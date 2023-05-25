@@ -1,5 +1,4 @@
 # website
-the website of fantopia
 
 
 
@@ -8,7 +7,7 @@ the website of fantopia
 initial deploy
 
 ```
-git clone https://github.com/fantopia-dev/website.git
+git clone https://github.com/firstsatoshi/website.git
 
 cd website
 
