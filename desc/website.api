@@ -1,0 +1,20 @@
+syntax = "v1"
+
+type JoinWaitListReq {
+	Email      string `json:"email"`
+	BtcAddress string `json:"btcAddress"`
+}
+
+type JoinWaitListResp {
+	Id         int  `json:"no"`
+	Duplicated bool `json:"duplicated"`
+}
+
+@server(
+	prefix: api/v1
+	group: joinwaitlist
+)
+service website-api {
+	@handler joinWaitList
+	post /joinwaitlist(JoinWaitListReq) returns (JoinWaitListResp)
+}

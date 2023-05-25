@@ -1,0 +1,17 @@
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `tb_waitlist`;
+CREATE TABLE `tb_waitlist` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '邮箱',
+  `btc_address` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'BTC的P2TR格式地址',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+	UNIQUE KEY `email` (`email`) USING BTREE,
+	UNIQUE KEY `btc_address` (`btc_address`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC COMMENT='waitlist数据表';
+
+SET FOREIGN_KEY_CHECKS = 1;
+

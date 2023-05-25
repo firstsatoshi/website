@@ -1,0 +1,68 @@
+services:
+  website:
+    build: .
+    container_name: website
+    environment:
+      # 时区上海 - Time zone Shanghai (Change if needed)
+      TZ: Asia/Shanghai
+    ports:
+     - 8888:8888
+    depends_on:
+     - mysql
+     - redis
+    networks:
+      - website_network
+
+  mysql:
+    image: mysql/mysql-server:8.0.32
+    container_name: mysql
+    environment:
+      # 时区上海 - Time zone Shanghai (Change if needed)
+     TZ: Asia/Shanghai
+     MYSQL_USER: root
+     MYSQL_ROOT_PASSWORD: FUnxy7jdfYsxkdfs
+     MYSQL_DATABASE: website
+     MYSQL_ROOT_HOST: '%'
+    #  - MYSQL_ROOT_HOST=website
+    ports:
+      - 33068:3306
+    command:
+      # 将mysql8.0默认密码策略 修改为 原先 策略 (mysql8.0对其默认策略做了更改 会导致密码无法匹配)
+      # Modify the Mysql 8.0 default password strategy to the original strategy (MySQL8.0 to change its default strategy will cause the password to be unable to match)
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+      # --init-file /data/init.sql
+    volumes:
+      - ./data/mysql/data:/var/lib/mysql
+      - ./doc/website-v1.0.sql:/docker-entrypoint-initdb.d/init.sql
+    privileged: true
+    restart: always
+    networks:
+      - website_network
+
+  redis:
+    image: redis:6.2.7
+    container_name: redis
+    ports:
+      - 36379:6379
+    environment:
+      # 时区上海 - Time zone Shanghai (Change if needed)
+      TZ: Asia/Shanghai
+    volumes:
+      # 数据文件 - data files
+      - ./data/redis/data:/data:rw
+    command: "redis-server --requirepass Tisd28478fhkhKSDFsdfk  --appendonly yes"
+    privileged: true
+    restart: always
+    networks:
+      - website_network
+
+networks:
+  website_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.0.0/16

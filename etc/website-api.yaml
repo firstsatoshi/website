@@ -1,0 +1,13 @@
+Name: waitlist-api
+Host: 0.0.0.0
+Port: 8888
+
+
+# MySql:
+#   DataSource: root:jqrromNaJq11FLNT@tcp(127.0.0.1:3307)/website?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+
+MySql:
+  DataSource: root:FUnxy7jdfYsxkdfs@tcp(172.29.0.1:33068)/website?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+CacheRedis:
+  - Host: 172.29.0.1:36379
+    Pass: Tisd28478fhkhKSDFsdfk
