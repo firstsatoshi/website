@@ -10,6 +10,7 @@ func init() {
 	message[INVALID_EMAIL_ERROR] = "invalid email"
 	message[TOO_MANY_REQUEST_ERROR] = "request too frequently"
 	message[INVALID_BTCP2TRADDRESS_ERROR] = "invalid bitcoin P2TR address, the address must be prefix with bc1p"
+	message[FEERATE_TOO_SMALL_ERROR] = "fee rate too small"
 	message[DB_ERROR] = "db error"
 }
 
