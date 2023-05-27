@@ -36,15 +36,19 @@ type QueryOrderReq struct {
 	FromAddress    string `json:"fromAddress,optional"`
 }
 
-type QueryOrderResp struct {
+type Order struct {
 	OrderId          string `json:"orderId"`
 	DepositAddress   string `json:"depositAddress"`
-	Total            string `json:"total"`
+	Total            int    `json:"total"`
 	ReceiveAddress   string `json:"receiveAddress"`
 	OrderStatus      string `json:"orderStatus"`
 	PayTime          string `json:"paytime"`
 	PayConfirmedTime string `json:"payConfirmedTime"`
 	RevealTxid       string `json:"revealTxid"`
+}
+
+type QueryOrderResp struct {
+	Orders []Order `json:"order,omitempty"`
 }
 
 type QueryBlindboxEventResp struct {

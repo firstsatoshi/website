@@ -55,15 +55,19 @@ type queryOrderReq {
 	FromAddress    string `json:"fromAddress,optional"`
 }
 
-type queryOrderResp {
+type Order {
 	OrderId          string `json:"orderId"`
 	DepositAddress   string `json:"depositAddress"`
-	Total            string `json:"total"`
+	Total            int    `json:"total"`
 	ReceiveAddress   string `json:"receiveAddress"`
 	OrderStatus      string `json:"orderStatus"`
 	PayTime          string `json:"paytime"`
 	PayConfirmedTime string `json:"payConfirmedTime"`
 	RevealTxid       string `json:"revealTxid"`
+}
+
+type queryOrderResp {
+	Orders []Order `json:"order,omitempty"`
 }
 
 // 查询订单
