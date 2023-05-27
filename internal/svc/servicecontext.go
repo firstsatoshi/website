@@ -10,7 +10,9 @@ import (
 type ServiceContext struct {
 	Config config.Config
 
-	TbWaitlistModel model.TbWaitlistModel
+	TbWaitlistModel      model.TbWaitlistModel
+	TbBlindboxEventModel model.TbBlindboxEventModel
+	TbOrderModel         model.TbOrderModel
 
 	// redis
 	Redis *redis.Redis
@@ -22,8 +24,10 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	sqlConn := sqlx.NewMysql(c.MySql.DataSource)
 
 	return &ServiceContext{
-		Config:          c,
-		Redis:           c.CacheRedis[0].NewRedis(),
-		TbWaitlistModel: model.NewTbWaitlistModel(sqlConn, c.CacheRedis),
+		Config:               c,
+		Redis:                c.CacheRedis[0].NewRedis(),
+		TbWaitlistModel:      model.NewTbWaitlistModel(sqlConn, c.CacheRedis),
+		TbBlindboxEventModel: model.NewTbBlindboxEventModel(sqlConn, c.CacheRedis),
+		TbOrderModel:         model.NewTbOrderModel(sqlConn, c.CacheRedis),
 	}
 }

@@ -6,7 +6,7 @@ import (
 
 	createOrder "github.com/fantopia-dev/website/internal/handler/createOrder"
 	joinwaitlist "github.com/fantopia-dev/website/internal/handler/joinwaitlist"
-	queryBlindbox "github.com/fantopia-dev/website/internal/handler/queryBlindbox"
+	queryBlindboxEvent "github.com/fantopia-dev/website/internal/handler/queryBlindboxEvent"
 	queryOrder "github.com/fantopia-dev/website/internal/handler/queryOrder"
 	"github.com/fantopia-dev/website/internal/svc"
 
@@ -51,8 +51,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		[]rest.Route{
 			{
 				Method:  http.MethodGet,
-				Path:    "/queryblindbox",
-				Handler: queryBlindbox.QueryBlindboxHandler(serverCtx),
+				Path:    "/queryblindboxevent",
+				Handler: queryBlindboxEvent.QueryBlindboxEventHandler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/api/v1"),

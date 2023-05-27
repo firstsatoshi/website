@@ -26,6 +26,25 @@ CREATE TABLE `tb_blindbox` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒表';
 
+DROP TABLE IF EXISTS `tb_blindbox_event`;
+CREATE TABLE `tb_blindbox_event` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `event_name` varchar(100) COLLATE utf8mb4_bin DEFAULT "" COMMENT '名称',
+  `event_description` varchar(200) COLLATE utf8mb4_bin DEFAULT "" COMMENT '描述',
+  `btc_price` int not NULL COMMENT 'BTC价格',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT '是否激活',
+  `payment_coin` varchar(20) NOT NULL COMMENT '支付币种',
+  `supply` int not NULL COMMENT '供应量',
+  `avail` int not NULL COMMENT '本批次发行量',
+  `only_whitelist` tinyint(1) DEFAULT '0' COMMENT '是否只有白名单',
+  `start_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '开始时间',
+  `end_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '结束时间',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒活动表';
+
+
 
 DROP TABLE IF EXISTS `tb_order`;
 CREATE TABLE `tb_order` (

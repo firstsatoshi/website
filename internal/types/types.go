@@ -47,10 +47,10 @@ type QueryOrderResp struct {
 	RevealTxid       string `json:"revealTxid"`
 }
 
-type QueryBlindboxResp struct {
+type QueryBlindboxEventResp struct {
 	Name         string `json:"name"`
 	Description  string `json:"description"`
-	PriceBtc     int    `json:"priceBtc"`
+	PriceBtcSats int    `json:"priceBtcSats"`
 	PriceUsd     int    `json:"priceUsd"`      // usd价格
 	PaymentCoin  string `json:"paymentCoin"`   // 支付币种
 	Supply       int    `json:"supply"`        // 总数量

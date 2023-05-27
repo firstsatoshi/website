@@ -17,5 +17,7 @@ gen-dockerfile:
 
 
 .PHONY: website-api
-website-api:
-	go run ./waitlist.go
+website-api-quick:
+	docker-compose stop website
+	docker-compose build website
+	docker-compose up website

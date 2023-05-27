@@ -76,10 +76,10 @@ service website-api {
 	post /queryorder(queryOrderReq) returns (queryOrderResp)
 }
 
-type queryBlindboxResp {
+type queryBlindboxEventResp {
 	Name         string `json:"name"`
 	Description  string `json:"description"`
-	PriceBtc     int    `json:"priceBtc"`
+	PriceBtcSats int    `json:"priceBtcSats"`
 	PriceUsd     int    `json:"priceUsd"`      // usd价格
 	PaymentCoin  string `json:"paymentCoin"`   // 支付币种
 	Supply       int    `json:"supply"`        // 总数量
@@ -93,9 +93,9 @@ type queryBlindboxResp {
 // 查询盲盒
 @server(
 	prefix: api/v1
-	group: queryBlindbox
+	group: queryBlindboxEvent
 )
 service website-api {
-	@handler queryBlindbox
-	get /queryblindbox() returns (queryBlindboxResp)
+	@handler queryBlindboxEvent
+	get /queryblindboxevent() returns (queryBlindboxEventResp)
 }
