@@ -42,10 +42,6 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp *types.Quer
 		queryBuilder = queryBuilder.Where(squirrel.Eq{
 			"deposit_address": req.DepositAddress,
 		}).OrderBy("id ASC")
-	} else if len(req.FromAddress) != 0 {
-		queryBuilder = queryBuilder.Where(squirrel.Eq{
-			"pay_from_address": req.FromAddress,
-		}).OrderBy("id ASC")
 	} else {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "query filter must not be empty")
 	}
@@ -77,6 +73,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp *types.Quer
 			PayTime:          pt,
 			PayConfirmedTime: pct,
 			RevealTxid:       o.RevealTxid.String,
+			CreateTime:       o.CreateTime.Format("2006-01-02 15:04:05 +0800 CST"),
 		})
 	}
 

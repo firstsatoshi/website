@@ -35,7 +35,7 @@ type createOrderResp {
 	ServiceFee     int    `json:"serviceFee"`
 	Price          int    `json:"price"`
 	Total          int    `json:"total"`
-	CreateTime     int    `json:"createTime"`
+	CreateTime     string `json:"createTime"`
 }
 
 // 创建订单
@@ -52,7 +52,6 @@ type queryOrderReq {
 	OrderId        string `json:"orderId,optional"`
 	ReceiveAddress string `json:"receiveAddress,optional"`
 	DepositAddress string `json:"depositAddress,optional"`
-	FromAddress    string `json:"fromAddress,optional"`
 }
 
 type Order {
@@ -64,6 +63,7 @@ type Order {
 	PayTime          string `json:"paytime"`
 	PayConfirmedTime string `json:"payConfirmedTime"`
 	RevealTxid       string `json:"revealTxid"`
+	CreateTime       string `json:"createTime"`
 }
 
 type queryOrderResp {
@@ -101,5 +101,5 @@ type queryBlindboxEventResp {
 )
 service website-api {
 	@handler queryBlindboxEvent
-	get /queryblindboxevent() returns (queryBlindboxEventResp)
+	post /queryblindboxevent returns (queryBlindboxEventResp)
 }

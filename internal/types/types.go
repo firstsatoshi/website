@@ -26,14 +26,13 @@ type CreateOrderResp struct {
 	ServiceFee     int    `json:"serviceFee"`
 	Price          int    `json:"price"`
 	Total          int    `json:"total"`
-	CreateTime     int    `json:"createTime"`
+	CreateTime     string `json:"createTime"`
 }
 
 type QueryOrderReq struct {
 	OrderId        string `json:"orderId,optional"`
 	ReceiveAddress string `json:"receiveAddress,optional"`
 	DepositAddress string `json:"depositAddress,optional"`
-	FromAddress    string `json:"fromAddress,optional"`
 }
 
 type Order struct {
@@ -45,6 +44,7 @@ type Order struct {
 	PayTime          string `json:"paytime"`
 	PayConfirmedTime string `json:"payConfirmedTime"`
 	RevealTxid       string `json:"revealTxid"`
+	CreateTime       string `json:"createTime"`
 }
 
 type QueryOrderResp struct {
