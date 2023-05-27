@@ -65,10 +65,10 @@ DROP TABLE IF EXISTS `tb_address`;
 CREATE TABLE `tb_address` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '地址',
-  `type` varchar(10) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
+  `coin_type`varchar(10) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
   `bip44_index` bigint NOT NULL COMMENT 'bip44_index',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `tb_address_address_IDX` (`address`,`type`) USING BTREE
+  UNIQUE KEY `tb_address_address_IDX` (`address`,`coin_type`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='收款地址表';
 
 
@@ -76,7 +76,7 @@ CREATE TABLE `tb_address` (
 DROP TABLE IF EXISTS `tb_deposit`;
 CREATE TABLE `tb_deposit` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `type` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
+  `coin_type`varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
   `from_address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT 'from地址,如果是btc归集充值,显示输入的第一个地址',
   `to_address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT 'to地址',
   `txid` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT 'txid',
@@ -86,19 +86,19 @@ CREATE TABLE `tb_deposit` (
   UNIQUE KEY `tb_deposit_to_address_txid` (`to_address`, `txid`) USING BTREE,
   KEY `tb_deposit_txid` (`txid` ) USING BTREE,
   KEY `tb_deposit_from_address` (`from_address`) USING BTREE,
-  KEY `tb_deposit_type_from_address` (`type`, `from_address`) USING BTREE,
+  KEY `tb_deposit_type_from_address` (`coin_type`, `from_address`) USING BTREE,
   KEY `tb_deposit_to_address` (`to_address`) USING BTREE,
-  KEY `tb_deposit_type_to_address` (`type`, `to_address`) USING BTREE
+  KEY `tb_deposit_type_to_address` (`coin_type`, `to_address`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='充值记录表';
 
 
 DROP TABLE IF EXISTS `tb_blockscan`;
 CREATE TABLE `tb_blockscan` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `type` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
+  `coin_type`varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
   `block_number` bigint  NOT NULL COMMENT '区块高度',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `tb_blockscan_type_block_number` (`type`, `block_number`)
+  UNIQUE KEY `tb_blockscan_type_block_number` (`coin_type`, `block_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='区块扫描记录表';
 
 
@@ -112,19 +112,6 @@ CREATE TABLE `tb_order_blindbox` (
   UNIQUE KEY `tb_order_blindbox_blindbox_id_IDX` (`blindbox_id`) USING BTREE,
   UNIQUE KEY `tb_order_blindbox_order_id_IDX` (`order_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='锁图表';
-
-
-DROP TABLE IF EXISTS `tb_order_blindbox`;
-CREATE TABLE `tb_order_blindbox` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单号',
-  `blindbox_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '盲盒id',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `tb_order_blindbox_blindbox_id_IDX` (`blindbox_id`) USING BTREE,
-  UNIQUE KEY `tb_order_blindbox_order_id_IDX` (`order_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='锁图表';
-
-
 
 
 SET FOREIGN_KEY_CHECKS = 1;

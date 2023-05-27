@@ -21,15 +21,15 @@ var (
 	tbBlockscanRowsExpectAutoSet   = strings.Join(stringx.Remove(tbBlockscanFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), ",")
 	tbBlockscanRowsWithPlaceHolder = strings.Join(stringx.Remove(tbBlockscanFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
 
-	cacheTbBlockscanIdPrefix              = "cache:tbBlockscan:id:"
-	cacheTbBlockscanTypeBlockNumberPrefix = "cache:tbBlockscan:type:blockNumber:"
+	cacheTbBlockscanIdPrefix                  = "cache:tbBlockscan:id:"
+	cacheTbBlockscanCoinTypeBlockNumberPrefix = "cache:tbBlockscan:coinType:blockNumber:"
 )
 
 type (
 	tbBlockscanModel interface {
 		Insert(ctx context.Context, data *TbBlockscan) (sql.Result, error)
 		FindOne(ctx context.Context, id int64) (*TbBlockscan, error)
-		FindOneByTypeBlockNumber(ctx context.Context, tp string, blockNumber int64) (*TbBlockscan, error)
+		FindOneByCoinTypeBlockNumber(ctx context.Context, coinType string, blockNumber int64) (*TbBlockscan, error)
 		Update(ctx context.Context, data *TbBlockscan) error
 		Delete(ctx context.Context, id int64) error
 	}
@@ -41,7 +41,7 @@ type (
 
 	TbBlockscan struct {
 		Id          int64  `db:"id"`           // id
-		Type        string `db:"type"`         // 地址类型,BTC,ETH,USDT
+		CoinType    string `db:"coin_type"`    // 地址类型,BTC,ETH,USDT
 		BlockNumber int64  `db:"block_number"` // 区块高度
 	}
 )
@@ -59,12 +59,12 @@ func (m *defaultTbBlockscanModel) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 
+	tbBlockscanCoinTypeBlockNumberKey := fmt.Sprintf("%s%v:%v", cacheTbBlockscanCoinTypeBlockNumberPrefix, data.CoinType, data.BlockNumber)
 	tbBlockscanIdKey := fmt.Sprintf("%s%v", cacheTbBlockscanIdPrefix, id)
-	tbBlockscanTypeBlockNumberKey := fmt.Sprintf("%s%v:%v", cacheTbBlockscanTypeBlockNumberPrefix, data.Type, data.BlockNumber)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 		return conn.ExecCtx(ctx, query, id)
-	}, tbBlockscanIdKey, tbBlockscanTypeBlockNumberKey)
+	}, tbBlockscanCoinTypeBlockNumberKey, tbBlockscanIdKey)
 	return err
 }
 
@@ -85,12 +85,12 @@ func (m *defaultTbBlockscanModel) FindOne(ctx context.Context, id int64) (*TbBlo
 	}
 }
 
-func (m *defaultTbBlockscanModel) FindOneByTypeBlockNumber(ctx context.Context, tp string, blockNumber int64) (*TbBlockscan, error) {
-	tbBlockscanTypeBlockNumberKey := fmt.Sprintf("%s%v:%v", cacheTbBlockscanTypeBlockNumberPrefix, tp, blockNumber)
+func (m *defaultTbBlockscanModel) FindOneByCoinTypeBlockNumber(ctx context.Context, coinType string, blockNumber int64) (*TbBlockscan, error) {
+	tbBlockscanCoinTypeBlockNumberKey := fmt.Sprintf("%s%v:%v", cacheTbBlockscanCoinTypeBlockNumberPrefix, coinType, blockNumber)
 	var resp TbBlockscan
-	err := m.QueryRowIndexCtx(ctx, &resp, tbBlockscanTypeBlockNumberKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `type` = ? and `block_number` = ? limit 1", tbBlockscanRows, m.table)
-		if err := conn.QueryRowCtx(ctx, &resp, query, tp, blockNumber); err != nil {
+	err := m.QueryRowIndexCtx(ctx, &resp, tbBlockscanCoinTypeBlockNumberKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
+		query := fmt.Sprintf("select %s from %s where `coin_type` = ? and `block_number` = ? limit 1", tbBlockscanRows, m.table)
+		if err := conn.QueryRowCtx(ctx, &resp, query, coinType, blockNumber); err != nil {
 			return nil, err
 		}
 		return resp.Id, nil
@@ -106,12 +106,12 @@ func (m *defaultTbBlockscanModel) FindOneByTypeBlockNumber(ctx context.Context, 
 }
 
 func (m *defaultTbBlockscanModel) Insert(ctx context.Context, data *TbBlockscan) (sql.Result, error) {
+	tbBlockscanCoinTypeBlockNumberKey := fmt.Sprintf("%s%v:%v", cacheTbBlockscanCoinTypeBlockNumberPrefix, data.CoinType, data.BlockNumber)
 	tbBlockscanIdKey := fmt.Sprintf("%s%v", cacheTbBlockscanIdPrefix, data.Id)
-	tbBlockscanTypeBlockNumberKey := fmt.Sprintf("%s%v:%v", cacheTbBlockscanTypeBlockNumberPrefix, data.Type, data.BlockNumber)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?)", m.table, tbBlockscanRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Type, data.BlockNumber)
-	}, tbBlockscanIdKey, tbBlockscanTypeBlockNumberKey)
+		return conn.ExecCtx(ctx, query, data.CoinType, data.BlockNumber)
+	}, tbBlockscanCoinTypeBlockNumberKey, tbBlockscanIdKey)
 	return ret, err
 }
 
@@ -121,12 +121,12 @@ func (m *defaultTbBlockscanModel) Update(ctx context.Context, newData *TbBlocksc
 		return err
 	}
 
+	tbBlockscanCoinTypeBlockNumberKey := fmt.Sprintf("%s%v:%v", cacheTbBlockscanCoinTypeBlockNumberPrefix, data.CoinType, data.BlockNumber)
 	tbBlockscanIdKey := fmt.Sprintf("%s%v", cacheTbBlockscanIdPrefix, data.Id)
-	tbBlockscanTypeBlockNumberKey := fmt.Sprintf("%s%v:%v", cacheTbBlockscanTypeBlockNumberPrefix, data.Type, data.BlockNumber)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbBlockscanRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.Type, newData.BlockNumber, newData.Id)
-	}, tbBlockscanIdKey, tbBlockscanTypeBlockNumberKey)
+		return conn.ExecCtx(ctx, query, newData.CoinType, newData.BlockNumber, newData.Id)
+	}, tbBlockscanCoinTypeBlockNumberKey, tbBlockscanIdKey)
 	return err
 }
 

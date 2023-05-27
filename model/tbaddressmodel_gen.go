@@ -21,15 +21,15 @@ var (
 	tbAddressRowsExpectAutoSet   = strings.Join(stringx.Remove(tbAddressFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), ",")
 	tbAddressRowsWithPlaceHolder = strings.Join(stringx.Remove(tbAddressFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
 
-	cacheTbAddressIdPrefix          = "cache:tbAddress:id:"
-	cacheTbAddressAddressTypePrefix = "cache:tbAddress:address:type:"
+	cacheTbAddressIdPrefix              = "cache:tbAddress:id:"
+	cacheTbAddressAddressCoinTypePrefix = "cache:tbAddress:address:coinType:"
 )
 
 type (
 	tbAddressModel interface {
 		Insert(ctx context.Context, data *TbAddress) (sql.Result, error)
 		FindOne(ctx context.Context, id int64) (*TbAddress, error)
-		FindOneByAddressType(ctx context.Context, address string, tp string) (*TbAddress, error)
+		FindOneByAddressCoinType(ctx context.Context, address string, coinType string) (*TbAddress, error)
 		Update(ctx context.Context, data *TbAddress) error
 		Delete(ctx context.Context, id int64) error
 	}
@@ -42,7 +42,7 @@ type (
 	TbAddress struct {
 		Id         int64  `db:"id"`          // id
 		Address    string `db:"address"`     // 地址
-		Type       string `db:"type"`        // 地址类型,BTC,ETH,USDT
+		CoinType   string `db:"coin_type"`   // 地址类型,BTC,ETH,USDT
 		Bip44Index int64  `db:"bip44_index"` // bip44_index
 	}
 )
@@ -60,12 +60,12 @@ func (m *defaultTbAddressModel) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 
-	tbAddressAddressTypeKey := fmt.Sprintf("%s%v:%v", cacheTbAddressAddressTypePrefix, data.Address, data.Type)
+	tbAddressAddressCoinTypeKey := fmt.Sprintf("%s%v:%v", cacheTbAddressAddressCoinTypePrefix, data.Address, data.CoinType)
 	tbAddressIdKey := fmt.Sprintf("%s%v", cacheTbAddressIdPrefix, id)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 		return conn.ExecCtx(ctx, query, id)
-	}, tbAddressAddressTypeKey, tbAddressIdKey)
+	}, tbAddressAddressCoinTypeKey, tbAddressIdKey)
 	return err
 }
 
@@ -86,12 +86,12 @@ func (m *defaultTbAddressModel) FindOne(ctx context.Context, id int64) (*TbAddre
 	}
 }
 
-func (m *defaultTbAddressModel) FindOneByAddressType(ctx context.Context, address string, tp string) (*TbAddress, error) {
-	tbAddressAddressTypeKey := fmt.Sprintf("%s%v:%v", cacheTbAddressAddressTypePrefix, address, tp)
+func (m *defaultTbAddressModel) FindOneByAddressCoinType(ctx context.Context, address string, coinType string) (*TbAddress, error) {
+	tbAddressAddressCoinTypeKey := fmt.Sprintf("%s%v:%v", cacheTbAddressAddressCoinTypePrefix, address, coinType)
 	var resp TbAddress
-	err := m.QueryRowIndexCtx(ctx, &resp, tbAddressAddressTypeKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `address` = ? and `type` = ? limit 1", tbAddressRows, m.table)
-		if err := conn.QueryRowCtx(ctx, &resp, query, address, tp); err != nil {
+	err := m.QueryRowIndexCtx(ctx, &resp, tbAddressAddressCoinTypeKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
+		query := fmt.Sprintf("select %s from %s where `address` = ? and `coin_type` = ? limit 1", tbAddressRows, m.table)
+		if err := conn.QueryRowCtx(ctx, &resp, query, address, coinType); err != nil {
 			return nil, err
 		}
 		return resp.Id, nil
@@ -107,12 +107,12 @@ func (m *defaultTbAddressModel) FindOneByAddressType(ctx context.Context, addres
 }
 
 func (m *defaultTbAddressModel) Insert(ctx context.Context, data *TbAddress) (sql.Result, error) {
-	tbAddressAddressTypeKey := fmt.Sprintf("%s%v:%v", cacheTbAddressAddressTypePrefix, data.Address, data.Type)
+	tbAddressAddressCoinTypeKey := fmt.Sprintf("%s%v:%v", cacheTbAddressAddressCoinTypePrefix, data.Address, data.CoinType)
 	tbAddressIdKey := fmt.Sprintf("%s%v", cacheTbAddressIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?)", m.table, tbAddressRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Address, data.Type, data.Bip44Index)
-	}, tbAddressAddressTypeKey, tbAddressIdKey)
+		return conn.ExecCtx(ctx, query, data.Address, data.CoinType, data.Bip44Index)
+	}, tbAddressAddressCoinTypeKey, tbAddressIdKey)
 	return ret, err
 }
 
@@ -122,12 +122,12 @@ func (m *defaultTbAddressModel) Update(ctx context.Context, newData *TbAddress) 
 		return err
 	}
 
-	tbAddressAddressTypeKey := fmt.Sprintf("%s%v:%v", cacheTbAddressAddressTypePrefix, data.Address, data.Type)
+	tbAddressAddressCoinTypeKey := fmt.Sprintf("%s%v:%v", cacheTbAddressAddressCoinTypePrefix, data.Address, data.CoinType)
 	tbAddressIdKey := fmt.Sprintf("%s%v", cacheTbAddressIdPrefix, data.Id)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbAddressRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.Address, newData.Type, newData.Bip44Index, newData.Id)
-	}, tbAddressAddressTypeKey, tbAddressIdKey)
+		return conn.ExecCtx(ctx, query, newData.Address, newData.CoinType, newData.Bip44Index, newData.Id)
+	}, tbAddressAddressCoinTypeKey, tbAddressIdKey)
 	return err
 }
 

@@ -41,7 +41,7 @@ type (
 
 	TbDeposit struct {
 		Id          int64  `db:"id"`           // id
-		Type        string `db:"type"`         // 地址类型,BTC,ETH,USDT
+		CoinType    string `db:"coin_type"`    // 地址类型,BTC,ETH,USDT
 		FromAddress string `db:"from_address"` // from地址,如果是btc归集充值,显示输入的第一个地址
 		ToAddress   string `db:"to_address"`   // to地址
 		Txid        string `db:"txid"`         // txid
@@ -114,7 +114,7 @@ func (m *defaultTbDepositModel) Insert(ctx context.Context, data *TbDeposit) (sq
 	tbDepositToAddressTxidKey := fmt.Sprintf("%s%v:%v", cacheTbDepositToAddressTxidPrefix, data.ToAddress, data.Txid)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?)", m.table, tbDepositRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Type, data.FromAddress, data.ToAddress, data.Txid, data.Amount, data.Decimals)
+		return conn.ExecCtx(ctx, query, data.CoinType, data.FromAddress, data.ToAddress, data.Txid, data.Amount, data.Decimals)
 	}, tbDepositIdKey, tbDepositToAddressTxidKey)
 	return ret, err
 }
@@ -129,7 +129,7 @@ func (m *defaultTbDepositModel) Update(ctx context.Context, newData *TbDeposit) 
 	tbDepositToAddressTxidKey := fmt.Sprintf("%s%v:%v", cacheTbDepositToAddressTxidPrefix, data.ToAddress, data.Txid)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbDepositRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.Type, newData.FromAddress, newData.ToAddress, newData.Txid, newData.Amount, newData.Decimals, newData.Id)
+		return conn.ExecCtx(ctx, query, newData.CoinType, newData.FromAddress, newData.ToAddress, newData.Txid, newData.Amount, newData.Decimals, newData.Id)
 	}, tbDepositIdKey, tbDepositToAddressTxidKey)
 	return err
 }
