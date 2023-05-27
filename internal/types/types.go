@@ -10,3 +10,53 @@ type JoinWaitListResp struct {
 	Id         int  `json:"no"`
 	Duplicated bool `json:"duplicated"`
 }
+
+type CreateOrderReq struct {
+	ReceiveAddress string `json:"receiveAddress"`
+	FeeRate        int    `json:"feeRate"`
+}
+
+type CreateOrderResp struct {
+	OrderId        string `json:"orderId"`
+	DepositAddress string `json:"depositAddress"`
+	ReceiveAddress string `json:"receiveAddress"`
+	FeeRate        int    `json:"feeRate"`
+	Bytes          int    `json:"bytes"`
+	InscribeFee    int    `json:"inscribeFee"`
+	ServiceFee     int    `json:"serviceFee"`
+	Price          int    `json:"price"`
+	Total          int    `json:"total"`
+	CreateTime     int    `json:"createTime"`
+}
+
+type QueryOrderReq struct {
+	OrderId        string `json:"orderId,optional"`
+	ReceiveAddress string `json:"receiveAddress,optional"`
+	DepositAddress string `json:"depositAddress,optional"`
+	FromAddress    string `json:"fromAddress,optional"`
+}
+
+type QueryOrderResp struct {
+	OrderId          string `json:"orderId"`
+	DepositAddress   string `json:"depositAddress"`
+	Total            string `json:"total"`
+	ReceiveAddress   string `json:"receiveAddress"`
+	OrderStatus      string `json:"orderStatus"`
+	PayTime          string `json:"paytime"`
+	PayConfirmedTime string `json:"payConfirmedTime"`
+	RevealTxid       string `json:"revealTxid"`
+}
+
+type QueryBlindboxResp struct {
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	PriceBtc     int    `json:"priceBtc"`
+	PriceUsd     int    `json:"priceUsd"`      // usd价格
+	PaymentCoin  string `json:"paymentCoin"`   // 支付币种
+	Supply       int    `json:"supply"`        // 总数量
+	Avail        int    `json:"avail"`         // 可用数量
+	Enable       bool   `json:"enable"`        // 是否开启
+	OnlyWhiteist bool   `json:"onlyWhitelist"` // 仅白名单
+	StartTime    string `json:"startTime"`     // 开始时间
+	EndTime      string `json:"endTime"`       // 结束时间
+}
