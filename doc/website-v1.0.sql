@@ -86,11 +86,13 @@ CREATE TABLE `tb_address` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '地址',
   `coin_type`varchar(10) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
-  `bip44_index` bigint NOT NULL COMMENT 'bip44_index',
-   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `account_index` bigint NOT NULL COMMENT 'account_index',
+  `address_index` bigint NOT NULL COMMENT 'address_index',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `tb_address_address_IDX` (`address`,`coin_type`) USING BTREE
+  UNIQUE KEY `tb_address_uindex` (`address`) USING BTREE,
+  UNIQUE KEY `tb_coin_type_account_index_address_index_IDX` ( `coin_type`, `account_index`,`address_index`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='收款地址表';
 
 

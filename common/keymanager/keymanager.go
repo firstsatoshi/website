@@ -77,34 +77,36 @@ type KeyManager struct {
 	mnemonic   string
 	passphrase string
 	keys       map[string]*bip32.Key
-	mux        sync.Mutex
+
+	chainCfg chaincfg.Params
+	mux      sync.Mutex
 }
 
 // NewKeyManager return new key manager
 // bitSize has to be a multiple 32 and be within the inclusive range of {128, 256}
 // 128: 12 phrases
 // 256: 24 phrases
-func newKeyManager(bitSize int, mnemonic string) (*KeyManager, error) {
+// func newKeyManager(bitSize int, mnemonic string) (*KeyManager, error) {
 
-	if mnemonic == "" {
-		entropy, err := bip39.NewEntropy(bitSize)
-		if err != nil {
-			return nil, err
-		}
-		mnemonic, err = bip39.NewMnemonic(entropy)
-		if err != nil {
-			return nil, err
-		}
-	}
+// 	if mnemonic == "" {
+// 		entropy, err := bip39.NewEntropy(bitSize)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		mnemonic, err = bip39.NewMnemonic(entropy)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 	}
 
-	km := &KeyManager{
-		mnemonic: mnemonic,
-		keys:     make(map[string]*bip32.Key, 0),
-	}
-	return km, nil
-}
+// 	km := &KeyManager{
+// 		mnemonic: mnemonic,
+// 		keys:     make(map[string]*bip32.Key, 0),
+// 	}
+// 	return km, nil
+// }
 
-func NewKeyManagerFromSeed(seed string) (*KeyManager, error) {
+func NewKeyManagerFromSeed(seed string, chainCfg chaincfg.Params) (*KeyManager, error) {
 
 	if seed == "" {
 		seed = "youngqqcn@163.com20230529"
@@ -126,6 +128,7 @@ func NewKeyManagerFromSeed(seed string) (*KeyManager, error) {
 	km := &KeyManager{
 		mnemonic:   mnemonic,
 		passphrase: "godbless@you20230529",
+		chainCfg: chainCfg,
 		keys:       make(map[string]*bip32.Key, 0),
 	}
 	return km, nil
@@ -295,9 +298,8 @@ func (km *KeyManager) getPrivateKey(purpose, coinType, account, change, index ui
 	return &Key{path: path, bip32Key: key}, nil
 }
 
-func (km *KeyManager) GetWifKeyAndAddresss(addrIndex int,  chainCfg chaincfg.Params) (wif, p2trAddress string, err error) {
-	addressIndex := uint32(1)
-	k, err := km.getPrivateKey(PurposeBIP44, CoinTypeBTC, 0, 0, addressIndex)
+func (km *KeyManager) GetWifKeyAndAddresss(accoutIndex, addrIndex uint32, chainCfg chaincfg.Params) (wif, p2trAddress string, err error) {
+	k, err := km.getPrivateKey(PurposeBIP44, CoinTypeBTC, accoutIndex, 0, addrIndex)
 	if err != nil {
 		return
 	}

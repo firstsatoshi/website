@@ -2,6 +2,9 @@ package createOrder
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/btcsuite/btcd/btcutil"
@@ -59,10 +62,51 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	// }).OrderBy("id ASC")
 	// l.svcCtx.TbOrderModel.FindOrders(l.ctx, queryBuilder)
 
-	orderId := uniqueid.GenSn("BX")
+	// random generate account_index and address_index
+	rand.Seed(time.Now().UnixNano())
 
-	// TODO
-	depositAddress := "bc1p2yzcv24v9tpw6ffhkqcq994y8p4ps2xfv65wx7nsmg4meuvzd0fqyesxg7"
+	accountIndex := rand.Uint32()
+	addressIndex := rand.Uint32()
+	for {
+		_, e := l.svcCtx.TbAddressModel.FindOneByCoinTypeAccountIndexAddressIndex(l.ctx, "BTC", int64(accountIndex), int64(addressIndex))
+		if e == model.ErrNotFound {
+			break
+		}
+
+		// if already exists continue generate random index
+		accountIndex = rand.Uint32()
+		addressIndex = rand.Uint32()
+	}
+
+	_, depositAddress, err := l.svcCtx.KeyManager.GetWifKeyAndAddresss(
+		accountIndex,
+		addressIndex,
+		chaincfg.MainNetParams)
+	if err != nil {
+		logx.Errorf("error: %v", err.Error())
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "generate address error %v", err.Error())
+	}
+
+	addresInsertResult, err := l.svcCtx.TbAddressModel.Insert(l.ctx, &model.TbAddress{
+		Address:      depositAddress,
+		CoinType:     "BTC",
+		AccountIndex: int64(accountIndex),
+		AddressIndex: int64(addressIndex),
+	})
+	if err != nil {
+		logx.Errorf("error: %v", err.Error())
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "insert address error %v", err.Error())
+	}
+	addressId, err := addresInsertResult.LastInsertId()
+	if err != nil {
+		addressId = 0
+	}
+
+	prefix := "BX" + req.ReceiveAddress[4:8] + req.ReceiveAddress[len(req.ReceiveAddress)-4:] +
+		depositAddress[4:8] + depositAddress[len(depositAddress)-4:] +
+		fmt.Sprintf("%02d", req.Count) + fmt.Sprintf("%02d", req.FeeRate)
+	prefix = strings.ToUpper(prefix)
+	orderId := uniqueid.GenSn(prefix)
 
 	createTime := time.Now()
 	ord := model.TbOrder{
@@ -81,6 +125,9 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	}
 	_, err = l.svcCtx.TbOrderModel.Insert(l.ctx, &ord)
 	if err != nil {
+		// TODO: use transaction ?
+		l.svcCtx.TbAddressModel.Delete(l.ctx, addressId)
+
 		logx.Errorf("insert error:%v", err.Error())
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "insert error: %v", err.Error())
 	}
