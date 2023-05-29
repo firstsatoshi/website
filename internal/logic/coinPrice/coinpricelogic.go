@@ -38,7 +38,7 @@ func (l *CoinPriceLogic) CoinPrice() (*types.CoinPriceResp, error) {
 		price, err := strconv.ParseFloat(v, 64)
 		if err == nil {
 			return &types.CoinPriceResp{
-				BtcPriceUsd: price,
+				BtcPriceUsd: float64(int32(price)),
 			}, nil
 		}
 	}
@@ -80,7 +80,7 @@ func (l *CoinPriceLogic) CoinPrice() (*types.CoinPriceResp, error) {
 		price, err := strconv.ParseFloat(v, 64)
 		if err == nil {
 			return &types.CoinPriceResp{
-				BtcPriceUsd: price,
+				BtcPriceUsd: float64(int32(price)),
 			}, nil
 		}
 	}
