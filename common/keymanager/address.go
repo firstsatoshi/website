@@ -1,4 +1,4 @@
-package address
+package keymanager
 
 import (
 	"crypto/sha256"

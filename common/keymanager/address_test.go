@@ -1,20 +1,20 @@
-package address_test
+package keymanager_test
 
 import (
 	"testing"
 
-	"github.com/fantopia-dev/website/common/address"
+	"github.com/fantopia-dev/website/common/keymanager"
 )
 
 func TestCreateWallet(t *testing.T) {
 
-	km, err := address.NewKeyManagerFromSeed("xiexieniyoungqqcn@163.com")
+	km, err := keymanager.NewKeyManagerFromSeed("xiexieniyoungqqcn@163.com")
 	if err != nil {
 		t.Fatalf("error: %v", err.Error())
 	}
 
 	addressIndex := uint32(1)
-	k, err := km.GetKey(address.PurposeBIP44, address.CoinTypeBTC, 0, 0, addressIndex)
+	k, err := km.GetKey(keymanager.PurposeBIP44, keymanager.CoinTypeBTC, 0, 0, addressIndex)
 	if err != nil {
 		t.Fatalf("error: %v", err.Error())
 	}
