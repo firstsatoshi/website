@@ -43,7 +43,7 @@ CREATE TABLE `tb_blindbox_event` (
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒活动表';
-
+INSERT INTO website.tb_blindbox_event (event_name,event_description,btc_price,is_active,payment_coin,supply,avail,only_whitelist,start_time,end_time,create_time,update_time) VALUES('Bitcoin Eagle','This is Bitcoin Eagle NFT mint',123456,1,'BTC',1000,1000,0,'2023-05-27 16:28:39','2024-05-27 16:28:39','2023-05-27 16:28:39','2023-05-27 16:28:48');
 
 
 DROP TABLE IF EXISTS `tb_order`;
@@ -87,6 +87,8 @@ CREATE TABLE `tb_address` (
   `address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '地址',
   `coin_type`varchar(10) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
   `bip44_index` bigint NOT NULL COMMENT 'bip44_index',
+   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `tb_address_address_IDX` (`address`,`coin_type`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='收款地址表';
@@ -102,6 +104,8 @@ CREATE TABLE `tb_deposit` (
   `txid` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT 'txid',
   `amount` int NOT NULL COMMENT '金额(最小单位)',
   `decimals` int NOT NULL COMMENT '精度(BTC: 8, ETH: 18, USDT: 6)',
+   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `tb_deposit_to_address_txid` (`to_address`, `txid`) USING BTREE,
   KEY `tb_deposit_txid` (`txid` ) USING BTREE,
@@ -117,20 +121,23 @@ CREATE TABLE `tb_blockscan` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `coin_type`varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
   `block_number` bigint  NOT NULL COMMENT '区块高度',
+   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `tb_blockscan_type_block_number` (`coin_type`, `block_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='区块扫描记录表';
 
-
-
-DROP TABLE IF EXISTS `tb_order_blindbox`;
-CREATE TABLE `tb_order_blindbox` (
+--- 用事务的方式插入
+DROP TABLE IF EXISTS `tb_lock_order_blindbox`;
+CREATE TABLE `tb_lock_order_blindbox` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单号',
+  `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单号', --- 一个订单可以锁定多个盲盒
   `blindbox_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '盲盒id',
+  `deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `tb_order_blindbox_blindbox_id_IDX` (`blindbox_id`) USING BTREE,
-  UNIQUE KEY `tb_order_blindbox_order_id_IDX` (`order_id`) USING BTREE
+  UNIQUE KEY `tb_lock_order_blindbox_blindbox_id_IDX` (`blindbox_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='锁图表';
 
 
