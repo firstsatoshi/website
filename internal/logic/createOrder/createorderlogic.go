@@ -55,6 +55,22 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.FEERATE_TOO_SMALL_ERROR), "feeRate too small %v", req.FeeRate)
 	}
 
+	event, err := l.svcCtx.TbBlindboxEventModel.FindOne(l.ctx, int64(req.EventId))
+	if err != nil {
+		if err == model.ErrNotFound {
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.EVENT_NOT_EXISTS_ERROR), "event id does not exists %v", req.EventId)
+		} else {
+			logx.Errorf("FindOne error:%v", err.Error())
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOne error: %v", err.Error())
+		}
+	}
+
+	// check available count
+	if event.Avail < int64(req.Count) {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.AVAILABLE_COUNT_IS_NOT_ENOUGH),
+			"avail count %v is not enough %v", event.Avail, req.Count)
+	}
+
 	// query exists unpayment order
 	// queryBuilder := l.svcCtx.TbOrderModel.RowBuilder().Where(squirrel.Eq{
 	// 	"receive_address": req.ReceiveAddress,
@@ -111,6 +127,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	createTime := time.Now()
 	ord := model.TbOrder{
 		OrderId:         orderId,
+		EventId:         int64(req.EventId),
 		Count:           int64(req.Count),
 		DepositAddress:  depositAddress,
 		ReceiveAddress:  req.ReceiveAddress,
@@ -134,6 +151,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	resp = &types.CreateOrderResp{
 		OrderId:        ord.OrderId,
+		EventId:        int(ord.EventId),
 		Count:          int(ord.Count),
 		DepositAddress: ord.DepositAddress,
 		ReceiveAddress: ord.ReceiveAddress,

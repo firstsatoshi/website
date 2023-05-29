@@ -42,6 +42,7 @@ type (
 
 	TbLockOrderBlindbox struct {
 		Id         int64     `db:"id"`          // id
+		EventId    int64     `db:"event_id"`    // 活动id
 		OrderId    string    `db:"order_id"`    // 订单号
 		BlindboxId string    `db:"blindbox_id"` // 盲盒id
 		Deleted    int64     `db:"deleted"`     // 逻辑删除
@@ -113,8 +114,8 @@ func (m *defaultTbLockOrderBlindboxModel) Insert(ctx context.Context, data *TbLo
 	tbLockOrderBlindboxBlindboxIdKey := fmt.Sprintf("%s%v", cacheTbLockOrderBlindboxBlindboxIdPrefix, data.BlindboxId)
 	tbLockOrderBlindboxIdKey := fmt.Sprintf("%s%v", cacheTbLockOrderBlindboxIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?)", m.table, tbLockOrderBlindboxRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.OrderId, data.BlindboxId, data.Deleted)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?)", m.table, tbLockOrderBlindboxRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.EventId, data.OrderId, data.BlindboxId, data.Deleted)
 	}, tbLockOrderBlindboxBlindboxIdKey, tbLockOrderBlindboxIdKey)
 	return ret, err
 }
@@ -129,7 +130,7 @@ func (m *defaultTbLockOrderBlindboxModel) Update(ctx context.Context, newData *T
 	tbLockOrderBlindboxIdKey := fmt.Sprintf("%s%v", cacheTbLockOrderBlindboxIdPrefix, data.Id)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbLockOrderBlindboxRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.OrderId, newData.BlindboxId, newData.Deleted, newData.Id)
+		return conn.ExecCtx(ctx, query, newData.EventId, newData.OrderId, newData.BlindboxId, newData.Deleted, newData.Id)
 	}, tbLockOrderBlindboxBlindboxIdKey, tbLockOrderBlindboxIdKey)
 	return err
 }

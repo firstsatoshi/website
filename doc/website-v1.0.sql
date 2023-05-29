@@ -50,6 +50,7 @@ DROP TABLE IF EXISTS `tb_order`;
 CREATE TABLE `tb_order` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单id',
+  `event_id` bigint NOT NULL COMMENT '活动id',
   `count` int not NULL COMMENT '数量',
   `deposit_address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '充值地址',
   `inscription_data` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '铭刻内容',
@@ -106,7 +107,7 @@ CREATE TABLE `tb_deposit` (
   `txid` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT 'txid',
   `amount` int NOT NULL COMMENT '金额(最小单位)',
   `decimals` int NOT NULL COMMENT '精度(BTC: 8, ETH: 18, USDT: 6)',
-   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `tb_deposit_to_address_txid` (`to_address`, `txid`) USING BTREE,
@@ -132,14 +133,15 @@ CREATE TABLE `tb_blockscan` (
 DROP TABLE IF EXISTS `tb_lock_order_blindbox`;
 CREATE TABLE `tb_lock_order_blindbox` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `event_id` bigint NOT NULL COMMENT '活动id',
   `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单号',
   `blindbox_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '盲盒id',
   `deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `tb_lock_order_blindbox_blindbox_id_IDX` (`blindbox_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='锁图表';
+  UNIQUE KEY `tb_blindbox_id_IDX` (`blindbox_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='锁库存表';
 
 
 SET FOREIGN_KEY_CHECKS = 1;

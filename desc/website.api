@@ -21,6 +21,7 @@ service website-api {
 }
 
 type createOrderReq {
+	EventId        int    `json:"eventId"`
 	Count          int    `json:"count"`
 	ReceiveAddress string `json:"receiveAddress"`
 	FeeRate        int    `json:"feeRate"`
@@ -28,6 +29,7 @@ type createOrderReq {
 
 type createOrderResp {
 	OrderId        string `json:"orderId"`
+	EventId        int    `json:"eventId"`
 	Count          int    `json:"count"`
 	DepositAddress string `json:"depositAddress"`
 	ReceiveAddress string `json:"receiveAddress"`
@@ -58,6 +60,7 @@ type queryOrderReq {
 
 type Order {
 	OrderId          string `json:"orderId"`
+	EventId          int    `json:"eventId"`
 	DepositAddress   string `json:"depositAddress"`
 	Total            int    `json:"total"`
 	ReceiveAddress   string `json:"receiveAddress"`
@@ -83,6 +86,7 @@ service website-api {
 }
 
 type queryBlindboxEventResp {
+	EventId      int    `json:"eventId"`
 	Name         string `json:"name"`
 	Description  string `json:"description"`
 	PriceBtcSats int    `json:"priceBtcSats"`

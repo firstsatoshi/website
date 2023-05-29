@@ -33,6 +33,7 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp *types.QueryBlindbo
 	}
 
 	resp = &types.QueryBlindboxEventResp{
+		EventId:      int(event.Id),
 		Name:         event.EventName,
 		Description:  event.EventDescription,
 		PriceBtcSats: int(event.BtcPrice),

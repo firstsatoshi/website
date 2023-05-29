@@ -12,6 +12,7 @@ type JoinWaitListResp struct {
 }
 
 type CreateOrderReq struct {
+	EventId        int    `json:"eventId"`
 	Count          int    `json:"count"`
 	ReceiveAddress string `json:"receiveAddress"`
 	FeeRate        int    `json:"feeRate"`
@@ -19,6 +20,7 @@ type CreateOrderReq struct {
 
 type CreateOrderResp struct {
 	OrderId        string `json:"orderId"`
+	EventId        int    `json:"eventId"`
 	Count          int    `json:"count"`
 	DepositAddress string `json:"depositAddress"`
 	ReceiveAddress string `json:"receiveAddress"`
@@ -39,6 +41,7 @@ type QueryOrderReq struct {
 
 type Order struct {
 	OrderId          string `json:"orderId"`
+	EventId          int    `json:"eventId"`
 	DepositAddress   string `json:"depositAddress"`
 	Total            int    `json:"total"`
 	ReceiveAddress   string `json:"receiveAddress"`
@@ -54,6 +57,7 @@ type QueryOrderResp struct {
 }
 
 type QueryBlindboxEventResp struct {
+	EventId      int    `json:"eventId"`
 	Name         string `json:"name"`
 	Description  string `json:"description"`
 	PriceBtcSats int    `json:"priceBtcSats"`

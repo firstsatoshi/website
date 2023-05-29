@@ -66,13 +66,14 @@
         "code": 0,
         "msg": "ok",
         "data": {
+            "eventId": 1, // 活动id
             "name": "Bitcoin Eagle",  // 盲盒活动名
             "description": "This is Bitcoin Eagle NFT mint", // 盲盒活动描述
             "priceBtcSats": 123456, // 盲盒价格， 单位是聪(satoshi),如果要换算成BTC要除以10^8, 例如：123456 satoshi = 0.00123456BTC
             "priceUsd": 0, // 盲盒价格（美元），
             "paymentCoin": "BTC", // 收款币种，用户必须使用此币种进行支付
-            "supply": 1000, // 总供应量
-            "avail": 1000,  // 当前可用量
+            "supply": 1000, // 总供应量（本次活动供应总量）
+            "avail": 1000,  // 当前可用量(背刺活动当前可用库存)
             "enable": true, // 活动是否开启
             "onlyWhitelist": false, // 是否仅对白名单用户开放
             "startTime": "2023-05-27 16:28:39 +0800 CST", // 活动开始时间
@@ -91,6 +92,7 @@
 
     | 字段 | 说明| 类型 | 可选? | 示例 |
     |-----|------|------|----|----|
+    | `evntId` | 活动id | integer | 必填 | 1 |
     | `count` | 数量（批量） , 限制`0 < count <= 10` | integer | 必填 | 2 |
     | `receiveAddress` |btc NFT 接收地址，主网地址以`bc1p`开头，测试网地址以`tb1p`开头，长度为`62`字符,  | string | 必填 | bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7 |
     | `feeRate` | 费率 | integer | 必填 | 25 |
@@ -139,7 +141,7 @@
 
     | 字段 | 说明| 类型 | 可选? | 示例 |
     |-----|------|------|----|----|
-    | `orderId` | 订单id | string | 可选 | `BX2023052717254792444944` |
+    | `orderId` | 订单id | string | 可选 | `BXHJSY54E7P836W4KU01252023052917044049093727` |
     | `receiveAddress` |btc NFT 接收地址，主网地址以`bc1p`开头，测试网地址以`tb1p`开头，长度为`62`字符,  | string | 可选 | bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7 |
     | `depositAddress` | 充值地址 | string | 可选 | bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7 |
 
@@ -162,10 +164,11 @@
         "data": {
             "order": [
                 {
-                    "orderId": "BX2023052717254792444944", // 订单id
+                    "orderId": "BXHJSY54E7P836W4KU01252023052917044049093727", // 订单id
+                    "eventId": 1,
                     "depositAddress": "xxxxxxxxxxxxxxxxx", // 充值地址
                     "total": 1123456, // 总金额（单位，聪），
-                    "receiveAddress": "bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7", // 用户的nft接收地址
+                    "receiveAddress": "bc1pp836v6am6mf2pr8dvm6tsx8atjqqfe4w7nrpzgxzd2t5ytm25erqu0w4ku", // 用户的nft接收地址
                     "orderStatus": "NOPAY", // 订单状态, NOPAY:未支付;PAYPENDING:支付确认中;PAYSUCCESS:支付成功;PAYTIMEOUT:超时未支付;INSCRIBING:铭刻交易等待确认中;ALLSUCCESS:订单成功
                     "paytime": "", // 支付交易发起时间
                     "payConfirmedTime": "", // 支付交易确认时间
@@ -173,8 +176,9 @@
                     "createTime": "2023-05-27 17:25:47 +0800 CST" // 订单生成时间
                 },
                 {
-                    "orderId": "BX2023052717272319484611",
-                    "depositAddress": "xxxxxxxxxxxxxxxxx",
+                    "orderId": "BXHJSY54E7VLPTMTSL01252023052917044134049267",
+                    "eventId": 1,
+                    "depositAddress": "bc1pvlpt3h7ydtnmraw49wgvme2pcgyrp6ha379uj6xwdsz058kek0vq53mtsl",
                     "total": 1123456,
                     "receiveAddress": "bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7",
                     "orderStatus": "NOPAY",

@@ -12,6 +12,8 @@ func init() {
 	message[INVALID_BTCP2TRADDRESS_ERROR] = "invalid bitcoin P2TR(Taproot) inscription receive address, it must be prefix with 'bc1p'"
 	message[FEERATE_TOO_SMALL_ERROR] = "fee rate too small"
 	message[COUNT_EXCEED_PER_ORDER_LIMIT_ERROR] = "inscribe count exceed per order limit"
+	message[EVENT_NOT_EXISTS_ERROR] = "event does not exists"
+	message[AVAILABLE_COUNT_IS_NOT_ENOUGH] = "avialable count is not enough"
 	message[DB_ERROR] = "db error"
 }
 

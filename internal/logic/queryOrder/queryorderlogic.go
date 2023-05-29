@@ -66,6 +66,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp *types.Quer
 		}
 		resp.Orders = append(resp.Orders, types.Order{
 			OrderId:          o.OrderId,
+			EventId:          int(o.EventId),
 			DepositAddress:   o.DepositAddress,
 			Total:            int(o.TotalAmountSat),
 			ReceiveAddress:   o.ReceiveAddress,
