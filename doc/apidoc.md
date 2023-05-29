@@ -189,8 +189,26 @@
                     "revealTxid": "",
                     "createTime": "2023-05-27 17:27:23 +0800 CST"
                 }
-            }
+            ]
         }
     }
     ```
 
+
+##  `coinprice` 获取`BTC`价格 (每小时更新一次)
+
+- 请求方式: `POST`
+
+- 请求参数: 无
+
+- 响应示例
+
+    ```json
+    {
+        "code": 0,
+        "msg": "ok",
+        "data": {
+            "btcPriceUsd": 27848   // BTC的价格（美元）
+        }
+    }
+    ```
