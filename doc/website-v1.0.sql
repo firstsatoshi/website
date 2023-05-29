@@ -127,11 +127,10 @@ CREATE TABLE `tb_blockscan` (
   UNIQUE KEY `tb_blockscan_type_block_number` (`coin_type`, `block_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='区块扫描记录表';
 
---- 用事务的方式插入
 DROP TABLE IF EXISTS `tb_lock_order_blindbox`;
 CREATE TABLE `tb_lock_order_blindbox` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单号', --- 一个订单可以锁定多个盲盒
+  `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单号',
   `blindbox_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '盲盒id',
   `deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

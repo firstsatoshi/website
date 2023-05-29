@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/builder"
 	"github.com/zeromicro/go-zero/core/stores/cache"
@@ -40,9 +41,11 @@ type (
 	}
 
 	TbBlockscan struct {
-		Id          int64  `db:"id"`           // id
-		CoinType    string `db:"coin_type"`    // 地址类型,BTC,ETH,USDT
-		BlockNumber int64  `db:"block_number"` // 区块高度
+		Id          int64     `db:"id"`           // id
+		CoinType    string    `db:"coin_type"`    // 地址类型,BTC,ETH,USDT
+		BlockNumber int64     `db:"block_number"` // 区块高度
+		CreateTime  time.Time `db:"create_time"`  // 创建时间
+		UpdateTime  time.Time `db:"update_time"`  // 最后更新时间
 	}
 )
 

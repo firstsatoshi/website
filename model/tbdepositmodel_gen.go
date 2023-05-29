@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/builder"
 	"github.com/zeromicro/go-zero/core/stores/cache"
@@ -40,13 +41,15 @@ type (
 	}
 
 	TbDeposit struct {
-		Id          int64  `db:"id"`           // id
-		CoinType    string `db:"coin_type"`    // 地址类型,BTC,ETH,USDT
-		FromAddress string `db:"from_address"` // from地址,如果是btc归集充值,显示输入的第一个地址
-		ToAddress   string `db:"to_address"`   // to地址
-		Txid        string `db:"txid"`         // txid
-		Amount      int64  `db:"amount"`       // 金额(最小单位)
-		Decimals    int64  `db:"decimals"`     // 精度(BTC: 8, ETH: 18, USDT: 6)
+		Id          int64     `db:"id"`           // id
+		CoinType    string    `db:"coin_type"`    // 地址类型,BTC,ETH,USDT
+		FromAddress string    `db:"from_address"` // from地址,如果是btc归集充值,显示输入的第一个地址
+		ToAddress   string    `db:"to_address"`   // to地址
+		Txid        string    `db:"txid"`         // txid
+		Amount      int64     `db:"amount"`       // 金额(最小单位)
+		Decimals    int64     `db:"decimals"`     // 精度(BTC: 8, ETH: 18, USDT: 6)
+		CreateTime  time.Time `db:"create_time"`  // 创建时间
+		UpdateTime  time.Time `db:"update_time"`  // 最后更新时间
 	}
 )
 

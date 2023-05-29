@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/builder"
 	"github.com/zeromicro/go-zero/core/stores/cache"
@@ -40,10 +41,12 @@ type (
 	}
 
 	TbAddress struct {
-		Id         int64  `db:"id"`          // id
-		Address    string `db:"address"`     // 地址
-		CoinType   string `db:"coin_type"`   // 地址类型,BTC,ETH,USDT
-		Bip44Index int64  `db:"bip44_index"` // bip44_index
+		Id         int64     `db:"id"`          // id
+		Address    string    `db:"address"`     // 地址
+		CoinType   string    `db:"coin_type"`   // 地址类型,BTC,ETH,USDT
+		Bip44Index int64     `db:"bip44_index"` // bip44_index
+		CreateTime time.Time `db:"create_time"` // 创建时间
+		UpdateTime time.Time `db:"update_time"` // 最后更新时间
 	}
 )
 
