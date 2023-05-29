@@ -14,7 +14,7 @@ import (
 	"github.com/tyler-smith/go-bip39"
 )
 
-// COPY FROM btcutil https://github.com/modood/btckeygen/blob/master/main.go
+// Refacotr FROM btcutil https://github.com/modood/btckeygen/blob/master/main.go
 
 // Purpose BIP43 - Purpose Field for Deterministic Wallets
 // https://github.com/bitcoin/bips/blob/master/bip-0043.mediawiki
@@ -58,7 +58,7 @@ type Key struct {
 	bip32Key *bip32.Key
 }
 
-func (k *Key) GetWifKeyAndAddress(compress bool, chainCfg chaincfg.Params) (wif, legacyAddress, p2trAddress string, err error) {
+func (k *Key) getWifKeyAndAddress(compress bool, chainCfg chaincfg.Params) (wif, legacyAddress, p2trAddress string, err error) {
 	prvKey, _ := btcec.PrivKeyFromBytes(k.bip32Key.Key)
 
 	wif, legacyAddress, p2trAddress, _, err = generateFromBytes(prvKey, compress, chainCfg)
@@ -272,7 +272,7 @@ func (km *KeyManager) getChangeKey(purpose, coinType, account, change uint32) (*
 	return key, nil
 }
 
-func (km *KeyManager) GetKey(purpose, coinType, account, change, index uint32) (*Key, error) {
+func (km *KeyManager) getPrivateKey(purpose, coinType, account, change, index uint32) (*Key, error) {
 	path := fmt.Sprintf(`m/%d'/%d'/%d'/%d/%d`, purpose-Apostrophe, coinType-Apostrophe, account, change, index)
 
 	key, ok := km.getKey(path)
@@ -293,6 +293,20 @@ func (km *KeyManager) GetKey(purpose, coinType, account, change, index uint32) (
 	km.setKey(path, key)
 
 	return &Key{path: path, bip32Key: key}, nil
+}
+
+func (km *KeyManager) GetWifKeyAndAddresss(addrIndex int,  chainCfg chaincfg.Params) (wif, p2trAddress string, err error) {
+	addressIndex := uint32(1)
+	k, err := km.getPrivateKey(PurposeBIP44, CoinTypeBTC, 0, 0, addressIndex)
+	if err != nil {
+		return
+	}
+	compressed := true
+	wif, _, p2trAddress, err = k.getWifKeyAndAddress(compressed, chainCfg)
+	if err != nil {
+		return
+	}
+	return
 }
 
 // func Generate(compress bool) (wif, address, segwitBech32, segwitNested string, err error) {

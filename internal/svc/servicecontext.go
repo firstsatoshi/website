@@ -1,6 +1,7 @@
 package svc
 
 import (
+	"github.com/fantopia-dev/website/common/keymanager"
 	"github.com/fantopia-dev/website/internal/config"
 	"github.com/fantopia-dev/website/model"
 	"github.com/zeromicro/go-zero/core/stores/redis"
@@ -16,6 +17,8 @@ type ServiceContext struct {
 
 	// redis
 	Redis *redis.Redis
+
+	KeyManager keymanager.KeyManager
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
