@@ -31,6 +31,15 @@ func NewCreateOrderLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 }
 
 func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.CreateOrderResp, err error) {
+
+	// check count
+	if req.Count <= 0 {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "count is invalid %v", req.Count)
+	}
+	if req.Count > 10 {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.COUNT_EXCEED_PER_ORDER_LIMIT_ERROR), "count is too large %v", req.Count)
+	}
+
 	// check receiveAddress is valid P2TR address
 	_, err = btcutil.DecodeAddress(req.ReceiveAddress, &chaincfg.MainNetParams)
 	if err != nil {
@@ -58,6 +67,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	createTime := time.Now()
 	ord := model.TbOrder{
 		OrderId:         orderId,
+		Count:           int64(req.Count),
 		DepositAddress:  depositAddress,
 		ReceiveAddress:  req.ReceiveAddress,
 		InscriptionData: "TODO", // TODO
@@ -77,6 +87,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	resp = &types.CreateOrderResp{
 		OrderId:        ord.OrderId,
+		Count:          int(ord.Count),
 		DepositAddress: ord.DepositAddress,
 		ReceiveAddress: ord.ReceiveAddress,
 		FeeRate:        int(ord.FeeRate),
@@ -86,7 +97,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		Price:          int(ord.PriceSat),
 		Total:          int(ord.TotalAmountSat),
 		// CreateTime:     time.Now().Format("2006-01-02 15:04:05"),
-		CreateTime:     createTime.Format("2006-01-02 15:04:05 +0800 CST"),
+		CreateTime: createTime.Format("2006-01-02 15:04:05 +0800 CST"),
 	}
 
 	return

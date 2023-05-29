@@ -12,6 +12,16 @@
     | `email` | 邮箱 | string | 必填 | helloworld@163.com |
     | `btcAddress` | btc地址，主网地址以`bc1p`开头，测试网地址以`tb1p`开头，长度为`62`字符, | string | 必填 | bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7 |
 
+- 请求示例：
+
+    ```json
+    {
+        "email":"youngqqcn@163.com",
+        "btcAddress":"bc1pv5d2mmx2v9cx9menxl5zlhacljqu9zqhltl4d303n3rjjcxfrgwqa80as0"
+    }
+    ```
+
+
 - 响应示例
   ```json
     {
@@ -32,6 +42,8 @@
 - 请求方式: POST
 
 - 请求参数: 无参数
+
+- 请求示例：
 
 - 响应示例:
 
@@ -65,8 +77,19 @@
 
     | 字段 | 说明| 类型 | 可选? | 示例 |
     |-----|------|------|----|----|
+    | `count` | 数量（批量） , 限制`0 < count <= 10` | integer | 必填 | 2 |
     | `receiveAddress` |btc NFT 接收地址，主网地址以`bc1p`开头，测试网地址以`tb1p`开头，长度为`62`字符,  | string | 必填 | bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7 |
-    | `feeRate` | 费率 | integer | 必填 | bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7 |
+    | `feeRate` | 费率 | integer | 必填 | 25 |
+
+- 请求示例：
+
+    ```json
+    {
+        "count": 2,
+        "receiveAddress":"bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7",
+        "feeRate":25
+    }
+    ```
 
 - 响应示例
 
@@ -76,6 +99,7 @@
         "msg": "ok",
         "data": {
             "orderId": "BX2023052718471354726281", // 订单id
+            "count": 2, // 数量
             "depositAddress": "bc1p2yzcv24v9tpw6ffhkqcq994y8p4ps2xfv65wx7nsmg4meuvzd0fqyesxg7", // 充值地址，用户需要支付BTC到这个地址
             "receiveAddress": "bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7", //  用户提供的 BTC NFT 接收地址
             "feeRate": 25, // 费率,例如 25  表示每个字节需要25sat(聪)
@@ -97,14 +121,21 @@
 
 - 请求参数:
 
-    3个参数，必填1个。 按照`orderId`，`receiveAddress`,`depositAddress`优先级查找
+    3个参数，**至少填1个**。 按照`orderId`，`receiveAddress`,`depositAddress`优先级查找
 
     | 字段 | 说明| 类型 | 可选? | 示例 |
     |-----|------|------|----|----|
-    | `orderId` | 订单id | string | 可选 | bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7 |
+    | `orderId` | 订单id | string | 可选 | `BX2023052717254792444944` |
     | `receiveAddress` |btc NFT 接收地址，主网地址以`bc1p`开头，测试网地址以`tb1p`开头，长度为`62`字符,  | string | 可选 | bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7 |
     | `depositAddress` | 充值地址 | string | 可选 | bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7 |
 
+- 请求示例：
+
+    ```json
+    {
+        "receiveAddress":"bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e8"
+    }
+    ```
 
 - 响应示例
 

@@ -12,12 +12,14 @@ type JoinWaitListResp struct {
 }
 
 type CreateOrderReq struct {
+	Count          int    `json:"count"`
 	ReceiveAddress string `json:"receiveAddress"`
 	FeeRate        int    `json:"feeRate"`
 }
 
 type CreateOrderResp struct {
 	OrderId        string `json:"orderId"`
+	Count          int    `json:"count"`
 	DepositAddress string `json:"depositAddress"`
 	ReceiveAddress string `json:"receiveAddress"`
 	FeeRate        int    `json:"feeRate"`

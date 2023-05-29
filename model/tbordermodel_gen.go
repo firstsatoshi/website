@@ -47,6 +47,7 @@ type (
 	TbOrder struct {
 		Id               int64          `db:"id"`                 // id
 		OrderId          string         `db:"order_id"`           // 订单id
+		Count            int64          `db:"count"`              // 数量
 		DepositAddress   string         `db:"deposit_address"`    // 充值地址
 		InscriptionData  string         `db:"inscription_data"`   // 铭刻内容
 		FeeRate          int64          `db:"fee_rate"`           // 费率 n/sat
@@ -174,8 +175,8 @@ func (m *defaultTbOrderModel) Insert(ctx context.Context, data *TbOrder) (sql.Re
 	tbOrderOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderOrderIdPrefix, data.OrderId)
 	tbOrderRevealTxidKey := fmt.Sprintf("%s%v", cacheTbOrderRevealTxidPrefix, data.RevealTxid)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbOrderRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.OrderId, data.DepositAddress, data.InscriptionData, data.FeeRate, data.TxfeeAmountSat, data.ServiceFeeSat, data.PriceSat, data.TotalAmountSat, data.CommitTxid, data.RevealTxid, data.ReceiveAddress, data.OrderStatus, data.PayTime, data.PayTxid, data.PayConfirmedTime, data.PayFromAddress)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbOrderRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.OrderId, data.Count, data.DepositAddress, data.InscriptionData, data.FeeRate, data.TxfeeAmountSat, data.ServiceFeeSat, data.PriceSat, data.TotalAmountSat, data.CommitTxid, data.RevealTxid, data.ReceiveAddress, data.OrderStatus, data.PayTime, data.PayTxid, data.PayConfirmedTime, data.PayFromAddress)
 	}, tbOrderCommitTxidKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
 	return ret, err
 }
@@ -192,7 +193,7 @@ func (m *defaultTbOrderModel) Update(ctx context.Context, newData *TbOrder) erro
 	tbOrderRevealTxidKey := fmt.Sprintf("%s%v", cacheTbOrderRevealTxidPrefix, data.RevealTxid)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbOrderRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.OrderId, newData.DepositAddress, newData.InscriptionData, newData.FeeRate, newData.TxfeeAmountSat, newData.ServiceFeeSat, newData.PriceSat, newData.TotalAmountSat, newData.CommitTxid, newData.RevealTxid, newData.ReceiveAddress, newData.OrderStatus, newData.PayTime, newData.PayTxid, newData.PayConfirmedTime, newData.PayFromAddress, newData.Id)
+		return conn.ExecCtx(ctx, query, newData.OrderId, newData.Count, newData.DepositAddress, newData.InscriptionData, newData.FeeRate, newData.TxfeeAmountSat, newData.ServiceFeeSat, newData.PriceSat, newData.TotalAmountSat, newData.CommitTxid, newData.RevealTxid, newData.ReceiveAddress, newData.OrderStatus, newData.PayTime, newData.PayTxid, newData.PayConfirmedTime, newData.PayFromAddress, newData.Id)
 	}, tbOrderCommitTxidKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
 	return err
 }

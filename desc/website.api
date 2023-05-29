@@ -21,12 +21,14 @@ service website-api {
 }
 
 type createOrderReq {
+	Count          int    `json:"count"`
 	ReceiveAddress string `json:"receiveAddress"`
 	FeeRate        int    `json:"feeRate"`
 }
 
 type createOrderResp {
 	OrderId        string `json:"orderId"`
+	Count          int    `json:"count"`
 	DepositAddress string `json:"depositAddress"`
 	ReceiveAddress string `json:"receiveAddress"`
 	FeeRate        int    `json:"feeRate"`

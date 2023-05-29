@@ -50,6 +50,7 @@ DROP TABLE IF EXISTS `tb_order`;
 CREATE TABLE `tb_order` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单id',
+  `count` int not NULL COMMENT '数量',
   `deposit_address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '充值地址',
   `inscription_data` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '铭刻内容',
   `fee_rate` int NOT NULL COMMENT '费率 n/sat',
