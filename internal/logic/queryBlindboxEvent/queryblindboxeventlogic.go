@@ -26,7 +26,10 @@ func NewQueryBlindboxEventLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 }
 
 func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp *types.QueryBlindboxEventResp, err error) {
-	event, err := l.svcCtx.TbBlindboxEventModel.FindOne(l.ctx, 1)
+	// TODO: config by database
+	EVENT_ID := 1
+
+	event, err := l.svcCtx.TbBlindboxEventModel.FindOne(l.ctx, int64(EVENT_ID))
 	if err != nil {
 		logx.Errorf("TbBlindboxEventModel.FindOne error: %v", err.Error())
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "database error")
