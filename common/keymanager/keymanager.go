@@ -58,10 +58,10 @@ type Key struct {
 	bip32Key *bip32.Key
 }
 
-func (k *Key) GetWifKeyAndAddress(compress bool) (wif, legacyAddress, p2trAddress string, err error) {
+func (k *Key) GetWifKeyAndAddress(compress bool, chainCfg chaincfg.Params) (wif, legacyAddress, p2trAddress string, err error) {
 	prvKey, _ := btcec.PrivKeyFromBytes(k.bip32Key.Key)
 
-	wif, legacyAddress, p2trAddress, _, err = generateFromBytes(prvKey, compress)
+	wif, legacyAddress, p2trAddress, _, err = generateFromBytes(prvKey, compress, chainCfg)
 	return
 }
 
@@ -295,17 +295,17 @@ func (km *KeyManager) GetKey(purpose, coinType, account, change, index uint32) (
 	return &Key{path: path, bip32Key: key}, nil
 }
 
-func Generate(compress bool) (wif, address, segwitBech32, segwitNested string, err error) {
-	prvKey, err := btcec.NewPrivateKey()
-	if err != nil {
-		return "", "", "", "", err
-	}
-	return generateFromBytes(prvKey, compress)
-}
+// func Generate(compress bool) (wif, address, segwitBech32, segwitNested string, err error) {
+// 	prvKey, err := btcec.NewPrivateKey()
+// 	if err != nil {
+// 		return "", "", "", "", err
+// 	}
+// 	return generateFromBytes(prvKey, compress)
+// }
 
-func generateFromBytes(prvKey *btcec.PrivateKey, compress bool) (wif, address, taprootBech32, segwitNested string, err error) {
+func generateFromBytes(prvKey *btcec.PrivateKey, compress bool, chainCfg chaincfg.Params) (wif, address, taprootBech32, segwitNested string, err error) {
 	// generate the wif(wallet import format) string
-	btcwif, err := btcutil.NewWIF(prvKey, &chaincfg.MainNetParams, compress)
+	btcwif, err := btcutil.NewWIF(prvKey, &chainCfg, compress)
 	if err != nil {
 		return "", "", "", "", err
 	}
@@ -313,19 +313,16 @@ func generateFromBytes(prvKey *btcec.PrivateKey, compress bool) (wif, address, t
 
 	// generate a normal p2pkh address
 	serializedPubKey := btcwif.SerializePubKey()
-	addressPubKey, err := btcutil.NewAddressPubKey(serializedPubKey, &chaincfg.MainNetParams)
+	addressPubKey, err := btcutil.NewAddressPubKey(serializedPubKey, &chainCfg)
 	if err != nil {
 		return "", "", "", "", err
 	}
 	address = addressPubKey.EncodeAddress()
 
-	// generate a normal p2wkh address from the pubkey hash
-	// witnessProg := btcutil.Hash160(serializedPubKey)
-	// addressWitnessPubKeyHash, err := btcutil.NewAddressWitnessPubKeyHash(witnessProg, &chaincfg.MainNetParams)
+	addressWitnessPubKeyHash, err := btcutil.NewAddressTaproot(
+		schnorr.SerializePubKey(txscript.ComputeTaprootKeyNoScript(btcwif.PrivKey.PubKey())),
+		&chainCfg)
 
-	addressWitnessPubKeyHash, err := btcutil.NewAddressTaproot(schnorr.SerializePubKey(txscript.ComputeTaprootKeyNoScript(btcwif.PrivKey.PubKey())), &chaincfg.MainNetParams)
-
-	// addressWitnessPubKeyHash, err := btcutil.NewAddressTaproot(witnessProg, &chaincfg.MainNetParams)
 	if err != nil {
 		return "", "", "", "", err
 	}
@@ -339,7 +336,7 @@ func generateFromBytes(prvKey *btcec.PrivateKey, compress bool) (wif, address, t
 	if err != nil {
 		return "", "", "", "", err
 	}
-	addressScriptHash, err := btcutil.NewAddressScriptHash(serializedScript, &chaincfg.MainNetParams)
+	addressScriptHash, err := btcutil.NewAddressScriptHash(serializedScript, &chainCfg)
 	if err != nil {
 		return "", "", "", "", err
 	}

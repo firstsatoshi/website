@@ -3,6 +3,7 @@ package keymanager_test
 import (
 	"testing"
 
+	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/fantopia-dev/website/common/keymanager"
 )
 
@@ -22,7 +23,7 @@ func TestCreateWallet(t *testing.T) {
 	t.Logf("path : %v\n", k.GetPath())
 
 	compressed := true
-	wif, address, taprootBech32, err := k.GetWifKeyAndAddress(compressed)
+	wif, address, taprootBech32, err := k.GetWifKeyAndAddress(compressed, chaincfg.MainNetParams)
 	if err != nil {
 		t.Fatalf("error: %v", err.Error())
 	}
