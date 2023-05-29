@@ -21,7 +21,7 @@ func Response(w http.ResponseWriter, resp interface{}, err error) {
 
 		//错误返回
 		errcode := xerr.SERVER_COMMON_ERROR
-		errmsg := "服务器开小差啦，稍后再来试一试"
+		errmsg := "server error, try it later"
 
 		causeErr := errors.Cause(err)                // err类型
 		if e, ok := causeErr.(*xerr.CodeError); ok { //自定义错误类型
