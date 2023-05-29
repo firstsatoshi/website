@@ -1,6 +1,20 @@
 # 接口文档
 
 
+- 服务地址： http://8.219.200.107:8888/api/v1/{API}
+- 请求方法： 所有接口都使用 `POST`
+- 示例：
+    ```json
+    curl --location 'http://8.219.200.107:8888/api/v1/joinwaitlist' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "email":"youngqqcn@163.com",
+        "btcAddress":"bc1pv5d2mmx2v9cx9menxl5zlhacljqu9zqhltl4d303n3rjjcxfrgwqa80as0"
+    }'
+    ```
+
+
+
 ## `joinwaitlist`加入预约名单
 
 - 请求方式: POST
