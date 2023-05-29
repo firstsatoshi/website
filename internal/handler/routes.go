@@ -4,12 +4,12 @@ package handler
 import (
 	"net/http"
 
-	coinPrice "github.com/fantopia-dev/website/internal/handler/coinPrice"
-	createOrder "github.com/fantopia-dev/website/internal/handler/createOrder"
-	joinwaitlist "github.com/fantopia-dev/website/internal/handler/joinwaitlist"
-	queryBlindboxEvent "github.com/fantopia-dev/website/internal/handler/queryBlindboxEvent"
-	queryOrder "github.com/fantopia-dev/website/internal/handler/queryOrder"
-	"github.com/fantopia-dev/website/internal/svc"
+	coinPrice "github.com/firstsatoshi/website/internal/handler/coinPrice"
+	createOrder "github.com/firstsatoshi/website/internal/handler/createOrder"
+	joinwaitlist "github.com/firstsatoshi/website/internal/handler/joinwaitlist"
+	queryBlindboxEvent "github.com/firstsatoshi/website/internal/handler/queryBlindboxEvent"
+	queryOrder "github.com/firstsatoshi/website/internal/handler/queryOrder"
+	"github.com/firstsatoshi/website/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
 )

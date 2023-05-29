@@ -9,11 +9,11 @@ import (
 
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/fantopia-dev/website/common/uniqueid"
-	"github.com/fantopia-dev/website/internal/svc"
-	"github.com/fantopia-dev/website/internal/types"
-	"github.com/fantopia-dev/website/model"
-	"github.com/fantopia-dev/website/xerr"
+	"github.com/firstsatoshi/website/common/uniqueid"
+	"github.com/firstsatoshi/website/internal/svc"
+	"github.com/firstsatoshi/website/internal/types"
+	"github.com/firstsatoshi/website/model"
+	"github.com/firstsatoshi/website/xerr"
 	"github.com/pkg/errors"
 
 	"github.com/zeromicro/go-zero/core/logx"

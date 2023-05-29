@@ -3,9 +3,9 @@ package coinPrice
 import (
 	"net/http"
 
-	"github.com/fantopia-dev/website/internal/logic/coinPrice"
-	"github.com/fantopia-dev/website/internal/svc"
-	"github.com/fantopia-dev/website/response"
+	"github.com/firstsatoshi/website/internal/logic/coinPrice"
+	"github.com/firstsatoshi/website/internal/svc"
+	"github.com/firstsatoshi/website/response"
 )
 
 func CoinPriceHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {

@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fantopia-dev/website/internal/svc"
-	"github.com/fantopia-dev/website/internal/types"
+	"github.com/firstsatoshi/website/internal/svc"
+	"github.com/firstsatoshi/website/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

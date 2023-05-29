@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/fantopia-dev/website/internal/config"
-	"github.com/fantopia-dev/website/internal/handler"
-	"github.com/fantopia-dev/website/internal/svc"
+	"github.com/firstsatoshi/website/internal/config"
+	"github.com/firstsatoshi/website/internal/handler"
+	"github.com/firstsatoshi/website/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"

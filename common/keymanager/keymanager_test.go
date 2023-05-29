@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/fantopia-dev/website/common/keymanager"
+	"github.com/firstsatoshi/website/common/keymanager"
 )
 
 // func TestCreateWallet(t *testing.T) {

@@ -2,9 +2,9 @@ package svc
 
 import (
 	"github.com/btcsuite/btcd/chaincfg"
-	"github.com/fantopia-dev/website/common/keymanager"
-	"github.com/fantopia-dev/website/internal/config"
-	"github.com/fantopia-dev/website/model"
+	"github.com/firstsatoshi/website/common/keymanager"
+	"github.com/firstsatoshi/website/internal/config"
+	"github.com/firstsatoshi/website/model"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )

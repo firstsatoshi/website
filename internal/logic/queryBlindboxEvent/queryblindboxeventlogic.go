@@ -3,9 +3,9 @@ package queryBlindboxEvent
 import (
 	"context"
 
-	"github.com/fantopia-dev/website/internal/svc"
-	"github.com/fantopia-dev/website/internal/types"
-	"github.com/fantopia-dev/website/xerr"
+	"github.com/firstsatoshi/website/internal/svc"
+	"github.com/firstsatoshi/website/internal/types"
+	"github.com/firstsatoshi/website/xerr"
 	"github.com/pkg/errors"
 
 	"github.com/zeromicro/go-zero/core/logx"

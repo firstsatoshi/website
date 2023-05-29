@@ -3,10 +3,10 @@ package queryOrder
 import (
 	"net/http"
 
-	"github.com/fantopia-dev/website/internal/logic/queryOrder"
-	"github.com/fantopia-dev/website/internal/svc"
-	"github.com/fantopia-dev/website/internal/types"
-	"github.com/fantopia-dev/website/response"
+	"github.com/firstsatoshi/website/internal/logic/queryOrder"
+	"github.com/firstsatoshi/website/internal/svc"
+	"github.com/firstsatoshi/website/internal/types"
+	"github.com/firstsatoshi/website/response"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 

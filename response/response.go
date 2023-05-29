@@ -3,8 +3,8 @@ package response
 import (
 	"net/http"
 
+	"github.com/firstsatoshi/website/xerr"
 	"github.com/pkg/errors"
-	"github.com/fantopia-dev/website/xerr"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
@@ -33,7 +33,7 @@ func Response(w http.ResponseWriter, resp interface{}, err error) {
 		body.Msg = errmsg
 		body.Data = nil
 
-		logx.Errorf("%v",  err)
+		logx.Errorf("%v", err)
 
 	} else {
 		body.Code = xerr.OK // 0

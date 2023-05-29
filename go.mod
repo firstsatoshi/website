@@ -1,4 +1,4 @@
-module github.com/fantopia-dev/website
+module github.com/firstsatoshi/website
 
 go 1.20
 
