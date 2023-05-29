@@ -109,3 +109,17 @@ service website-api {
 	@handler queryBlindboxEvent
 	post /queryblindboxevent returns (queryBlindboxEventResp)
 }
+
+type coinPriceResp {
+	BtcPriceUsd float64 `json:"btcPriceUsd"`
+}
+
+// 查询盲盒
+@server(
+	prefix: api/v1
+	group: coinPrice
+)
+service website-api {
+	@handler coinPrice
+	post /coinprice returns (coinPriceResp)
+}

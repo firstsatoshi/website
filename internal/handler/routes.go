@@ -4,6 +4,7 @@ package handler
 import (
 	"net/http"
 
+	coinPrice "github.com/fantopia-dev/website/internal/handler/coinPrice"
 	createOrder "github.com/fantopia-dev/website/internal/handler/createOrder"
 	joinwaitlist "github.com/fantopia-dev/website/internal/handler/joinwaitlist"
 	queryBlindboxEvent "github.com/fantopia-dev/website/internal/handler/queryBlindboxEvent"
@@ -53,6 +54,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPost,
 				Path:    "/queryblindboxevent",
 				Handler: queryBlindboxEvent.QueryBlindboxEventHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/coinprice",
+				Handler: coinPrice.CoinPriceHandler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/api/v1"),

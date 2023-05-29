@@ -70,3 +70,7 @@ type QueryBlindboxEventResp struct {
 	StartTime    string `json:"startTime"`     // 开始时间
 	EndTime      string `json:"endTime"`       // 结束时间
 }
+
+type CoinPriceResp struct {
+	BtcPriceUsd float64 `json:"btcPriceUsd"`
+}
