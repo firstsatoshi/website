@@ -101,6 +101,7 @@
 
     ```json
     {
+        "eventId": 1,
         "count": 2,
         "receiveAddress":"bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7",
         "feeRate":25
@@ -115,6 +116,7 @@
         "msg": "ok",
         "data": {
             "orderId": "BX2023052718471354726281", // 订单id
+            "eventId": 1, // 活动id
             "count": 2, // 数量
             "depositAddress": "bc1p2yzcv24v9tpw6ffhkqcq994y8p4ps2xfv65wx7nsmg4meuvzd0fqyesxg7", // 充值地址，用户需要支付BTC到这个地址
             "receiveAddress": "bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7", //  用户提供的 BTC NFT 接收地址
