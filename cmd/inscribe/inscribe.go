@@ -8,7 +8,7 @@ import (
 	"github.com/firstsatoshi/website/common/startup"
 	"github.com/firstsatoshi/website/common/task"
 	"github.com/firstsatoshi/website/internal/config"
-	"github.com/firstsatoshi/website/tasks/deposit"
+	"github.com/firstsatoshi/website/tasks/inscribe"
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -20,7 +20,7 @@ func main() {
 	flag.Parse()
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
-	logx.Info("========Btc Deposit Task Start======")
+	logx.Info("========Btc Inscribe Task Start======")
 
 	chainCfg := &chaincfg.MainNetParams
 	apiHost := ""
@@ -29,7 +29,7 @@ func main() {
 		apiHost = "TODO" // TODO
 	}
 
-	depositTask := deposit.NewBtcDepositTask(apiHost, &c, chainCfg)
+	inscribeTask := inscribe.NewBtcInscribeTask(apiHost, &c, chainCfg)
 
-	startup.TaskStartup([]task.Task{depositTask})
+	startup.TaskStartup([]task.Task{inscribeTask})
 }

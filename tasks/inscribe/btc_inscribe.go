@@ -34,7 +34,8 @@ type BtcInscribeTask struct {
 	tbTbLockOrderBlindboxModel model.TbLockOrderBlindboxModel
 }
 
-func NewBtcInscribeTask(ctx context.Context, cancel context.CancelFunc, apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcInscribeTask {
+func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcInscribeTask {
+	ctx, cancel := context.WithCancel(context.Background())
 
 	redis, err := redis.NewRedis(config.CacheRedis[0].RedisConf)
 	if err != nil {

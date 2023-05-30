@@ -32,7 +32,8 @@ type BtcDepositTask struct {
 	tbAddressModel   model.TbAddressModel
 }
 
-func NewBtcDepositTask(ctx context.Context, cancel context.CancelFunc, apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcDepositTask {
+func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcDepositTask {
+	ctx, cancel := context.WithCancel(context.Background())
 
 	redis, err := redis.NewRedis(config.CacheRedis[0].RedisConf)
 	if err != nil {
