@@ -1,12 +1,24 @@
 package mempool
 
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/go-resty/resty/v2"
+)
+
 type MempoolApiClient struct {
-	Host string
+	host   string
+	client *resty.Client
 }
 
 func NewMempoolApiClient(host string) *MempoolApiClient {
+
+	client := resty.New()
+	// client.BaseURL = host
 	return &MempoolApiClient{
-		Host: host,
+		host:   host,
+		client: client,
 	}
 }
 
@@ -14,7 +26,20 @@ func NewMempoolApiClient(host string) *MempoolApiClient {
 // https://mempool.space/zh/docs/api/rest#get-block-height
 func (m *MempoolApiClient) GetBlockHashByHeight(height uint64) (blockHash string, err error) {
 
-	return "", nil
+	// "https://mempool.space/api/block-height/615615"
+	url := fmt.Sprintf("%s/block-height/%v", m.host, height)
+	resp, err := m.client.R().Get(url)
+	if err != nil {
+		return
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		return
+	}
+
+	blockHash = string(resp.Body())
+	return
 }
 
 // GetBlockStatus Returns the confirmation status of a block.
@@ -74,7 +99,8 @@ func (m *MempoolApiClient) GetRecommendedFees(address string) (recommendedFee Re
 	return RecommendedFee{}, nil
 }
 
-
-func (m *MempoolApiClient) GetAddressUTXOs(address string) ( utxos []UTXO, err error) {
+// GetAddressUTXOs Get the list of unspent transaction outputs associated with the address/scripthash.
+// https://mempool.space/zh/docs/api/rest#get-address-utxo
+func (m *MempoolApiClient) GetAddressUTXOs(address string) (utxos []UTXO, err error) {
 	return []UTXO{}, nil
 }
