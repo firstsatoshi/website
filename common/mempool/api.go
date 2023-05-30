@@ -1,7 +1,5 @@
 package mempool
 
-// curl -sSL "https://mempool.space/api/blocks/tip/hash"
-
 type MempoolApiClient struct {
 	Host string
 }
@@ -12,42 +10,71 @@ func NewMempoolApiClient(host string) *MempoolApiClient {
 	}
 }
 
-// curl -sSL "https://mempool.space/api/block-height/615615"
-func (m *MempoolApiClient) GetBlockHashByHeight(height uint32) (blockHash string, err error) {
-	// 000000000000000000067bea442af50a91377ac796e63b8d284354feff4042b3
+// GetBlockHashByHeight Returns the hash of the block currently at :height.
+// https://mempool.space/zh/docs/api/rest#get-block-height
+func (m *MempoolApiClient) GetBlockHashByHeight(height uint64) (blockHash string, err error) {
 
 	return "", nil
 }
 
-// curl -sSL "https://mempool.space/api/block/0000000000000000000065bda8f8a88f2e1e00d9a6887a43d640e52a4c7660f2/status"
-func (m *MempoolApiClient) GetBlockStatus(blockHash string) (isBestChain bool, height uint32, err error) {
-
-	/*
-		{
-			in_best_chain: true,
-			height: 690557,
-			next_best: "00000000000000000003a59a34c93e39e636c8cd23ead726fdc467fbed0b7c5a"
-		}
-	*/
+// GetBlockStatus Returns the confirmation status of a block.
+// Available fields:
+//
+// in_best_chain : boolean, false for orphaned blocks,
+// next_best : the hash of the next block, only available for blocks in the best chain
+//
+// https://mempool.space/zh/docs/api/rest#get-block-status
+func (m *MempoolApiClient) GetBlockStatus(blockHash string) (isBestChain bool, height uint64, err error) {
 	return false, 0, nil
 }
 
-// curl -sSL "https://mempool.space/api/blocks/tip/height"
-func (m *MempoolApiClient) GetTipBlockHeight() (height uint32, err error) {
+// GetTipBlockHeight Returns the height of the last block.
+// https://mempool.space/zh/docs/api/rest#get-block-tip-height
+func (m *MempoolApiClient) GetTipBlockHeight() (height uint64, err error) {
 	return 0, nil
 }
 
-// curl -sSL "https://mempool.space/api/blocks/tip/hash"
+// GetTipBlockHash Returns the hash of the last block.
+// https://mempool.space/zh/docs/api/rest#get-block-tip-hash
 func (m *MempoolApiClient) GetTipBlockHash() (hash string, err error) {
 	return "", nil
 }
 
-// curl -sSL "https://mempool.space/api/block/000000000000000015dc777b3ff2611091336355d3f0ee9766a2cf3be8e4b1ce/txids"
+// GetBlockTansactionIDs Returns a list of all txids in the block.
+// https://mempool.space/zh/docs/api/rest#get-block-transaction-ids
 func (m *MempoolApiClient) GetBlockTansactionIDs(blackHash string) (txids []string, err error) {
 	return []string{}, nil
 }
 
-// curl -sSL "https://mempool.space/api/tx/15e10745f15593a899cef391191bdd3d7c12412cc4696b7bcb669d0feadc8521"
+// GetTansaction Returns details about a transaction.
+//
+//	https://mempool.space/zh/docs/api/rest#get-transaction
 func (m *MempoolApiClient) GetTansaction(txid string) (txs []Transaction, err error) {
 	return []Transaction{}, nil
+}
+
+// GetAddressDetails Returns details about an address.
+//
+//	https://mempool.space/zh/docs/api/rest#get-address
+func (m *MempoolApiClient) GetAddressDetails(address string) (addressDetails []AddressDetail, err error) {
+	return []AddressDetail{}, nil
+}
+
+// GetAddressMempool Get unconfirmed transaction history for the specified address/scripthash.
+// Returns up to 50 transactions (no paging).
+//
+//	https://mempool.space/zh/docs/api/rest#get-address-transactions-mempool
+func (m *MempoolApiClient) GetAddressMempool(address string) (mempoolTxs []Transaction, err error) {
+	return []Transaction{}, nil
+}
+
+// GetRecommendedFees Returns our currently suggested fees for new transactions.
+// https://mempool.space/zh/docs/api/rest#get-recommended-fees
+func (m *MempoolApiClient) GetRecommendedFees(address string) (recommendedFee RecommendedFee, err error) {
+	return RecommendedFee{}, nil
+}
+
+
+func (m *MempoolApiClient) GetAddressUTXOs(address string) ( utxos []UTXO, err error) {
+	return []UTXO{}, nil
 }
