@@ -62,8 +62,15 @@ func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincf
 
 func (t *BtcInscribeTask) Start() {
 	for {
-		time.Sleep(time.Second)
-		logx.Info("======inscribe task =====")
+		ticker := time.NewTicker(time.Second * 7)
+		select {
+		case <-t.ctx.Done():
+			logx.Info("Gracefully exit Inscribe Task goroutine....")
+			// wait sub-goroutine
+			return
+		case <-ticker.C:
+			logx.Info("======= Btc Inscribe Task =================")
+		}
 	}
 }
 

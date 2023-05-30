@@ -59,8 +59,15 @@ func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg
 func (t *BtcDepositTask) Start() {
 
 	for {
-		time.Sleep(time.Second)
-		logx.Info("======== btc deposit task ======")
+		ticker := time.NewTicker(time.Second * 7)
+		select {
+		case <-t.ctx.Done():
+			logx.Info("Gracefully exit Inscribe Task goroutine....")
+			// wait sub-goroutine
+			return
+		case <-ticker.C:
+			logx.Info("======= Btc Inscribe Task =================")
+		}
 	}
 }
 
