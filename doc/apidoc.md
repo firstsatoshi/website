@@ -171,7 +171,7 @@
                     "depositAddress": "xxxxxxxxxxxxxxxxx", // 充值地址
                     "total": 1123456, // 总金额（单位，聪），
                     "receiveAddress": "bc1pp836v6am6mf2pr8dvm6tsx8atjqqfe4w7nrpzgxzd2t5ytm25erqu0w4ku", // 用户的nft接收地址
-                    "orderStatus": "NOPAY", // 订单状态, NOPAY:未支付;PAYPENDING:支付确认中;PAYSUCCESS:支付成功;PAYTIMEOUT:超时未支付;INSCRIBING:铭刻交易等待确认中;ALLSUCCESS:订单成功
+                    "orderStatus": "NOTPAID", // 订单状态, NOTPAID:未支付;PAYPENDING:支付确认中;PAYSUCCESS:支付成功;PAYTIMEOUT:超时未支付;INSCRIBING:铭刻交易等待确认中;ALLSUCCESS:订单成功
                     "paytime": "", // 支付交易发起时间
                     "payConfirmedTime": "", // 支付交易确认时间
                     "revealTxid": "", // 铭文交易id
@@ -183,7 +183,7 @@
                     "depositAddress": "bc1pvlpt3h7ydtnmraw49wgvme2pcgyrp6ha379uj6xwdsz058kek0vq53mtsl",
                     "total": 1123456,
                     "receiveAddress": "bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7",
-                    "orderStatus": "NOPAY",
+                    "orderStatus": "NOTPAID",
                     "paytime": "",
                     "payConfirmedTime": "",
                     "revealTxid": "",

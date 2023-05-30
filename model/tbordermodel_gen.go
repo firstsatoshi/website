@@ -59,7 +59,7 @@ type (
 		CommitTxid       sql.NullString `db:"commit_txid"`        // commit_txid
 		RevealTxid       sql.NullString `db:"reveal_txid"`        // 铭文交易id
 		ReceiveAddress   string         `db:"receive_address"`    // 铭刻内容接收地址
-		OrderStatus      string         `db:"order_status"`       // 订单状态: NOPAY未支付;PAYPENDING支付确认中;PAYSUCCESS支付成功;PAYTIMEOUT超时未支付;INSCRIBING铭刻交易等待确认中;ALLSUCCESS订单成功
+		OrderStatus      string         `db:"order_status"`       // 订单状态: NOTPAID未支付;PAYPENDING支付确认中;PAYSUCCESS支付成功;PAYTIMEOUT超时未支付;INSCRIBING铭刻交易等待确认中;ALLSUCCESS订单成功
 		PayTime          sql.NullTime   `db:"pay_time"`           // 支付时间(进入内存池的时间)
 		PayTxid          sql.NullString `db:"pay_txid"`           // 付款交易id(支持批量支付,即一笔交易多个输出到我们平台的收款地址,所以不必设置为唯一索引)
 		PayConfirmedTime sql.NullTime   `db:"pay_confirmed_time"` // 付款交易确认时间

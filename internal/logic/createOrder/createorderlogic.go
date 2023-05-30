@@ -74,7 +74,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	// query exists unpayment order
 	// queryBuilder := l.svcCtx.TbOrderModel.RowBuilder().Where(squirrel.Eq{
 	// 	"receive_address": req.ReceiveAddress,
-	// 	"order_status": "NOPAY",
+	// 	"order_status": "NOTPAID",
 	// }).OrderBy("id ASC")
 	// l.svcCtx.TbOrderModel.FindOrders(l.ctx, queryBuilder)
 
@@ -137,7 +137,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		ServiceFeeSat:   123456,  // TODO
 		PriceSat:        123456,  // TODO
 		TotalAmountSat:  1123456, // TODO
-		OrderStatus:     "NOPAY",
+		OrderStatus:     "NOTPAID",
 		CreateTime:      createTime,
 	}
 	_, err = l.svcCtx.TbOrderModel.Insert(l.ctx, &ord)
