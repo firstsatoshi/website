@@ -168,7 +168,8 @@ func (t *BtcDepositTask) scanBlock() {
 			return
 		}
 
-		goroutineCount := 20
+		// multi goroutine txfecther
+		goroutineCount := 40
 		ch := make(chan mempool.Transaction, 50000)
 		go func() {
 			wg := sync.WaitGroup{}
@@ -183,7 +184,7 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 
 				wg.Add(1)
-				go t.txFecther(&wg, txids[startIdx:endIdx], ch)
+				go t.txFecther(i, &wg, txids[startIdx:endIdx], ch)
 			}
 			wg.Wait()
 			close(ch)
@@ -358,18 +359,21 @@ func (t *BtcDepositTask) scanBlock() {
 
 }
 
-func (t *BtcDepositTask) txFecther(wg *sync.WaitGroup, txids []string, ch chan<- mempool.Transaction) {
+func (t *BtcDepositTask) txFecther(goroutineId int, wg *sync.WaitGroup, txids []string, ch chan<- mempool.Transaction) {
 	defer wg.Done()
 
-	for idx, txid := range txids {
+	for i := 0; i < len(txids); {
+		txid := txids[i]
 		tx, err := t.apiClient.GetTansaction(txid)
 		if err != nil {
 			logx.Errorf("GetTansaction error: %v", err.Error())
-			return
+			continue
 		}
-		logx.Infof("get txid idx : %v, DONE", idx)
+		logx.Infof("[goroutine %v] get  txid idx : %v, DONE", goroutineId, i)
 
 		// send to channel
 		ch <- tx
+
+		i += 1
 	}
 }
