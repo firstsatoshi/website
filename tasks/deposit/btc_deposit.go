@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -167,15 +168,30 @@ func (t *BtcDepositTask) scanBlock() {
 			return
 		}
 
-		for idx, txid := range txids {
-			logx.Infof("get txid idx : %v, BEGIN", idx)
-			//  get each transaction details by txid
-			tx, err := t.apiClient.GetTansaction(txid)
-			if err != nil {
-				logx.Errorf("GetTansaction error: %v", err.Error())
-				return
+		goroutineCount := 20
+		ch := make(chan mempool.Transaction, 50000)
+		go func() {
+			wg := sync.WaitGroup{}
+			l := len(txids)
+			e := len(txids) / goroutineCount
+			for i := 0; i < goroutineCount; i++ {
+
+				startIdx := i * e
+				endIdx := startIdx + e
+				if i == goroutineCount-1 {
+					endIdx = l
+				}
+
+				wg.Add(1)
+				go t.txFecther(&wg, txids[startIdx:endIdx], ch)
 			}
-			logx.Infof("get txid idx : %v, DONE", idx)
+			wg.Wait()
+			close(ch)
+		}()
+
+		for tx := range ch {
+
+			txid := tx.Txid
 
 			// because we only fecth transaction from block, so this is impossible be false
 			if tx.Status.Confirmed != true {
@@ -340,4 +356,20 @@ func (t *BtcDepositTask) scanBlock() {
 		t.tbBlockscanModel.Update(t.ctx, blockScan)
 	}
 
+}
+
+func (t *BtcDepositTask) txFecther(wg *sync.WaitGroup, txids []string, ch chan<- mempool.Transaction) {
+	defer wg.Done()
+
+	for idx, txid := range txids {
+		tx, err := t.apiClient.GetTansaction(txid)
+		if err != nil {
+			logx.Errorf("GetTansaction error: %v", err.Error())
+			return
+		}
+		logx.Infof("get txid idx : %v, DONE", idx)
+
+		// send to channel
+		ch <- tx
+	}
 }
