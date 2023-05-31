@@ -97,6 +97,7 @@ func (t *BtcDepositTask) Stop() {
 }
 
 func (t *BtcDepositTask) scanBlock() {
+	// TODO: blom filter?
 
 	// load all listen address into redis from db
 	counter := 0
@@ -166,13 +167,15 @@ func (t *BtcDepositTask) scanBlock() {
 			return
 		}
 
-		for _, txid := range txids {
+		for idx, txid := range txids {
+			logx.Infof("get txid idx : %v, BEGIN", idx)
 			//  get each transaction details by txid
 			tx, err := t.apiClient.GetTansaction(txid)
 			if err != nil {
 				logx.Errorf("GetTansaction error: %v", err.Error())
 				return
 			}
+			logx.Infof("get txid idx : %v, DONE", idx)
 
 			// because we only fecth transaction from block, so this is impossible be false
 			if tx.Status.Confirmed != true {
