@@ -3,8 +3,10 @@ package deposit
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/firstsatoshi/website/common/mempool"
 	"github.com/firstsatoshi/website/common/task"
@@ -28,6 +30,8 @@ type BtcDepositTask struct {
 
 	redis  *redis.Redis
 	config *config.Config
+
+	sqlConn sqlx.SqlConn
 
 	apiClient *mempool.MempoolApiClient
 
@@ -60,6 +64,7 @@ func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg
 		apiHost:  apiHost,
 		chainCfg: chainCfg,
 
+		sqlConn:   sqlConn,
 		apiClient: apiClient,
 
 		tbDepositModel:           model.NewTbDepositModel(sqlConn, config.CacheRedis),
@@ -217,18 +222,22 @@ func (t *BtcDepositTask) scanBlock() {
 
 			// insert into db
 			for depositAddr, value := range totalDepositValueMap {
-				_, err := t.tbDepositModel.Insert(t.ctx, &model.TbDeposit{
-					CoinType:    "BTC",
-					FromAddress: "----NO-USE---",
-					ToAddress:   depositAddr,
-					Txid:        txid,
-					Amount:      int64(value),
-					Decimals:    8,
-				})
+				_, err := t.tbDepositModel.FindOneByToAddressTxid(t.ctx, depositAddr, txid)
+				if err == model.ErrNotFound {
+					_, err := t.tbDepositModel.Insert(t.ctx, &model.TbDeposit{
+						CoinType:    "BTC",
+						FromAddress: "----NO-USE---",
+						ToAddress:   depositAddr,
+						Txid:        txid,
+						Amount:      int64(value),
+						Decimals:    8,
+					})
 
-				if err != nil {
-					logx.Errorf("Insert error:%v", err.Error())
-					return
+					if err != nil {
+						logx.Errorf("Insert error:%v", err.Error())
+						return
+					}
+					logx.Infof("==== insert db ok! === ")
 				}
 			}
 
@@ -254,15 +263,67 @@ func (t *BtcDepositTask) scanBlock() {
 				// update order
 				order.PayTxid = sql.NullString{Valid: true, String: txid}
 				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
-				order.Version  += 1
+				order.Version += 1
 				if err := t.tbOrderModel.Update(t.ctx, order); err != nil {
 					logx.Errorf("Update: %v", err.Error())
 					return
 				}
 
-
 				// get not lock blindbox
-				
+				count := order.Count
+
+				query := t.tbBlindboxModel.RowBuilder().Where(squirrel.Eq{
+					"is_active":    1,
+					"is_locked":    0,
+					"is_inscribed": 0,
+				}).Limit(uint64(count))
+				boxs, err := t.tbBlindboxModel.FindBlindbox(t.ctx, query)
+				if err != nil {
+					logx.Errorf("FindBlindbox error: %v", err.Error())
+					return
+				}
+
+				if len(boxs) == 0 {
+					logx.Infof("======== NO BLINDBOX COULD BE LOCKED ANY MORE ============")
+					return
+				}
+
+				// use transaction to lock order and blindbox
+				// if could lock, lock it
+				err = t.sqlConn.TransactCtx(t.ctx, func(ctx context.Context, s sqlx.Session) error {
+
+					// lock blindbox
+					for _, b := range boxs {
+						updateBlindbox := fmt.Sprintf("update tb_blindbox set `is_locked`=1 where `id`=%v", b.Id)
+						result, err := s.ExecCtx(ctx, updateBlindbox)
+						if err != nil {
+							return err
+						}
+						if _, err = result.RowsAffected(); err != nil {
+							return err
+						}
+					}
+
+					// insert
+					for _, b := range boxs {
+						insertSql := fmt.Sprintf("INSERT INTO tb_lock_order_blindbox (event_id, order_id, blindbox_id, deleted) VALUES(%v, '%v', '%v', 0)",
+							order.EventId, order.OrderId, b.Id)
+						result, err := s.ExecCtx(ctx, insertSql)
+						if err != nil {
+							return err
+						}
+						if _, err = result.RowsAffected(); err != nil {
+							return err
+						}
+					}
+
+					return nil
+				})
+
+				if err != nil {
+					logx.Errorf(" lock order and blindbox error:%v ", err.Error())
+					return
+				}
 
 			}
 		}

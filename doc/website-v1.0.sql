@@ -136,7 +136,7 @@ CREATE TABLE `tb_lock_order_blindbox` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `event_id` bigint NOT NULL COMMENT '活动id',
   `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单号',
-  `blindbox_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '盲盒id',
+  `blindbox_id` bigint NOT NULL COMMENT '盲盒id',
   `version` bigint NOT NULL DEFAULT '0' COMMENT '版本号',
   `deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

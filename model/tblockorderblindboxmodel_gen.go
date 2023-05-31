@@ -30,7 +30,7 @@ type (
 	tbLockOrderBlindboxModel interface {
 		Insert(ctx context.Context, data *TbLockOrderBlindbox) (sql.Result, error)
 		FindOne(ctx context.Context, id int64) (*TbLockOrderBlindbox, error)
-		FindOneByBlindboxId(ctx context.Context, blindboxId string) (*TbLockOrderBlindbox, error)
+		FindOneByBlindboxId(ctx context.Context, blindboxId int64) (*TbLockOrderBlindbox, error)
 		Update(ctx context.Context, data *TbLockOrderBlindbox) error
 		Delete(ctx context.Context, id int64) error
 	}
@@ -44,7 +44,7 @@ type (
 		Id         int64     `db:"id"`          // id
 		EventId    int64     `db:"event_id"`    // 活动id
 		OrderId    string    `db:"order_id"`    // 订单号
-		BlindboxId string    `db:"blindbox_id"` // 盲盒id
+		BlindboxId int64     `db:"blindbox_id"` // 盲盒id
 		Version    int64     `db:"version"`     // 版本号
 		Deleted    int64     `db:"deleted"`     // 逻辑删除
 		CreateTime time.Time `db:"create_time"` // 创建时间
@@ -91,7 +91,7 @@ func (m *defaultTbLockOrderBlindboxModel) FindOne(ctx context.Context, id int64)
 	}
 }
 
-func (m *defaultTbLockOrderBlindboxModel) FindOneByBlindboxId(ctx context.Context, blindboxId string) (*TbLockOrderBlindbox, error) {
+func (m *defaultTbLockOrderBlindboxModel) FindOneByBlindboxId(ctx context.Context, blindboxId int64) (*TbLockOrderBlindbox, error) {
 	tbLockOrderBlindboxBlindboxIdKey := fmt.Sprintf("%s%v", cacheTbLockOrderBlindboxBlindboxIdPrefix, blindboxId)
 	var resp TbLockOrderBlindbox
 	err := m.QueryRowIndexCtx(ctx, &resp, tbLockOrderBlindboxBlindboxIdKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
