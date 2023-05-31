@@ -2,7 +2,7 @@ services:
   website:
     build:
       context: .
-      dockerfile: Dockerfile-website
+      target: website
     container_name: website
     environment:
       # 时区上海 - Time zone Shanghai (Change if needed)
@@ -18,7 +18,8 @@ services:
   deposit:
     build:
       context: .
-      dockerfile: Dockerfile-deposit
+      target: deposit
+      # dockerfile: Dockerfile-deposit
     container_name: deposit
     environment:
       # 时区上海 - Time zone Shanghai (Change if needed)
@@ -33,7 +34,7 @@ services:
   inscribe:
     build:
       context: .
-      dockerfile: Dockerfile-inscribe
+      target: inscribe
     container_name: inscribe
     environment:
       # 时区上海 - Time zone Shanghai (Change if needed)
