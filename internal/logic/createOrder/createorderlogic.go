@@ -138,6 +138,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		PriceSat:        123456,  // TODO
 		TotalAmountSat:  1123456, // TODO
 		OrderStatus:     "NOTPAID",
+		Version:         0,
 		CreateTime:      createTime,
 	}
 	_, err = l.svcCtx.TbOrderModel.Insert(l.ctx, &ord)

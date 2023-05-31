@@ -86,7 +86,7 @@ func (t *BtcDepositTask) Start() {
 			// wait sub-goroutine
 			return
 		case <-ticker.C:
-			logx.Info("======= Btc Inscribe Task =================")
+			logx.Info("======= Btc Deposit Task =================")
 			t.scanBlock()
 		}
 	}
@@ -100,19 +100,15 @@ func (t *BtcDepositTask) scanBlock() {
 
 	// load all listen address into redis from db
 	counter := 0
-	maxId, err := t.tbAddressModel.FindMaxId(t.ctx, "BTC")
+	addresses, err := t.tbAddressModel.FindAll(t.ctx, "BTC")
 	if err != nil {
 		logx.Errorf("error: %v", err.Error())
 		return
 	}
-	for i := int32(0); i < maxId; i++ {
-		a, err := t.tbAddressModel.FindOne(t.ctx, int64(i))
-		if err != nil {
-			continue
-		}
 
+	for i := 0; i < len(addresses); i++ {
 		// it'll load address into redis
-		_, err = t.tbAddressModel.FindOneByAddress(t.ctx, a.Address)
+		_, err = t.tbAddressModel.FindOneByAddress(t.ctx, addresses[i].Address)
 		if err != nil {
 			continue
 		}
@@ -155,7 +151,7 @@ func (t *BtcDepositTask) scanBlock() {
 		return
 	}
 
-	for n := uint64(blockScan.BlockNumber); n <= uint64(latestBlockHeight); n++ {
+	for n := uint64(blockScan.BlockNumber + 1); n <= uint64(latestBlockHeight); n++ {
 		// 	get block hash by height
 		blockHash, err := t.apiClient.GetBlockHashByHeight(n)
 		if err != nil {
@@ -335,6 +331,10 @@ func (t *BtcDepositTask) scanBlock() {
 
 			}
 		}
+
+		// update block height
+		blockScan.BlockNumber = int64(n)
+		t.tbBlockscanModel.Update(t.ctx, blockScan)
 	}
 
 }
