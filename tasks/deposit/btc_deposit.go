@@ -2,6 +2,7 @@ package deposit
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/btcsuite/btcd/chaincfg"
@@ -30,9 +31,12 @@ type BtcDepositTask struct {
 
 	apiClient *mempool.MempoolApiClient
 
-	tbDepositModel   model.TbDepositModel
-	tbBlockscanModel model.TbBlockscanModel
-	tbAddressModel   model.TbAddressModel
+	tbDepositModel           model.TbDepositModel
+	tbBlockscanModel         model.TbBlockscanModel
+	tbAddressModel           model.TbAddressModel
+	tbOrderModel             model.TbOrderModel
+	tbBlindboxModel          model.TbBlindboxModel
+	tbLockOrderBlindboxModel model.TbLockOrderBlindboxModel
 }
 
 func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcDepositTask {
@@ -58,9 +62,12 @@ func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg
 
 		apiClient: apiClient,
 
-		tbDepositModel:   model.NewTbDepositModel(sqlConn, config.CacheRedis),
-		tbBlockscanModel: model.NewTbBlockscanModel(sqlConn, config.CacheRedis),
-		tbAddressModel:   model.NewTbAddressModel(sqlConn, config.CacheRedis),
+		tbDepositModel:           model.NewTbDepositModel(sqlConn, config.CacheRedis),
+		tbBlockscanModel:         model.NewTbBlockscanModel(sqlConn, config.CacheRedis),
+		tbAddressModel:           model.NewTbAddressModel(sqlConn, config.CacheRedis),
+		tbBlindboxModel:          model.NewTbBlindboxModel(sqlConn, config.CacheRedis),
+		tbOrderModel:             model.NewTbOrderModel(sqlConn, config.CacheRedis),
+		tbLockOrderBlindboxModel: model.NewTbLockOrderBlindboxModel(sqlConn, config.CacheRedis),
 	}
 }
 
@@ -225,9 +232,39 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 			}
 
+			// lock blindbox
 			//  if tx is deposit transaction check the value whether equal or greater than order's payment value
-			// for depositAddr, value := range totalDepositValueMap {
-			// }
+			for depositAddr, value := range totalDepositValueMap {
+				order, err := t.tbOrderModel.FindOneByDepositAddress(t.ctx, depositAddr)
+				if err != nil {
+					if err == model.ErrNotFound {
+						logx.Errorf("=========== DEPOSIT ADDRESS NOT MATCH ORDER: %v =======", depositAddr)
+						continue
+					}
+					logx.Errorf("FindOneByDepositAddress error: %v", err.Error())
+					continue
+				}
+
+				if value < uint64(order.TotalAmountSat) {
+					// TODO ??
+					logx.Infof(" ============ DEPOSIT AMOUNT IS NOT ENOUGH, order total is %v, got %v ====", order.TotalAmountSat, value)
+					continue
+				}
+
+				// update order
+				order.PayTxid = sql.NullString{Valid: true, String: txid}
+				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
+				order.Version  += 1
+				if err := t.tbOrderModel.Update(t.ctx, order); err != nil {
+					logx.Errorf("Update: %v", err.Error())
+					return
+				}
+
+
+				// get not lock blindbox
+				
+
+			}
 		}
 	}
 

@@ -74,7 +74,7 @@ CREATE TABLE `tb_order` (
   UNIQUE KEY `order_id` (`order_id`) USING BTREE,
   UNIQUE KEY `tb_order_commit_txid_IDX` (`commit_txid`) USING BTREE,
   UNIQUE KEY `tb_order_reveal_txid_IDX` (`reveal_txid`) USING BTREE,
-  KEY `tb_order_deposit_address_IDX` (`deposit_address`) USING BTREE,
+  UNIQUE KEY `tb_order_deposit_address_UIDX` (`deposit_address`) USING BTREE,
   KEY `tb_order_receive_address_IDX` (`receive_address`) USING BTREE,
   KEY `tb_order_order_status_IDX` (`order_status`) USING BTREE,
   KEY `tb_order_pay_from_address_IDX` (`pay_from_address`) USING BTREE,

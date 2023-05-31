@@ -22,10 +22,11 @@ var (
 	tbOrderRowsExpectAutoSet   = strings.Join(stringx.Remove(tbOrderFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), ",")
 	tbOrderRowsWithPlaceHolder = strings.Join(stringx.Remove(tbOrderFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
 
-	cacheTbOrderIdPrefix         = "cache:tbOrder:id:"
-	cacheTbOrderCommitTxidPrefix = "cache:tbOrder:commitTxid:"
-	cacheTbOrderOrderIdPrefix    = "cache:tbOrder:orderId:"
-	cacheTbOrderRevealTxidPrefix = "cache:tbOrder:revealTxid:"
+	cacheTbOrderIdPrefix             = "cache:tbOrder:id:"
+	cacheTbOrderCommitTxidPrefix     = "cache:tbOrder:commitTxid:"
+	cacheTbOrderDepositAddressPrefix = "cache:tbOrder:depositAddress:"
+	cacheTbOrderOrderIdPrefix        = "cache:tbOrder:orderId:"
+	cacheTbOrderRevealTxidPrefix     = "cache:tbOrder:revealTxid:"
 )
 
 type (
@@ -33,6 +34,7 @@ type (
 		Insert(ctx context.Context, data *TbOrder) (sql.Result, error)
 		FindOne(ctx context.Context, id int64) (*TbOrder, error)
 		FindOneByCommitTxid(ctx context.Context, commitTxid sql.NullString) (*TbOrder, error)
+		FindOneByDepositAddress(ctx context.Context, depositAddress string) (*TbOrder, error)
 		FindOneByOrderId(ctx context.Context, orderId string) (*TbOrder, error)
 		FindOneByRevealTxid(ctx context.Context, revealTxid sql.NullString) (*TbOrder, error)
 		Update(ctx context.Context, data *TbOrder) error
@@ -84,13 +86,14 @@ func (m *defaultTbOrderModel) Delete(ctx context.Context, id int64) error {
 	}
 
 	tbOrderCommitTxidKey := fmt.Sprintf("%s%v", cacheTbOrderCommitTxidPrefix, data.CommitTxid)
+	tbOrderDepositAddressKey := fmt.Sprintf("%s%v", cacheTbOrderDepositAddressPrefix, data.DepositAddress)
 	tbOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderIdPrefix, id)
 	tbOrderOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderOrderIdPrefix, data.OrderId)
 	tbOrderRevealTxidKey := fmt.Sprintf("%s%v", cacheTbOrderRevealTxidPrefix, data.RevealTxid)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 		return conn.ExecCtx(ctx, query, id)
-	}, tbOrderCommitTxidKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
+	}, tbOrderCommitTxidKey, tbOrderDepositAddressKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
 	return err
 }
 
@@ -117,6 +120,26 @@ func (m *defaultTbOrderModel) FindOneByCommitTxid(ctx context.Context, commitTxi
 	err := m.QueryRowIndexCtx(ctx, &resp, tbOrderCommitTxidKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
 		query := fmt.Sprintf("select %s from %s where `commit_txid` = ? limit 1", tbOrderRows, m.table)
 		if err := conn.QueryRowCtx(ctx, &resp, query, commitTxid); err != nil {
+			return nil, err
+		}
+		return resp.Id, nil
+	}, m.queryPrimary)
+	switch err {
+	case nil:
+		return &resp, nil
+	case sqlc.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
+}
+
+func (m *defaultTbOrderModel) FindOneByDepositAddress(ctx context.Context, depositAddress string) (*TbOrder, error) {
+	tbOrderDepositAddressKey := fmt.Sprintf("%s%v", cacheTbOrderDepositAddressPrefix, depositAddress)
+	var resp TbOrder
+	err := m.QueryRowIndexCtx(ctx, &resp, tbOrderDepositAddressKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
+		query := fmt.Sprintf("select %s from %s where `deposit_address` = ? limit 1", tbOrderRows, m.table)
+		if err := conn.QueryRowCtx(ctx, &resp, query, depositAddress); err != nil {
 			return nil, err
 		}
 		return resp.Id, nil
@@ -173,13 +196,14 @@ func (m *defaultTbOrderModel) FindOneByRevealTxid(ctx context.Context, revealTxi
 
 func (m *defaultTbOrderModel) Insert(ctx context.Context, data *TbOrder) (sql.Result, error) {
 	tbOrderCommitTxidKey := fmt.Sprintf("%s%v", cacheTbOrderCommitTxidPrefix, data.CommitTxid)
+	tbOrderDepositAddressKey := fmt.Sprintf("%s%v", cacheTbOrderDepositAddressPrefix, data.DepositAddress)
 	tbOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderIdPrefix, data.Id)
 	tbOrderOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderOrderIdPrefix, data.OrderId)
 	tbOrderRevealTxidKey := fmt.Sprintf("%s%v", cacheTbOrderRevealTxidPrefix, data.RevealTxid)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbOrderRowsExpectAutoSet)
 		return conn.ExecCtx(ctx, query, data.OrderId, data.EventId, data.Count, data.DepositAddress, data.InscriptionData, data.FeeRate, data.TxfeeAmountSat, data.ServiceFeeSat, data.PriceSat, data.TotalAmountSat, data.CommitTxid, data.RevealTxid, data.ReceiveAddress, data.OrderStatus, data.PayTime, data.PayTxid, data.PayConfirmedTime, data.PayFromAddress, data.Version)
-	}, tbOrderCommitTxidKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
+	}, tbOrderCommitTxidKey, tbOrderDepositAddressKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
 	return ret, err
 }
 
@@ -190,13 +214,14 @@ func (m *defaultTbOrderModel) Update(ctx context.Context, newData *TbOrder) erro
 	}
 
 	tbOrderCommitTxidKey := fmt.Sprintf("%s%v", cacheTbOrderCommitTxidPrefix, data.CommitTxid)
+	tbOrderDepositAddressKey := fmt.Sprintf("%s%v", cacheTbOrderDepositAddressPrefix, data.DepositAddress)
 	tbOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderIdPrefix, data.Id)
 	tbOrderOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderOrderIdPrefix, data.OrderId)
 	tbOrderRevealTxidKey := fmt.Sprintf("%s%v", cacheTbOrderRevealTxidPrefix, data.RevealTxid)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbOrderRowsWithPlaceHolder)
 		return conn.ExecCtx(ctx, query, newData.OrderId, newData.EventId, newData.Count, newData.DepositAddress, newData.InscriptionData, newData.FeeRate, newData.TxfeeAmountSat, newData.ServiceFeeSat, newData.PriceSat, newData.TotalAmountSat, newData.CommitTxid, newData.RevealTxid, newData.ReceiveAddress, newData.OrderStatus, newData.PayTime, newData.PayTxid, newData.PayConfirmedTime, newData.PayFromAddress, newData.Version, newData.Id)
-	}, tbOrderCommitTxidKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
+	}, tbOrderCommitTxidKey, tbOrderDepositAddressKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
 	return err
 }
 
