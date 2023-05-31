@@ -63,7 +63,7 @@ func (m *customTbAddressModel) FindAddresses(ctx context.Context, rowBuilder squ
 // TODO: as FindOne has used cache to accelerate query, so we could use FindOne to filter addresses, instead of query
 func (m *customTbAddressModel) FindAll(ctx context.Context, coinType string) ([]*TbAddress, error) {
 
-	query, values, err := m.RowBuilder().Where("token_name=?", coinType).Where("is_active=?", 1).ToSql()
+	query, values, err := m.RowBuilder().Where("coin_type=?", coinType).Where("is_active=?", 1).ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (m *customTbAddressModel) FindMaxId(ctx context.Context, coinType string) (
 
 	var sqlRet Rsp
 	// query := fmt.Sprintf("select MAX(address_index) maxidx from %s where `token_name`='%s'", m.table, coinType)
-	query := fmt.Sprintf("select MAX(id) maxid from %s where `token_name`='%s'", m.table, coinType)
+	query := fmt.Sprintf("select MAX(id) maxid from %s where `coin_type`='%s'", m.table, coinType)
 
 	err := m.QueryRowNoCache(&sqlRet, query)
 	if err != nil {
