@@ -1,12 +1,44 @@
 services:
   website:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-website
     container_name: website
     environment:
       # 时区上海 - Time zone Shanghai (Change if needed)
       TZ: Asia/Shanghai
     ports:
      - 8888:8888
+    depends_on:
+     - mysql
+     - redis
+    networks:
+      - website_network
+
+  deposit:
+    build:
+      context: .
+      dockerfile: Dockerfile-deposit
+    container_name: deposit
+    environment:
+      # 时区上海 - Time zone Shanghai (Change if needed)
+      TZ: Asia/Shanghai
+    # ports:
+    depends_on:
+     - mysql
+     - redis
+    networks:
+      - website_network
+
+  inscribe:
+    build:
+      context: .
+      dockerfile: Dockerfile-inscribe
+    container_name: inscribe
+    environment:
+      # 时区上海 - Time zone Shanghai (Change if needed)
+      TZ: Asia/Shanghai
+    # ports:
     depends_on:
      - mysql
      - redis

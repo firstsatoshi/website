@@ -24,7 +24,7 @@ func TaskStartup(tasks []task.Task) {
 		if err == nil {
 			lockFile = path.Join(user.HomeDir, lockFile)
 		} else {
-			lockFile = path.Join("/root/", lockFile)
+			lockFile = path.Join("./", lockFile)
 		}
 
 		lock, err := os.Create(lockFile)
