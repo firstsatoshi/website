@@ -263,6 +263,7 @@ func (t *BtcDepositTask) scanBlock() {
 				// update order
 				order.PayTxid = sql.NullString{Valid: true, String: txid}
 				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
+				order.OrderStatus = "PAYSUCCESS"
 				order.Version += 1
 				if err := t.tbOrderModel.Update(t.ctx, order); err != nil {
 					logx.Errorf("Update: %v", err.Error())
@@ -293,7 +294,7 @@ func (t *BtcDepositTask) scanBlock() {
 					bids = append(bids, b.Id)
 				}
 
-				// use transaction to lock order and blindbox
+				// use Transaction to lock order and blindbox
 				// if could lock, lock it
 				err = t.sqlConn.TransactCtx(t.ctx, func(ctx context.Context, s sqlx.Session) error {
 
@@ -311,7 +312,7 @@ func (t *BtcDepositTask) scanBlock() {
 
 					// insert
 					for _, b := range boxs {
-						insertSql := fmt.Sprintf("INSERT INTO tb_lock_order_blindbox (event_id, order_id, blindbox_id, deleted) VALUES(%v, '%v', '%v', 0)",
+						insertSql := fmt.Sprintf("INSERT INTO tb_lock_order_blindbox (event_id, order_id, blindbox_id) VALUES(%v, '%v', '%v')",
 							order.EventId, order.OrderId, b.Id)
 						result, err := s.ExecCtx(ctx, insertSql)
 						if err != nil {
