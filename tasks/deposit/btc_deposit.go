@@ -288,13 +288,18 @@ func (t *BtcDepositTask) scanBlock() {
 					return
 				}
 
+				bids := make([]int64, 0)
+				for _, b := range boxs {
+					bids = append(bids, b.Id)
+				}
+
 				// use transaction to lock order and blindbox
 				// if could lock, lock it
 				err = t.sqlConn.TransactCtx(t.ctx, func(ctx context.Context, s sqlx.Session) error {
 
 					// lock blindbox
 					for _, b := range boxs {
-						updateBlindbox := fmt.Sprintf("update tb_blindbox set `is_locked`=1 where `id`=%v", b.Id)
+						updateBlindbox := fmt.Sprintf("UPDATE tb_blindbox SET is_locked=1 WHERE id=%v", b.Id)
 						result, err := s.ExecCtx(ctx, updateBlindbox)
 						if err != nil {
 							return err
@@ -324,6 +329,8 @@ func (t *BtcDepositTask) scanBlock() {
 					logx.Errorf(" lock order and blindbox error:%v ", err.Error())
 					return
 				}
+
+				logx.Infof("=== lock order and blindbox success, orderId:%v, blindboxIds: %v ===", order.OrderId, bids)
 
 			}
 		}
