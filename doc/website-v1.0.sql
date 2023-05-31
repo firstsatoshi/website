@@ -125,10 +125,10 @@ CREATE TABLE `tb_blockscan` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `coin_type`varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
   `block_number` bigint  NOT NULL COMMENT '区块高度',
-   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `tb_blockscan_type_block_number` (`coin_type`, `block_number`)
+  UNIQUE KEY `uindex_cointype` (`coin_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='区块扫描记录表';
 
 DROP TABLE IF EXISTS `tb_lock_order_blindbox`;

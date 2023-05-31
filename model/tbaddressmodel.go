@@ -21,7 +21,7 @@ type (
 
 		FindAddresses(ctx context.Context, rowBuilder squirrel.SelectBuilder) ([]*TbAddress, error)
 		FindAll(ctx context.Context, coinType string) ([]*TbAddress, error)
-		FindMaxAddressIndex(ctx context.Context, coinType string) (int32, error)
+		FindMaxId(ctx context.Context, coinType string) (int32, error)
 	}
 
 	customTbAddressModel struct {
@@ -88,14 +88,15 @@ func (m *customTbAddressModel) FindAll(ctx context.Context, coinType string) ([]
 	}
 }
 
-func (m *customTbAddressModel) FindMaxAddressIndex(ctx context.Context, coinType string) (int32, error) {
+func (m *customTbAddressModel) FindMaxId(ctx context.Context, coinType string) (int32, error) {
 
 	type Rsp struct {
 		MaxIdx sql.NullInt32 `db:"maxidx"`
 	}
 
 	var sqlRet Rsp
-	query := fmt.Sprintf("select MAX(address_index) maxidx from %s where `token_name`='%s'", m.table, coinType)
+	// query := fmt.Sprintf("select MAX(address_index) maxidx from %s where `token_name`='%s'", m.table, coinType)
+	query := fmt.Sprintf("select MAX(id) maxid from %s where `token_name`='%s'", m.table, coinType)
 
 	err := m.QueryRowNoCache(&sqlRet, query)
 	if err != nil {
