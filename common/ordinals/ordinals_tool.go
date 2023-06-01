@@ -18,6 +18,7 @@ import (
 	"github.com/btcsuite/btcd/wire"
 	"github.com/firstsatoshi/website/common/btcapi"
 	"github.com/pkg/errors"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type InscriptionData struct {
@@ -27,6 +28,8 @@ type InscriptionData struct {
 }
 
 type inscriptionRequest struct {
+	ChangeAddress string // NOTE: it's our address to receive all change BTC (sale amount)
+
 	CommitTxOutPointList   []*wire.OutPoint
 	CommitTxPrivateKeyList []*btcec.PrivateKey // If used without RPC,
 	// a local signature is required for committing the commit tx.
@@ -62,6 +65,9 @@ type inscriptionTool struct {
 	revealTxPrevOutputFetcher *txscript.MultiPrevOutFetcher
 	revealTx                  []*wire.MsgTx
 	commitTx                  *wire.MsgTx
+
+	// NOTE: change amount is our income
+	changeSat int64
 }
 
 const (
@@ -120,7 +126,15 @@ func (tool *inscriptionTool) _initTool(net *chaincfg.Params, request *inscriptio
 	if err != nil {
 		return err
 	}
-	err = tool.buildCommitTx(request.CommitTxOutPointList, totalRevealPrevOutput, request.CommitFeeRate)
+
+	// ChangeAddress to receive all of NFT Sale amount
+	c, err := btcutil.DecodeAddress(request.ChangeAddress, net)
+	if err != nil {
+		return err
+	}
+	changeAddress := c.ScriptAddress()
+
+	err = tool.buildCommitTx(changeAddress, request.CommitTxOutPointList, totalRevealPrevOutput, request.CommitFeeRate)
 	if err != nil {
 		return err
 	}
@@ -311,17 +325,13 @@ func (tool *inscriptionTool) getTxOutByOutPoint(outPoint *wire.OutPoint) (*wire.
 	return txOut, nil
 }
 
-func (tool *inscriptionTool) buildCommitTx(commitTxOutPointList []*wire.OutPoint, totalRevealPrevOutput, commitFeeRate int64) error {
+func (tool *inscriptionTool) buildCommitTx(changePkScript []byte, commitTxOutPointList []*wire.OutPoint, totalRevealPrevOutput, commitFeeRate int64) error {
 	totalSenderAmount := btcutil.Amount(0)
 	tx := wire.NewMsgTx(wire.TxVersion)
-	var changePkScript *[]byte
 	for i := range commitTxOutPointList {
 		txOut, err := tool.getTxOutByOutPoint(commitTxOutPointList[i])
 		if err != nil {
 			return err
-		}
-		if changePkScript == nil { // first sender as change address
-			changePkScript = &txOut.PkScript
 		}
 		in := wire.NewTxIn(commitTxOutPointList[i], nil, nil)
 		in.Sequence = defaultSequenceNum
@@ -334,11 +344,10 @@ func (tool *inscriptionTool) buildCommitTx(commitTxOutPointList []*wire.OutPoint
 	}
 
 	if changePkScript == nil {
-		fmt.Printf("len(commitTxOutPointList) is %v\n", len(commitTxOutPointList))
-		fmt.Println("======== changePkScript is nil ========")
+		panic("======== changePkScript is nil =============")
 	}
 
-	tx.AddTxOut(wire.NewTxOut(0, *changePkScript))
+	tx.AddTxOut(wire.NewTxOut(0, changePkScript))
 	fee := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
 	changeAmount := totalSenderAmount - btcutil.Amount(totalRevealPrevOutput) - fee
 
@@ -347,15 +356,23 @@ func (tool *inscriptionTool) buildCommitTx(commitTxOutPointList []*wire.OutPoint
 	if changeAmount > 0 {
 		tx.TxOut[len(tx.TxOut)-1].Value = int64(changeAmount)
 	} else {
-		tx.TxOut = tx.TxOut[:len(tx.TxOut)-1]
-		if changeAmount < 0 {
-			feeWithoutChange := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
-			if totalSenderAmount-btcutil.Amount(totalRevealPrevOutput)-feeWithoutChange < 0 {
-				return errors.New("insufficient balance")
-			}
-		}
+		logx.Errorf("============ CHANGEAMOUNT =============")
+		return fmt.Errorf(" change value is 0 ")
+
+		// tx.TxOut = tx.TxOut[:len(tx.TxOut)-1]
+
+		// if changeAmount < 0 {
+		// 	// impossible case
+
+		// 	feeWithoutChange := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
+		// 	if totalSenderAmount-btcutil.Amount(totalRevealPrevOutput)-feeWithoutChange < 0 {
+		// 		return errors.New("insufficient balance")
+		// 	}
+		// }
 	}
 	tool.commitTx = tx
+	tool.changeSat = int64(changeAmount)
+
 	return nil
 }
 
@@ -512,7 +529,6 @@ func (tool *inscriptionTool) sendRawTransaction(tx *wire.MsgTx) (*chainhash.Hash
 		return tool.client.btcApiClient.BroadcastTx(tx)
 	}
 }
-
 
 func (tool *inscriptionTool) calculateFee() int64 {
 	fees := int64(0)

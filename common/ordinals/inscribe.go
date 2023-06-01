@@ -14,8 +14,8 @@ import (
 	"github.com/btcsuite/btcd/wire"
 )
 
-func Inscribe(wifPrivKey string, netParams *chaincfg.Params, feeRate int,
-	inscriptionData []InscriptionData, onlyEstimate bool) (commitTxid string, revealsTxids []string, fee int64, err error) {
+func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Params, feeRate int,
+	inscriptionData []InscriptionData, onlyEstimate bool) (commitTxid string, revealsTxids []string, fee int64, change int64, err error) {
 
 	btcApiClient := mempool.NewClient(netParams)
 	wifKey, err := btcutil.DecodeWIF(wifPrivKey)
@@ -29,7 +29,7 @@ func Inscribe(wifPrivKey string, netParams *chaincfg.Params, feeRate int,
 	unspentList, err := btcApiClient.ListUnspent(utxoTaprootAddress)
 
 	// TODO:  multiple utxo ?
-	// collect all of UTXOs 
+	// collect all of UTXOs
 	logx.Infof("utxo size is %v\n", len(unspentList))
 	vinAmount := 0
 	commitTxOutPointList := make([]*wire.OutPoint, 0)
@@ -46,6 +46,7 @@ func Inscribe(wifPrivKey string, netParams *chaincfg.Params, feeRate int,
 	logx.Infof("len(commitTxPrivateKeyList) is %v\n", len(commitTxPrivateKeyList))
 
 	request := inscriptionRequest{
+		ChangeAddress:          changeAddress,
 		CommitTxOutPointList:   commitTxOutPointList,
 		CommitTxPrivateKeyList: commitTxPrivateKeyList,
 		CommitFeeRate:          int64(feeRate),
@@ -59,10 +60,9 @@ func Inscribe(wifPrivKey string, netParams *chaincfg.Params, feeRate int,
 		return
 	}
 
-	baseFee := tool.calculateFee()
-
+	change = tool.changeSat
+	fee = tool.calculateFee()
 	if onlyEstimate {
-		fee = baseFee
 		return
 	}
 

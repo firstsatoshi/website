@@ -43,6 +43,8 @@ services:
     depends_on:
      - mysql
      - redis
+    volumes:
+      - ./images:/images  # NFT 图片目录映射
     networks:
       - website_network
 
