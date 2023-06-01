@@ -9,6 +9,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/firstsatoshi/website/common/bmfilter"
 	"github.com/firstsatoshi/website/common/mempool"
 	"github.com/firstsatoshi/website/common/task"
 	"github.com/firstsatoshi/website/internal/config"
@@ -33,6 +34,8 @@ type BtcDepositTask struct {
 	config *config.Config
 
 	sqlConn sqlx.SqlConn
+
+	bloomFilter *bmfilter.BloomFilter
 
 	apiClient *mempool.MempoolApiClient
 
@@ -65,8 +68,9 @@ func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg
 		apiHost:  apiHost,
 		chainCfg: chainCfg,
 
-		sqlConn:   sqlConn,
-		apiClient: apiClient,
+		sqlConn:     sqlConn,
+		apiClient:   apiClient,
+		bloomFilter: bmfilter.NewUpgwBloomFilter(redis, "BTC"),
 
 		tbDepositModel:           model.NewTbDepositModel(sqlConn, config.CacheRedis),
 		tbBlockscanModel:         model.NewTbBlockscanModel(sqlConn, config.CacheRedis),
@@ -98,9 +102,7 @@ func (t *BtcDepositTask) Stop() {
 }
 
 func (t *BtcDepositTask) scanBlock() {
-	// TODO: blom filter?
-
-	// load all listen address into redis from db
+	// load all listen address into redis bloomfilter
 	counter := 0
 	addresses, err := t.tbAddressModel.FindAll(t.ctx, "BTC")
 	if err != nil {
@@ -109,15 +111,14 @@ func (t *BtcDepositTask) scanBlock() {
 	}
 
 	for i := 0; i < len(addresses); i++ {
-		// it'll load address into redis
-		_, err = t.tbAddressModel.FindOneByAddress(t.ctx, addresses[i].Address)
-		if err != nil {
-			continue
+		if err := t.bloomFilter.Add([]byte(addresses[i].Address)); err != nil {
+			logx.Errorf("error: %v", err.Error())
+			return
 		}
 
 		counter += 1
 	}
-	logx.Infof(" ===== load  %v address into redis", counter)
+	logx.Infof(" ===== load  %v address into redis bloom filter", counter)
 
 	// get latest height
 	latestBlockHeight, err := t.apiClient.GetTipBlockHeight()
@@ -218,6 +219,17 @@ func (t *BtcDepositTask) scanBlock() {
 					continue
 				}
 
+				// check address whther is bloom filter
+				isExists, err := t.bloomFilter.Exists([]byte(vo.ScriptpubkeyAddress ))
+				if err != nil {
+					logx.Errorf("bloom filter check error: %v ", err.Error())
+					return
+				}
+				if !isExists {
+					continue
+				}
+
+				// check again by querying database
 				addr, err := t.tbAddressModel.FindOneByAddress(t.ctx, vo.ScriptpubkeyAddress)
 				if err == model.ErrNotFound {
 					continue
