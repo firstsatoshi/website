@@ -5,13 +5,35 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/wire"
 	"github.com/go-resty/resty/v2"
 	"github.com/tidwall/gjson"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type MempoolApiClient struct {
 	host   string
 	client *resty.Client
+}
+
+func NewClient(netParams *chaincfg.Params) *MempoolApiClient {
+	baseURL := ""
+	if netParams.Net == wire.MainNet {
+		baseURL = "https://mempool.space/api"
+	} else if netParams.Net == wire.TestNet3 {
+		baseURL = "https://mempool.space/testnet/api"
+	} else if netParams.Net == chaincfg.SigNetParams.Net {
+		baseURL = "https://mempool.space/signet/api"
+	} else {
+		// baseURL = "https://mempool.space/signet/api"
+
+		logx.Errorf("mempool don't support other netParams")
+	}
+	return &MempoolApiClient{
+		host:   baseURL,
+		client: resty.New(),
+	}
 }
 
 func NewMempoolApiClient(host string) *MempoolApiClient {
@@ -263,3 +285,5 @@ func (m *MempoolApiClient) GetAddressUTXOs(address string) (utxos []UTXO, err er
 	utxos = *utxosx
 	return
 }
+
+
