@@ -26,7 +26,7 @@ type InscriptionData struct {
 	Destination string
 }
 
-type InscriptionRequest struct {
+type inscriptionRequest struct {
 	CommitTxOutPointList   []*wire.OutPoint
 	CommitTxPrivateKeyList []*btcec.PrivateKey // If used without RPC,
 	// a local signature is required for committing the commit tx.
@@ -53,7 +53,7 @@ type blockchainClient struct {
 	btcApiClient btcapi.BTCAPIClient
 }
 
-type InscriptionTool struct {
+type inscriptionTool struct {
 	net                       *chaincfg.Params
 	client                    *blockchainClient
 	commitTxPrevOutputFetcher *txscript.MultiPrevOutFetcher
@@ -71,8 +71,8 @@ const (
 	MaxStandardTxWeight = blockchain.MaxBlockWeight / 10
 )
 
-func NewInscriptionTool(net *chaincfg.Params, rpcclient *rpcclient.Client, request *InscriptionRequest) (*InscriptionTool, error) {
-	tool := &InscriptionTool{
+func newInscriptionTool(net *chaincfg.Params, rpcclient *rpcclient.Client, request *inscriptionRequest) (*inscriptionTool, error) {
+	tool := &inscriptionTool{
 		net: net,
 		client: &blockchainClient{
 			rpcClient: rpcclient,
@@ -84,11 +84,11 @@ func NewInscriptionTool(net *chaincfg.Params, rpcclient *rpcclient.Client, reque
 	return tool, tool._initTool(net, request)
 }
 
-func NewInscriptionToolWithBtcApiClient(net *chaincfg.Params, btcApiClient btcapi.BTCAPIClient, request *InscriptionRequest) (*InscriptionTool, error) {
+func newInscriptionToolWithBtcApiClient(net *chaincfg.Params, btcApiClient btcapi.BTCAPIClient, request *inscriptionRequest) (*inscriptionTool, error) {
 	if len(request.CommitTxPrivateKeyList) != len(request.CommitTxOutPointList) {
 		return nil, errors.New("the length of CommitTxPrivateKeyList and CommitTxOutPointList should be the same")
 	}
-	tool := &InscriptionTool{
+	tool := &inscriptionTool{
 		net: net,
 		client: &blockchainClient{
 			btcApiClient: btcApiClient,
@@ -101,7 +101,7 @@ func NewInscriptionToolWithBtcApiClient(net *chaincfg.Params, btcApiClient btcap
 	return tool, tool._initTool(net, request)
 }
 
-func (tool *InscriptionTool) _initTool(net *chaincfg.Params, request *InscriptionRequest) error {
+func (tool *inscriptionTool) _initTool(net *chaincfg.Params, request *inscriptionRequest) error {
 	destinations := make([]string, len(request.DataList))
 	revealOutValue := defaultRevealOutValue
 	if request.RevealOutValue > 0 {
@@ -135,7 +135,7 @@ func (tool *InscriptionTool) _initTool(net *chaincfg.Params, request *Inscriptio
 	return err
 }
 
-func createInscriptionTxCtxData(net *chaincfg.Params, inscriptionRequest *InscriptionRequest, indexOfRequestDataList int) (*inscriptionTxCtxData, error) {
+func createInscriptionTxCtxData(net *chaincfg.Params, inscriptionRequest *inscriptionRequest, indexOfRequestDataList int) (*inscriptionTxCtxData, error) {
 	privateKey, err := btcec.NewPrivateKey()
 	if err != nil {
 		return nil, err
@@ -205,7 +205,7 @@ func createInscriptionTxCtxData(net *chaincfg.Params, inscriptionRequest *Inscri
 	}, nil
 }
 
-func (tool *InscriptionTool) buildEmptyRevealTx(singleRevealTxOnly bool, destination []string, revealOutValue, feeRate int64) (int64, error) {
+func (tool *inscriptionTool) buildEmptyRevealTx(singleRevealTxOnly bool, destination []string, revealOutValue, feeRate int64) (int64, error) {
 	var revealTx []*wire.MsgTx
 	totalPrevOutput := int64(0)
 	total := len(tool.txCtxDataList)
@@ -277,7 +277,7 @@ func (tool *InscriptionTool) buildEmptyRevealTx(singleRevealTxOnly bool, destina
 	return totalPrevOutput, nil
 }
 
-func (tool *InscriptionTool) getTxOutByOutPoint(outPoint *wire.OutPoint) (*wire.TxOut, error) {
+func (tool *inscriptionTool) getTxOutByOutPoint(outPoint *wire.OutPoint) (*wire.TxOut, error) {
 	var txOut *wire.TxOut
 	if tool.client.rpcClient != nil {
 		tx, err := tool.client.rpcClient.GetRawTransactionVerbose(&outPoint.Hash)
@@ -311,7 +311,7 @@ func (tool *InscriptionTool) getTxOutByOutPoint(outPoint *wire.OutPoint) (*wire.
 	return txOut, nil
 }
 
-func (tool *InscriptionTool) buildCommitTx(commitTxOutPointList []*wire.OutPoint, totalRevealPrevOutput, commitFeeRate int64) error {
+func (tool *inscriptionTool) buildCommitTx(commitTxOutPointList []*wire.OutPoint, totalRevealPrevOutput, commitFeeRate int64) error {
 	totalSenderAmount := btcutil.Amount(0)
 	tx := wire.NewMsgTx(wire.TxVersion)
 	var changePkScript *[]byte
@@ -359,7 +359,7 @@ func (tool *InscriptionTool) buildCommitTx(commitTxOutPointList []*wire.OutPoint
 	return nil
 }
 
-func (tool *InscriptionTool) completeRevealTx() error {
+func (tool *inscriptionTool) completeRevealTx() error {
 	for i := range tool.txCtxDataList {
 		tool.revealTxPrevOutputFetcher.AddPrevOut(wire.OutPoint{
 			Hash:  tool.commitTx.TxHash(),
@@ -407,7 +407,7 @@ func (tool *InscriptionTool) completeRevealTx() error {
 	return nil
 }
 
-func (tool *InscriptionTool) signCommitTx() error {
+func (tool *inscriptionTool) signCommitTx() error {
 	if len(tool.commitTxPrivateKeyList) == 0 {
 		commitSignTransaction, isSignComplete, err := tool.client.rpcClient.SignRawTransactionWithWallet(tool.commitTx)
 		if err != nil {
@@ -473,7 +473,7 @@ func (tool *InscriptionTool) signCommitTx() error {
 // 	return nil
 // }
 
-func (tool *InscriptionTool) GetRecoveryKeyWIFList() []string {
+func (tool *inscriptionTool) getRecoveryKeyWIFList() []string {
 	wifList := make([]string, len(tool.txCtxDataList))
 	for i := range tool.txCtxDataList {
 		wifList[i] = tool.txCtxDataList[i].recoveryPrivateKeyWIF
@@ -489,11 +489,11 @@ func getTxHex(tx *wire.MsgTx) (string, error) {
 	return hex.EncodeToString(buf.Bytes()), nil
 }
 
-func (tool *InscriptionTool) GetCommitTxHex() (string, error) {
+func (tool *inscriptionTool) getCommitTxHex() (string, error) {
 	return getTxHex(tool.commitTx)
 }
 
-func (tool *InscriptionTool) GetRevealTxHexList() ([]string, error) {
+func (tool *inscriptionTool) getRevealTxHexList() ([]string, error) {
 	txHexList := make([]string, len(tool.revealTx))
 	for i := range tool.revealTx {
 		txHex, err := getTxHex(tool.revealTx[i])
@@ -505,7 +505,7 @@ func (tool *InscriptionTool) GetRevealTxHexList() ([]string, error) {
 	return txHexList, nil
 }
 
-func (tool *InscriptionTool) sendRawTransaction(tx *wire.MsgTx) (*chainhash.Hash, error) {
+func (tool *inscriptionTool) sendRawTransaction(tx *wire.MsgTx) (*chainhash.Hash, error) {
 	if tool.client.rpcClient != nil {
 		return tool.client.rpcClient.SendRawTransaction(tx, false)
 	} else {
@@ -513,11 +513,11 @@ func (tool *InscriptionTool) sendRawTransaction(tx *wire.MsgTx) (*chainhash.Hash
 	}
 }
 
-func (tool *InscriptionTool) CalculateFee() int64 {
-	return tool.calculateFee()
-}
+// func (tool *inscriptionTool) calculateFee() int64 {
+// 	return tool.calculateFee()
+// }
 
-func (tool *InscriptionTool) calculateFee() int64 {
+func (tool *inscriptionTool) calculateFee() int64 {
 	fees := int64(0)
 	for _, in := range tool.commitTx.TxIn {
 		fees += tool.commitTxPrevOutputFetcher.FetchPrevOutput(in.PreviousOutPoint).Value
@@ -536,7 +536,7 @@ func (tool *InscriptionTool) calculateFee() int64 {
 	return fees
 }
 
-func (tool *InscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxHashList []*chainhash.Hash, inscriptions []string, fees int64, err error) {
+func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxHashList []*chainhash.Hash, inscriptions []string, fees int64, err error) {
 	fees = tool.calculateFee()
 	commitTxHash, err = tool.sendRawTransaction(tool.commitTx)
 	if err != nil {
