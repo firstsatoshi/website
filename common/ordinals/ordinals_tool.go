@@ -513,9 +513,6 @@ func (tool *inscriptionTool) sendRawTransaction(tx *wire.MsgTx) (*chainhash.Hash
 	}
 }
 
-// func (tool *inscriptionTool) calculateFee() int64 {
-// 	return tool.calculateFee()
-// }
 
 func (tool *inscriptionTool) calculateFee() int64 {
 	fees := int64(0)
