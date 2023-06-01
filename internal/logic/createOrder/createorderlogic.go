@@ -79,7 +79,8 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	// l.svcCtx.TbOrderModel.FindOrders(l.ctx, queryBuilder)
 
 	// random generate account_index and address_index
-	rand.Seed(time.Now().UnixNano())
+	time.Sleep(time.Microsecond * 1)
+	rand.Seed(time.Now().UnixNano() + int64(req.Count) + int64(req.FeeRate) + int64(req.ReceiveAddress[10]) + int64(req.ReceiveAddress[17]))
 
 	accountIndex := rand.Uint32()
 	addressIndex := rand.Uint32()
@@ -148,6 +149,12 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 		logx.Errorf("insert error:%v", err.Error())
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "insert error: %v", err.Error())
+	}
+
+	// update bloomFilter for deposit
+	if err = l.svcCtx.DepositBloomFilter.Add([]byte(depositAddress)); err != nil {
+		time.Sleep(time.Millisecond * 17)
+		l.svcCtx.DepositBloomFilter.Add([]byte(depositAddress))
 	}
 
 	resp = &types.CreateOrderResp{

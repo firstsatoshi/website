@@ -2,6 +2,7 @@ package svc
 
 import (
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/firstsatoshi/website/common/bmfilter"
 	"github.com/firstsatoshi/website/common/keymanager"
 	"github.com/firstsatoshi/website/internal/config"
 	"github.com/firstsatoshi/website/model"
@@ -20,6 +21,9 @@ type ServiceContext struct {
 	// redis
 	Redis *redis.Redis
 
+	// deposit address bloom filter
+	DepositBloomFilter *bmfilter.BloomFilter
+
 	KeyManager *keymanager.KeyManager
 }
 
@@ -34,9 +38,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		panic(err)
 	}
 
+	rds := c.CacheRedis[0].NewRedis()
+
 	return &ServiceContext{
 		Config:               c,
-		Redis:                c.CacheRedis[0].NewRedis(),
+		Redis:                rds,
+		DepositBloomFilter:   bmfilter.NewUpgwBloomFilter(rds, "BTC"),
 		TbWaitlistModel:      model.NewTbWaitlistModel(sqlConn, c.CacheRedis),
 		TbBlindboxEventModel: model.NewTbBlindboxEventModel(sqlConn, c.CacheRedis),
 		TbOrderModel:         model.NewTbOrderModel(sqlConn, c.CacheRedis),
