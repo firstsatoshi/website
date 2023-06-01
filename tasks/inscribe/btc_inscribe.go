@@ -24,8 +24,9 @@ type BtcInscribeTask struct {
 	chainCfg *chaincfg.Params
 	apiHost  string
 
-	redis  *redis.Redis
-	config *config.Config
+	redis   *redis.Redis
+	config  *config.Config
+	sqlConn sqlx.SqlConn
 
 	tbDepositModel             model.TbDepositModel
 	tbAddressModel             model.TbAddressModel
@@ -48,8 +49,10 @@ func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincf
 		ctx:  ctx,
 		stop: cancel,
 
-		config:                     config,
-		redis:                      redis,
+		config:  config,
+		redis:   redis,
+		sqlConn: sqlConn,
+
 		apiHost:                    apiHost,
 		chainCfg:                   chainCfg,
 		tbDepositModel:             model.NewTbDepositModel(sqlConn, config.CacheRedis),
@@ -70,10 +73,16 @@ func (t *BtcInscribeTask) Start() {
 			return
 		case <-ticker.C:
 			logx.Info("======= Btc Inscribe Task =================")
+			t.inscribe()
 		}
 	}
 }
 
 func (t *BtcInscribeTask) Stop() {
 	t.stop()
+}
+
+func (t *BtcInscribeTask) inscribe() {
+	
+
 }
