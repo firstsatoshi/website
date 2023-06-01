@@ -13,6 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// implement  BTCAPIClient interface
+var _ btcapi.BTCAPIClient = &MempoolApiClient{}
+
+// ListUnspent get utox of address
 func (m *MempoolApiClient) ListUnspent(address btcutil.Address) ([]*btcapi.UnspentOutput, error) {
 
 	utxos, err := m.GetAddressUTXOs(address.EncodeAddress())
