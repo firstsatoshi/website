@@ -170,7 +170,7 @@ func (t *BtcDepositTask) scanBlock() {
 		}
 
 		// multi goroutine txfecther
-		goroutineCount := 40
+		goroutineCount := 30
 		ch := make(chan mempool.Transaction, 50000)
 		go func() {
 			wg := sync.WaitGroup{}
