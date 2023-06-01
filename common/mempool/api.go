@@ -40,7 +40,7 @@ func (m *MempoolApiClient) GetBlockHashByHeight(height uint64) (blockHash string
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 
@@ -63,7 +63,7 @@ func (m *MempoolApiClient) GetBlockStatus(blockHash string) (isBestChain bool, h
 		return
 	}
 	if resp.StatusCode() != http.StatusOK {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 
@@ -83,7 +83,7 @@ func (m *MempoolApiClient) GetTipBlockHeight() (height uint64, err error) {
 		return
 	}
 	if resp.StatusCode() != http.StatusOK {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 
@@ -100,7 +100,7 @@ func (m *MempoolApiClient) GetTipBlockHash() (hash string, err error) {
 		return
 	}
 	if resp.StatusCode() != http.StatusOK {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 
@@ -118,7 +118,7 @@ func (m *MempoolApiClient) GetBlockTansactionIDs(blockHash string) (txids []stri
 		return
 	}
 	if resp.StatusCode() != http.StatusOK {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 
@@ -141,13 +141,13 @@ func (m *MempoolApiClient) GetTansaction(txid string) (tx Transaction, err error
 		return
 	}
 	if resp.StatusCode() != http.StatusOK {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 
 	txx := resp.Result().(*Transaction)
 	if txx == nil {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 	tx = *txx
@@ -166,7 +166,7 @@ func (m *MempoolApiClient) GetAddressDetails(address string) (addressDetails Add
 		return
 	}
 	if resp.StatusCode() != http.StatusOK {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 
@@ -194,7 +194,7 @@ func (m *MempoolApiClient) GetAddressMempoolTxs(address string) (mempoolTxs []Tr
 		return
 	}
 	if resp.StatusCode() != http.StatusOK {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 
@@ -223,7 +223,7 @@ func (m *MempoolApiClient) GetRecommendedFees() (recommendedFee RecommendedFee, 
 		return
 	}
 	if resp.StatusCode() != http.StatusOK {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 
@@ -248,7 +248,7 @@ func (m *MempoolApiClient) GetAddressUTXOs(address string) (utxos []UTXO, err er
 		return
 	}
 	if resp.StatusCode() != http.StatusOK {
-		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), resp.Body())
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
 		return
 	}
 	if string(resp.Body()) == "[]" {
