@@ -228,7 +228,7 @@ func (t *BtcInscribeTask) inscribe() {
 		})
 		if err != nil {
 			if nTry < 3 {
-				time.Sleep(1)
+				time.Sleep(time.Duration(nTry) * time.Second)
 				logx.Errorf("update order status and blindbox status error, try it later")
 				continue
 			}
@@ -243,9 +243,72 @@ func (t *BtcInscribeTask) inscribe() {
 func (t *BtcInscribeTask) txMonitor() {
 	// TODO: if deposit tx in a orphan block ?
 
-	// get txids from databases
+	// get peding txs' txids from databases
+	querySql := t.tbBlindboxModel.RowBuilder().Where(squirrel.Eq{
+		"status": "MINTING",
+	})
+	mintingBoxs, err := t.tbBlindboxModel.FindBlindbox(t.ctx, querySql)
+	if err != nil {
+		logx.Errorf("FindBlindbox error: %v", err.Error())
+		return
+	}
 
-	// async monitor tx status
+	// monitor tx status
+	for _, mbx := range mintingBoxs {
+		tx, err := t.apiClient.GetTansaction(mbx.RevealTxid.String)
+		if err != nil {
+			logx.Errorf("GetTansaction error: %v, continue", err.Error())
+			continue
+		}
+
+		// still pending
+		if !tx.Status.Confirmed {
+			logx.Infof(" blindbox: %v, revealTxid:%v , still pending", mbx.Id, mbx.RevealTxid.String)
+			continue
+		}
+
+		// if reveal is comfirmed
+		for nTry := 0; ; nTry++ {
+			err = t.sqlConn.TransactCtx(t.ctx, func(ctx context.Context, s sqlx.Session) error {
+
+				// update blindbox status to MINT
+				if true {
+					updateBlindbox := fmt.Sprintf("UPDATE tb_blindbox SET status='%v' WHERE id=%v", "MINT", mbx.Id)
+					result, err := s.ExecCtx(ctx, updateBlindbox)
+					if err != nil {
+						return err
+					}
+					if _, err = result.RowsAffected(); err != nil {
+						return err
+					}
+				}
+
+				// update order status
+				if true {
+					updateSql := fmt.Sprintf("UPDATE tb_order SET order_status='%v' WHERE id=%v", "ALLSUCCESS", mbx.Id)
+					result, err := s.ExecCtx(t.ctx, updateSql)
+					if err != nil {
+						return err
+					}
+					if _, err = result.RowsAffected(); err != nil {
+						return err
+					}
+				}
+
+				return nil
+			})
+			if err != nil {
+				if nTry < 3 {
+					time.Sleep(time.Duration(nTry) * time.Second)
+					logx.Errorf("update order status and blindbox status error, try it later")
+					continue
+				}
+
+				logx.Errorf("update order status and blindbox status error :%v ", err.Error())
+			}
+			break
+		}
+	}
 
 	// update order status when tx be succeed
 }
