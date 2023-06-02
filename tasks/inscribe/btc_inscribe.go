@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/firstsatoshi/website/common/keymanager"
 	"github.com/firstsatoshi/website/common/mempool"
 	"github.com/firstsatoshi/website/common/ordinals"
 	"github.com/firstsatoshi/website/common/task"
@@ -36,6 +38,9 @@ type BtcInscribeTask struct {
 
 	apiClient *mempool.MempoolApiClient
 
+	changeAddressKeyManager *keymanager.KeyManager
+	depositAddressKm        *keymanager.KeyManager
+
 	tbDepositModel             model.TbDepositModel
 	tbAddressModel             model.TbAddressModel
 	tbOrderModel               model.TbOrderModel
@@ -55,6 +60,22 @@ func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincf
 
 	apiClient := mempool.NewMempoolApiClient(apiHost)
 
+	if len(os.Getenv("CHANGE_SEED")) == 0 {
+		panic("empty CHANGE_SEED")
+	}
+	changeKm, err := keymanager.NewKeyManagerFromSeed(os.Getenv("CHANGE_SEED"), *chainCfg)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(os.Getenv("DEPOSIT_SEED")) == 0 {
+		panic("empty DEPOSIT_SEED")
+	}
+	depositAddressKm, err := keymanager.NewKeyManagerFromSeed(os.Getenv("DEPOSIT_SEED"), *chainCfg)
+	if err != nil {
+		panic(err)
+	}
+
 	return &BtcInscribeTask{
 		ctx:  ctx,
 		stop: cancel,
@@ -64,6 +85,9 @@ func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincf
 		sqlConn: sqlConn,
 
 		apiClient: apiClient,
+
+		changeAddressKeyManager: changeKm,
+		depositAddressKm:        depositAddressKm,
 
 		apiHost:                    apiHost,
 		chainCfg:                   chainCfg,
@@ -164,7 +188,28 @@ func (t *BtcInscribeTask) inscribe() {
 		inscribeData = append(inscribeData, insData)
 	}
 
-	_, _, feeEstimate, changeSat, err := ordinals.Inscribe("TODO", "TODO", t.chainCfg, int(order.FeeRate), inscribeData, true)
+	_, changeAddress, err := t.changeAddressKeyManager.GetWifKeyAndAddresss(0, uint32(order.Id%5))
+	logx.Infof("orderId:%v, CHANGEADDRESS: %v", order.OrderId, changeAddress)
+
+	addr, err := t.tbAddressModel.FindOneByAddress(t.ctx, order.DepositAddress)
+	if err != nil {
+		logx.Errorf("FindOneByAddress error:%v", order.DepositAddress)
+		return
+	}
+
+	depositWif, depositAddressStr, err := t.depositAddressKm.GetWifKeyAndAddresss(uint32(addr.AccountIndex), uint32(addr.AddressIndex))
+	if err != nil {
+		logx.Errorf("GetWifKeyAndAddresss error: %v", err.Error())
+		return
+	}
+	defer func() { depositWif = "" }()
+
+	if addr.Address != depositAddressStr {
+		logx.Errorf("====== DEPOSITADDRESS ADDRESS NOT MATCH %v not match %v ==========", addr.Address, depositAddressStr)
+		return
+	}
+
+	_, _, feeEstimate, changeSat, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, true)
 	if err != nil {
 		logx.Errorf(" estimate fee error: %v ", err.Error())
 		return
@@ -172,18 +217,21 @@ func (t *BtcInscribeTask) inscribe() {
 
 	if feeEstimate > feeSat {
 		// TODO: we must estimate accuracy FEE before create order
+		logx.Infof("=============== feeEstimate greater than feeSat ================")
 	}
 
 	if changeSat < order.PriceSat {
 		// TODO: we must estimate accuracy FEE before create order
+		logx.Infof("=============== changeSat less than PriceSat ================")
 	}
 
 	// inscrbe images
-	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe("TODO", "TODO", t.chainCfg, int(order.FeeRate), inscribeData, true)
+	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, true)
 	if err != nil {
 		logx.Errorf("estimate fee error: %v ", err.Error())
 		return
 	}
+	depositWif = ""
 	logx.Infof("======= OrderId: %v inscribe finished", order.OrderId)
 
 	// TODO:

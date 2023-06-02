@@ -34,7 +34,10 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// no cache, only database
 	sqlConn := sqlx.NewMysql(c.MySql.DataSource)
 
-	seed := "[20230529byyoungqqcn@163.com]:__.+-&2$fz&lGp)93-_-x$.-x_4.-~`_T_92fn^lsYTpz-N-"
+	seed := os.Getenv("DEPOSIT_SEED")
+	if len(seed) == 0 {
+		panic("empty DEPOSIT_SEED")
+	}
 
 	chainCfg := chaincfg.MainNetParams
 	if len(os.Getenv("BITEAGLE_TESTNET")) != 0 {
