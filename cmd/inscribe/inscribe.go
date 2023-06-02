@@ -25,7 +25,7 @@ func main() {
 	chainCfg := &chaincfg.MainNetParams
 	apiHost := ""
 	if len(os.Getenv("BITEAGLE_TESTNET")) != 0 {
-		chainCfg = &chaincfg.SigNetParams
+		chainCfg = &chaincfg.TestNet3Params
 		apiHost = "TODO" // TODO
 	}
 
