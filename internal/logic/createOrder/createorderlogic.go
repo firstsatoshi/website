@@ -97,8 +97,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	_, depositAddress, err := l.svcCtx.KeyManager.GetWifKeyAndAddresss(
 		accountIndex,
-		addressIndex,
-		chaincfg.MainNetParams)
+		addressIndex)
 	if err != nil {
 		logx.Errorf("error: %v", err.Error())
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "generate address error %v", err.Error())
