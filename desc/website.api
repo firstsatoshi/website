@@ -71,10 +71,6 @@ type Order {
 	CreateTime       string `json:"createTime"`
 }
 
-type queryOrderResp {
-	Orders []Order `json:"order,omitempty"`
-}
-
 // 查询订单
 @server(
 	prefix: api/v1
@@ -82,16 +78,16 @@ type queryOrderResp {
 )
 service website-api {
 	@handler queryOrder
-	post /queryorder(queryOrderReq) returns (queryOrderResp)
+	post /queryorder(queryOrderReq) returns ([]Order)
 }
 
-type queryBlindboxEventResp {
+type BlindboxEvent {
 	EventId      int    `json:"eventId"`
 	Name         string `json:"name"`
 	Description  string `json:"description"`
 	PriceBtcSats int    `json:"priceBtcSats"`
 	PriceUsd     int    `json:"priceUsd"`      // usd价格
-	PaymentCoin  string `json:"paymentCoin"`   // 支付币种
+	PaymentToken string `json:"paymentToken"`  // 支付币种
 	Supply       int    `json:"supply"`        // 总数量
 	Avail        int    `json:"avail"`         // 可用数量
 	Enable       bool   `json:"enable"`        // 是否开启
@@ -100,21 +96,21 @@ type queryBlindboxEventResp {
 	EndTime      string `json:"endTime"`       // 结束时间
 }
 
-// 查询盲盒
+// 查询盲盒活动
 @server(
 	prefix: api/v1
 	group: queryBlindboxEvent
 )
 service website-api {
 	@handler queryBlindboxEvent
-	post /queryblindboxevent returns (queryBlindboxEventResp)
+	post /queryblindboxevent returns ([]BlindboxEvent)
 }
 
 type coinPriceResp {
 	BtcPriceUsd float64 `json:"btcPriceUsd"`
 }
 
-// 查询盲盒
+// 查询btc价格
 @server(
 	prefix: api/v1
 	group: coinPrice

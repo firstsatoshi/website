@@ -131,11 +131,11 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		Count:           int64(req.Count),
 		DepositAddress:  depositAddress,
 		ReceiveAddress:  req.ReceiveAddress,
-		InscriptionData: "TODO", // TODO
+		InscriptionData: "", // no use
 		FeeRate:         int64(req.FeeRate),
 		TxfeeAmountSat:  123456,  // TODO
-		ServiceFeeSat:   123456,  // TODO
-		PriceSat:        123456,  // TODO
+		ServiceFeeSat:   0,  // TODO
+		PriceSat:        event.PriceSats,  // 0.002
 		TotalAmountSat:  1123456, // TODO
 		OrderStatus:     "NOTPAID",
 		Version:         0,

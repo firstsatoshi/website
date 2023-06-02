@@ -33,9 +33,9 @@ CREATE TABLE `tb_blindbox_event` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `event_name` varchar(100) COLLATE utf8mb4_bin DEFAULT "" COMMENT '名称',
   `event_description` varchar(200) COLLATE utf8mb4_bin DEFAULT "" COMMENT '描述',
-  `btc_price` int not NULL COMMENT 'BTC价格',
+  `price_sats` int not NULL COMMENT '价格',
   `is_active` tinyint(1) DEFAULT '1' COMMENT '是否激活',
-  `payment_coin` varchar(20) NOT NULL COMMENT '支付币种',
+  `payment_token` varchar(20) NOT NULL COMMENT '支付币种',
   `supply` int not NULL COMMENT '供应量',
   `avail` int not NULL COMMENT '本批次发行量',
   `only_whitelist` tinyint(1) DEFAULT '0' COMMENT '是否只有白名单',
@@ -47,7 +47,7 @@ CREATE TABLE `tb_blindbox_event` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒活动表';
 
 
-INSERT INTO website.tb_blindbox_event (event_name,event_description,btc_price,is_active,payment_coin,supply,avail,only_whitelist,start_time,end_time,create_time,update_time) VALUES('Bitcoin Eagle','This is Bitcoin Eagle NFT mint',123456,1,'BTC',1000,1000,0,'2023-05-27 16:28:39','2024-05-27 16:28:39','2023-05-27 16:28:39','2023-05-27 16:28:48');
+INSERT INTO website.tb_blindbox_event (event_name,event_description,price_sats,is_active,payment_token,supply,avail,only_whitelist,start_time,end_time,create_time,update_time) VALUES('Bitcoin Eagle','This is Bitcoin Eagle NFT mint',20000,1,'BTC',1000,1000,0,'2023-05-27 16:28:39','2024-05-27 16:28:39','2023-05-27 16:28:39','2023-05-27 16:28:48');
 
 
 DROP TABLE IF EXISTS `tb_order`;

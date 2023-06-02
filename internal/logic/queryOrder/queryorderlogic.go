@@ -26,7 +26,7 @@ func NewQueryOrderLogic(ctx context.Context, svcCtx *svc.ServiceContext) *QueryO
 	}
 }
 
-func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp *types.QueryOrderResp, err error) {
+func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Order, err error) {
 	// query exists unpayment order
 	queryBuilder := l.svcCtx.TbOrderModel.RowBuilder()
 
@@ -52,7 +52,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp *types.Quer
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOrders error")
 	}
 
-	resp = &types.QueryOrderResp{Orders: make([]types.Order, 0)}
+	resp = make([]types.Order, 0)
 	for _, o := range orders {
 
 		pt := o.PayTime.Time.String()
@@ -64,7 +64,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp *types.Quer
 		if !o.PayConfirmedTime.Valid {
 			pct = ""
 		}
-		resp.Orders = append(resp.Orders, types.Order{
+		resp = append(resp, types.Order{
 			OrderId:          o.OrderId,
 			EventId:          int(o.EventId),
 			DepositAddress:   o.DepositAddress,
