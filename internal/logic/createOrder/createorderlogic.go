@@ -3,6 +3,7 @@ package createOrder
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/rand"
 	"strings"
 	"time"
@@ -31,6 +32,27 @@ func NewCreateOrderLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
+}
+
+func calcFee(count, feeRate float64) int64 {
+	// 每个铭文固定金额
+	utxoSat := float64(10000)
+	averageFileSize := float64(2600) // 是 2600byte 不是 2600Byte
+
+	utxoOutputValue := float64(utxoSat) * count
+	commitTxSize := 68 + (43+1)*count
+	commitTxSize += 64
+	revealTxSize := 10.5 + (57.5+43.0)*float64(count)
+	revealTxSize += 64
+	feeSats := math.Ceil((averageFileSize/4 + commitTxSize + revealTxSize) * feeRate)
+	feeSats = 1000 * math.Ceil(feeSats/1000)
+
+	// base fee
+	baseService := 1000 * math.Ceil(feeRate*0.1/1000)
+	feeSats += baseService
+
+	total := feeSats + utxoOutputValue
+	return int64(total)
 }
 
 func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.CreateOrderResp, err error) {
@@ -124,6 +146,17 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	prefix = strings.ToUpper(prefix)
 	orderId := uniqueid.GenSn(prefix)
 
+	// https://bitcoinops.org/en/tools/calc-size/
+	// https://blockchain-academy.hs-mittweida.de/2023/02/calculation-of-bitcoin-transaction-fees-explained/
+	// for p2tr:
+	//  Transaction size = Overhead +  57.5 * inputsNumber + 43 * outputsNumber
+	//      eg: 1 input 1 output: 10.5 + 57.5 * 1 + 43 * 1 = 111 bytes
+
+	totalFee := calcFee(float64(req.Count), float64(req.FeeRate))
+	if totalFee+event.PriceSats < event.PriceSats {
+		panic("invalid price or totalFee")
+	}
+
 	createTime := time.Now()
 	ord := model.TbOrder{
 		OrderId:         orderId,
@@ -131,12 +164,12 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		Count:           int64(req.Count),
 		DepositAddress:  depositAddress,
 		ReceiveAddress:  req.ReceiveAddress,
-		InscriptionData: "", // no use
+		InscriptionData: "BitEagle Blindbox", // no use
 		FeeRate:         int64(req.FeeRate),
-		TxfeeAmountSat:  123456,  // TODO
-		ServiceFeeSat:   0,  // TODO
-		PriceSat:        event.PriceSats,  // 0.002
-		TotalAmountSat:  1123456, // TODO
+		TxfeeAmountSat:  totalFee,
+		ServiceFeeSat:   0,
+		PriceSat:        event.PriceSats, // 0.002
+		TotalAmountSat:  totalFee + event.PriceSats,
 		OrderStatus:     "NOTPAID",
 		Version:         0,
 		CreateTime:      createTime,
@@ -163,7 +196,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		DepositAddress: ord.DepositAddress,
 		ReceiveAddress: ord.ReceiveAddress,
 		FeeRate:        int(ord.FeeRate),
-		Bytes:          12345, // TODO
+		Bytes:          0,
 		InscribeFee:    int(ord.TxfeeAmountSat),
 		ServiceFee:     int(ord.ServiceFeeSat),
 		Price:          int(ord.PriceSat),
