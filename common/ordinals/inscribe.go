@@ -73,6 +73,7 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 	}
 
 	commitTxid = commitTxHash.String()
+	logx.Info("================================================")
 	logx.Infof("commitTxid: %v", commitTxid)
 
 	for i := range revealTxHashList {
@@ -80,6 +81,8 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 		logx.Infof("revealTxid[%v]: %v", i, revealTxHashList[i].String())
 	}
 	logx.Infof("fee: %v", fee)
+	logx.Infof("change: %v", change)
+	logx.Info("================================================")
 
 	return
 }

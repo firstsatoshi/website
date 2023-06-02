@@ -39,14 +39,16 @@ type (
 	}
 
 	TbBlindbox struct {
-		Id          int64          `db:"id"`           // id
-		Name        string         `db:"name"`         // 名称
-		Description sql.NullString `db:"description"`  // 描述
-		IsActive    int64          `db:"is_active"`    // 是否激活
-		IsLocked    int64          `db:"is_locked"`    // 是否锁定
-		IsInscribed int64          `db:"is_inscribed"` // 是否已铭刻(铭刻交易完全上链确认)
-		CreateTime  time.Time      `db:"create_time"`  // 创建时间
-		UpdateTime  time.Time      `db:"update_time"`  // 最后更新时间
+		Id          int64          `db:"id"`          // id
+		Name        string         `db:"name"`        // 名称
+		Description sql.NullString `db:"description"` // 描述
+		IsActive    int64          `db:"is_active"`   // 是否激活
+		IsLocked    int64          `db:"is_locked"`   // 是否锁定
+		Status      string         `db:"status"`      // 状态,NOTMINT,MINTING,MINT
+		CommitTxid  sql.NullString `db:"commit_txid"` // commit_txid
+		RevealTxid  sql.NullString `db:"reveal_txid"` // 铭文交易id
+		CreateTime  time.Time      `db:"create_time"` // 创建时间
+		UpdateTime  time.Time      `db:"update_time"` // 最后更新时间
 	}
 )
 
@@ -86,8 +88,8 @@ func (m *defaultTbBlindboxModel) FindOne(ctx context.Context, id int64) (*TbBlin
 func (m *defaultTbBlindboxModel) Insert(ctx context.Context, data *TbBlindbox) (sql.Result, error) {
 	tbBlindboxIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?)", m.table, tbBlindboxRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Name, data.Description, data.IsActive, data.IsLocked, data.IsInscribed)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.Name, data.Description, data.IsActive, data.IsLocked, data.Status, data.CommitTxid, data.RevealTxid)
 	}, tbBlindboxIdKey)
 	return ret, err
 }
@@ -96,7 +98,7 @@ func (m *defaultTbBlindboxModel) Update(ctx context.Context, data *TbBlindbox) e
 	tbBlindboxIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxIdPrefix, data.Id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbBlindboxRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.Name, data.Description, data.IsActive, data.IsLocked, data.IsInscribed, data.Id)
+		return conn.ExecCtx(ctx, query, data.Name, data.Description, data.IsActive, data.IsLocked, data.Status, data.CommitTxid, data.RevealTxid, data.Id)
 	}, tbBlindboxIdKey)
 	return err
 }

@@ -220,7 +220,7 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 
 				// check address whther is bloom filter
-				isExists, err := t.bloomFilter.Exists([]byte(vo.ScriptpubkeyAddress ))
+				isExists, err := t.bloomFilter.Exists([]byte(vo.ScriptpubkeyAddress))
 				if err != nil {
 					logx.Errorf("bloom filter check error: %v ", err.Error())
 					return
@@ -302,9 +302,9 @@ func (t *BtcDepositTask) scanBlock() {
 				count := order.Count
 
 				query := t.tbBlindboxModel.RowBuilder().Where(squirrel.Eq{
-					"is_active":    1,
-					"is_locked":    0,
-					"is_inscribed": 0,
+					"is_active": 1,
+					"is_locked": 0,
+					"status":    "NOTMINT",
 				}).Limit(uint64(count))
 				boxs, err := t.tbBlindboxModel.FindBlindbox(t.ctx, query)
 				if err != nil {

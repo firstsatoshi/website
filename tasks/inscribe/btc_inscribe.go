@@ -178,18 +178,66 @@ func (t *BtcInscribeTask) inscribe() {
 		// TODO: we must estimate accuracy FEE before create order
 	}
 
-	// TODO : FINISH
 	// inscrbe images
-	// commitTxid, revealTxids, fee, change, err := ordinals.Inscribe("TODO", "TODO", t.chainCfg, int(order.FeeRate), inscribeData, true)
-	// if err != nil {
-	// 	logx.Errorf(" estimate fee error: %v ", err.Error())
-	// 	return
-	// }
+	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe("TODO", "TODO", t.chainCfg, int(order.FeeRate), inscribeData, true)
+	if err != nil {
+		logx.Errorf("estimate fee error: %v ", err.Error())
+		return
+	}
+	logx.Infof("======= OrderId: %v inscribe finished", order.OrderId)
+
+	// TODO:
+	if len(revealTxids) != len(blindboxs) {
+		logx.Errorf(" revealTxids size NOT MATCH blindboxs size ")
+		return // ?????
+	}
 
 	// update order status
-
 	// update blindbox status
+	for nTry := 0; ; nTry++ {
+		err = t.sqlConn.TransactCtx(t.ctx, func(ctx context.Context, s sqlx.Session) error {
 
+			// update blindbox status to MINTING
+			for i, b := range blindboxs {
+				revealTxid := revealTxids[i]
+				updateBlindbox := fmt.Sprintf(
+					"UPDATE tb_blindbox SET status='%v',commit_txid='%v',reveal_txid='%v',real_fee_sat=%v,real_change_sat=%v WHERE id=%v",
+					"MINTING", commitTxid, revealTxid, realFee, realChange, b.Id)
+				result, err := s.ExecCtx(ctx, updateBlindbox)
+				if err != nil {
+					return err
+				}
+				if _, err = result.RowsAffected(); err != nil {
+					return err
+				}
+			}
+
+			// update order status
+			if true {
+				updateSql := fmt.Sprintf("UPDATE tb_order SET order_status='%v' WHERE id=%v", "INSCRIBING", order.Id)
+				result, err := s.ExecCtx(t.ctx, updateSql)
+				if err != nil {
+					return err
+				}
+				if _, err = result.RowsAffected(); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+		if err != nil {
+			if nTry < 3 {
+				time.Sleep(1)
+				logx.Errorf("update order status and blindbox status error, try it later")
+				continue
+			}
+
+			logx.Errorf("update order status and blindbox status error :%v ", err.Error())
+		}
+		break
+	}
+	logx.Errorf("update order %v status and blindbox status  SUCCESS ", order.OrderId)
 }
 
 func (t *BtcInscribeTask) txMonitor() {

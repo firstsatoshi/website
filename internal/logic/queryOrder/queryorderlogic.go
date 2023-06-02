@@ -73,7 +73,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp *types.Quer
 			OrderStatus:      o.OrderStatus,
 			PayTime:          pt,
 			PayConfirmedTime: pct,
-			RevealTxid:       o.RevealTxid.String,
+			RevealTxid:       "TODO----", // TODO: implement this
 			CreateTime:       o.CreateTime.Format("2006-01-02 15:04:05 +0800 CST"),
 		})
 	}
