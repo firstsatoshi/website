@@ -2,6 +2,7 @@ package queryGalleryList
 
 import (
 	"context"
+	"math"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -56,7 +57,7 @@ func (l *QueryGalleryListLogic) QueryGalleryList(req *types.QueryGalleryListReq)
 	resp.Category = req.Category
 	resp.CurPage = req.CurPage
 	resp.PageSize = req.PageSize
-	resp.Total = int(total)
+	resp.Total = int(math.Ceil(float64(total) / float64(req.PageSize)))
 
 	for _, box := range boxs {
 		resp.NFTs = append(resp.NFTs, types.NFT{
