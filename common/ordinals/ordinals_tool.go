@@ -349,6 +349,13 @@ func (tool *inscriptionTool) buildCommitTx(changePkScript []byte, commitTxOutPoi
 
 	tx.AddTxOut(wire.NewTxOut(0, changePkScript))
 	fee := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
+
+	// relay fee
+	// https://bitcoin.stackexchange.com/questions/69282/what-is-the-min-relay-min-fee-code-26
+	// if fee < 1000 {
+	// 	fee = 1000
+	// }
+
 	changeAmount := totalSenderAmount - btcutil.Amount(totalRevealPrevOutput) - fee
 
 	// fmt.Println((totalSenderAmount - changeAmount).ToBTC())

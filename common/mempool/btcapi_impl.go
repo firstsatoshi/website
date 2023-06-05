@@ -70,7 +70,8 @@ func (m *MempoolApiClient) BroadcastTx(tx *wire.MsgTx) (*chainhash.Hash, error) 
 		return nil, err
 	}
 
-	url := fmt.Sprintf("%s/tx/", m.host)
+	url := fmt.Sprintf("%s/tx", m.host)
+	fmt.Printf("url: %v", url)
 	resp, err := m.client.R().SetBody([]byte(hex.EncodeToString(buf.Bytes()))).Post(url)
 	if err != nil {
 		return nil, err

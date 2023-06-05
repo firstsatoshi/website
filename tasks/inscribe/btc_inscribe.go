@@ -269,7 +269,7 @@ func (t *BtcInscribeTask) inscribe() {
 	onlyEstimate = false // push tx to blockchain
 	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, onlyEstimate)
 	if err != nil {
-		logx.Errorf("estimate fee error: %v ", err.Error())
+		logx.Errorf("inscribe error: %v ", err.Error())
 		return
 	}
 	depositWif = ""
