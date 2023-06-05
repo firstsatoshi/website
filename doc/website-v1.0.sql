@@ -17,13 +17,18 @@ DROP TABLE IF EXISTS `tb_blindbox`;
 CREATE TABLE `tb_blindbox` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `name` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '名称',
-  `description` varchar(200) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '描述',
+  `description` varchar(200) COLLATE utf8mb4_bin DEFAULT '' COMMENT '描述',
+  `category` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '分类: bald,punk,rich,elite',
+  `img_url` varchar(500) COLLATE utf8mb4_bin DEFAULT "" COMMENT '图片url',
   `is_active` tinyint(1) DEFAULT '1' COMMENT '是否激活',
   `is_locked` tinyint(1) DEFAULT '0' COMMENT '是否锁定',
-  `is_inscribed` tinyint(1) DEFAULT '0' COMMENT '是否已铭刻(铭刻交易完全上链确认)',
+  `status` varchar(20) COLLATE utf8mb4_bin DEFAULT 'NOTMINT'  COMMENT '状态,NOTMINT,MINTING,MINT',
+  `commit_txid` varchar(100) COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'commit_txid',
+  `reveal_txid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '铭文交易id',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_category` (`category`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒表';
 
 DROP TABLE IF EXISTS `tb_blindbox_event`;
@@ -31,9 +36,9 @@ CREATE TABLE `tb_blindbox_event` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `event_name` varchar(100) COLLATE utf8mb4_bin DEFAULT "" COMMENT '名称',
   `event_description` varchar(200) COLLATE utf8mb4_bin DEFAULT "" COMMENT '描述',
-  `btc_price` int not NULL COMMENT 'BTC价格',
+  `price_sats` int not NULL COMMENT '价格',
   `is_active` tinyint(1) DEFAULT '1' COMMENT '是否激活',
-  `payment_coin` varchar(20) NOT NULL COMMENT '支付币种',
+  `payment_token` varchar(20) NOT NULL COMMENT '支付币种',
   `supply` int not NULL COMMENT '供应量',
   `avail` int not NULL COMMENT '本批次发行量',
   `only_whitelist` tinyint(1) DEFAULT '0' COMMENT '是否只有白名单',
@@ -43,7 +48,9 @@ CREATE TABLE `tb_blindbox_event` (
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒活动表';
-INSERT INTO website.tb_blindbox_event (event_name,event_description,btc_price,is_active,payment_coin,supply,avail,only_whitelist,start_time,end_time,create_time,update_time) VALUES('Bitcoin Eagle','This is Bitcoin Eagle NFT mint',123456,1,'BTC',1000,1000,0,'2023-05-27 16:28:39','2024-05-27 16:28:39','2023-05-27 16:28:39','2023-05-27 16:28:48');
+
+
+INSERT INTO website.tb_blindbox_event (event_name,event_description,price_sats,is_active,payment_token,supply,avail,only_whitelist,start_time,end_time,create_time,update_time) VALUES('Bitcoin Eagle','This is Bitcoin Eagle NFT mint',20000,1,'BTC',1000,1000,0,'2023-05-27 16:28:39','2024-05-27 16:28:39','2023-05-27 16:28:39','2023-05-27 16:28:48');
 
 
 DROP TABLE IF EXISTS `tb_order`;
@@ -59,21 +66,19 @@ CREATE TABLE `tb_order` (
   `service_fee_sat` int NOT NULL COMMENT '服务费',
   `price_sat` int NOT NULL COMMENT '价格',
   `total_amount_sat` int NOT NULL COMMENT '总费用sat',
-  `commit_txid` varchar(100) COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'commit_txid',
-  `reveal_txid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '铭文交易id',
   `receive_address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '铭刻内容接收地址',
-  `order_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '订单状态: NOTPAID未支付;PAYPENDING支付确认中;PAYSUCCESS支付成功;PAYTIMEOUT超时未支付;INSCRIBING铭刻交易等待确认中;ALLSUCCESS订单成功',
+  `order_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '订单状态: NOTPAID未支付;PAYPENDING支付确认中;PAYSUCCESS支付成功;PAYTIMEOUT超时未支付;MINTING铭刻交易等待确认中;ALLSUCCESS订单成功',
   `pay_time` datetime DEFAULT NULL COMMENT '支付时间(进入内存池的时间)',
   `pay_txid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '付款交易id(支持批量支付,即一笔交易多个输出到我们平台的收款地址,所以不必设置为唯一索引)',
   `pay_confirmed_time` datetime DEFAULT NULL COMMENT '付款交易确认时间',
   `pay_from_address` varchar(100) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '付款地址',
+  `real_fee_sat` int DEFAULT '0' COMMENT '实际矿工费',
+  `real_change_sat` int DEFAULT '0' COMMENT '实际找零(收入)',
   `version` bigint NOT NULL DEFAULT '0' COMMENT '版本号',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `order_id` (`order_id`) USING BTREE,
-  UNIQUE KEY `tb_order_commit_txid_IDX` (`commit_txid`) USING BTREE,
-  UNIQUE KEY `tb_order_reveal_txid_IDX` (`reveal_txid`) USING BTREE,
   UNIQUE KEY `tb_order_deposit_address_UIDX` (`deposit_address`) USING BTREE,
   KEY `tb_order_receive_address_IDX` (`receive_address`) USING BTREE,
   KEY `tb_order_order_status_IDX` (`order_status`) USING BTREE,

@@ -8,6 +8,7 @@ import (
 	createOrder "github.com/firstsatoshi/website/internal/handler/createOrder"
 	joinwaitlist "github.com/firstsatoshi/website/internal/handler/joinwaitlist"
 	queryBlindboxEvent "github.com/firstsatoshi/website/internal/handler/queryBlindboxEvent"
+	queryGalleryList "github.com/firstsatoshi/website/internal/handler/queryGalleryList"
 	queryOrder "github.com/firstsatoshi/website/internal/handler/queryOrder"
 	"github.com/firstsatoshi/website/internal/svc"
 
@@ -65,6 +66,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPost,
 				Path:    "/coinprice",
 				Handler: coinPrice.CoinPriceHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/querygallerylist",
+				Handler: queryGalleryList.QueryGalleryListHandler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/api/v1"),

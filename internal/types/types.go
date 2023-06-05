@@ -52,17 +52,13 @@ type Order struct {
 	CreateTime       string `json:"createTime"`
 }
 
-type QueryOrderResp struct {
-	Orders []Order `json:"order,omitempty"`
-}
-
-type QueryBlindboxEventResp struct {
+type BlindboxEvent struct {
 	EventId      int    `json:"eventId"`
 	Name         string `json:"name"`
 	Description  string `json:"description"`
 	PriceBtcSats int    `json:"priceBtcSats"`
 	PriceUsd     int    `json:"priceUsd"`      // usd价格
-	PaymentCoin  string `json:"paymentCoin"`   // 支付币种
+	PaymentToken string `json:"paymentToken"`  // 支付币种
 	Supply       int    `json:"supply"`        // 总数量
 	Avail        int    `json:"avail"`         // 可用数量
 	Enable       bool   `json:"enable"`        // 是否开启
@@ -73,4 +69,25 @@ type QueryBlindboxEventResp struct {
 
 type CoinPriceResp struct {
 	BtcPriceUsd float64 `json:"btcPriceUsd"`
+}
+
+type QueryGalleryListReq struct {
+	CurPage  int    `json:"curPage"`
+	PageSize int    `json:"pageSize"`
+	Category string `json:"category"`
+}
+
+type NFT struct {
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	ImageUrl    string `json:"imageUrl"`
+}
+
+type QueryGalleryListResp struct {
+	Category string `json:"category"`
+	CurPage  int    `json:"curPage"`
+	Total    int    `json:"totalPage"`
+	PageSize int    `json:"pageSize"`
+	NFTs     []NFT  `json:"nfts"`
 }

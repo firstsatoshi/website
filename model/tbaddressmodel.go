@@ -19,6 +19,7 @@ type (
 	TbAddressModel interface {
 		tbAddressModel
 
+		RowBuilder() squirrel.SelectBuilder
 		FindAddresses(ctx context.Context, rowBuilder squirrel.SelectBuilder) ([]*TbAddress, error)
 		FindAll(ctx context.Context, coinType string) ([]*TbAddress, error)
 		FindMaxId(ctx context.Context, coinType string) (int32, error)

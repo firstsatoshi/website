@@ -128,7 +128,7 @@ func NewKeyManagerFromSeed(seed string, chainCfg chaincfg.Params) (*KeyManager, 
 	km := &KeyManager{
 		mnemonic:   mnemonic,
 		passphrase: "godbless@you20230529",
-		chainCfg: chainCfg,
+		chainCfg:   chainCfg,
 		keys:       make(map[string]*bip32.Key, 0),
 	}
 	return km, nil
@@ -298,13 +298,13 @@ func (km *KeyManager) getPrivateKey(purpose, coinType, account, change, index ui
 	return &Key{path: path, bip32Key: key}, nil
 }
 
-func (km *KeyManager) GetWifKeyAndAddresss(accoutIndex, addrIndex uint32, chainCfg chaincfg.Params) (wif, p2trAddress string, err error) {
+func (km *KeyManager) GetWifKeyAndAddresss(accoutIndex, addrIndex uint32) (wif, p2trAddress string, err error) {
 	k, err := km.getPrivateKey(PurposeBIP44, CoinTypeBTC, accoutIndex, 0, addrIndex)
 	if err != nil {
 		return
 	}
 	compressed := true
-	wif, _, p2trAddress, err = k.getWifKeyAndAddress(compressed, chainCfg)
+	wif, _, p2trAddress, err = k.getWifKeyAndAddress(compressed, km.chainCfg)
 	if err != nil {
 		return
 	}

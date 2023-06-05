@@ -1,6 +1,8 @@
 package svc
 
 import (
+	"os"
+
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/firstsatoshi/website/common/bmfilter"
 	"github.com/firstsatoshi/website/common/keymanager"
@@ -17,6 +19,7 @@ type ServiceContext struct {
 	TbBlindboxEventModel model.TbBlindboxEventModel
 	TbOrderModel         model.TbOrderModel
 	TbAddressModel       model.TbAddressModel
+	TbBlindboxModel      model.TbBlindboxModel
 
 	// redis
 	Redis *redis.Redis
@@ -32,8 +35,16 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// no cache, only database
 	sqlConn := sqlx.NewMysql(c.MySql.DataSource)
 
-	seed := "[20230529byyoungqqcn@163.com]:__.+-&2$fz&lGp)93-_-x$.-x_4.-~`_T_92fn^lsYTpz-N-"
-	km, err := keymanager.NewKeyManagerFromSeed(seed, chaincfg.MainNetParams)
+	seed := os.Getenv("DEPOSIT_SEED")
+	if len(seed) == 0 {
+		panic("empty DEPOSIT_SEED")
+	}
+
+	chainCfg := chaincfg.MainNetParams
+	if len(os.Getenv("BITEAGLE_TESTNET")) != 0 {
+		chainCfg = chaincfg.TestNet3Params
+	}
+	km, err := keymanager.NewKeyManagerFromSeed(seed, chainCfg)
 	if err != nil {
 		panic(err)
 	}
@@ -48,6 +59,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		TbBlindboxEventModel: model.NewTbBlindboxEventModel(sqlConn, c.CacheRedis),
 		TbOrderModel:         model.NewTbOrderModel(sqlConn, c.CacheRedis),
 		TbAddressModel:       model.NewTbAddressModel(sqlConn, c.CacheRedis),
+		TbBlindboxModel:      model.NewTbBlindboxModel(sqlConn, c.CacheRedis),
 		KeyManager:           km,
 	}
 }

@@ -40,7 +40,7 @@ func TestGetWifKeyAndAddresss(t *testing.T) {
 		t.Fatalf("error: %v", err.Error())
 	}
 
-	wif, taprootBech32, err := km.GetWifKeyAndAddresss(0, 1, chaincfg.MainNetParams)
+	wif, taprootBech32, err := km.GetWifKeyAndAddresss(0, 1)
 	if err != nil {
 		t.Fatalf("error: %v", err.Error())
 	}

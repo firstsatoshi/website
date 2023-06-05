@@ -23,20 +23,16 @@ var (
 	tbOrderRowsWithPlaceHolder = strings.Join(stringx.Remove(tbOrderFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
 
 	cacheTbOrderIdPrefix             = "cache:tbOrder:id:"
-	cacheTbOrderCommitTxidPrefix     = "cache:tbOrder:commitTxid:"
 	cacheTbOrderDepositAddressPrefix = "cache:tbOrder:depositAddress:"
 	cacheTbOrderOrderIdPrefix        = "cache:tbOrder:orderId:"
-	cacheTbOrderRevealTxidPrefix     = "cache:tbOrder:revealTxid:"
 )
 
 type (
 	tbOrderModel interface {
 		Insert(ctx context.Context, data *TbOrder) (sql.Result, error)
 		FindOne(ctx context.Context, id int64) (*TbOrder, error)
-		FindOneByCommitTxid(ctx context.Context, commitTxid sql.NullString) (*TbOrder, error)
 		FindOneByDepositAddress(ctx context.Context, depositAddress string) (*TbOrder, error)
 		FindOneByOrderId(ctx context.Context, orderId string) (*TbOrder, error)
-		FindOneByRevealTxid(ctx context.Context, revealTxid sql.NullString) (*TbOrder, error)
 		Update(ctx context.Context, data *TbOrder) error
 		Delete(ctx context.Context, id int64) error
 	}
@@ -58,14 +54,14 @@ type (
 		ServiceFeeSat    int64          `db:"service_fee_sat"`    // 服务费
 		PriceSat         int64          `db:"price_sat"`          // 价格
 		TotalAmountSat   int64          `db:"total_amount_sat"`   // 总费用sat
-		CommitTxid       sql.NullString `db:"commit_txid"`        // commit_txid
-		RevealTxid       sql.NullString `db:"reveal_txid"`        // 铭文交易id
 		ReceiveAddress   string         `db:"receive_address"`    // 铭刻内容接收地址
-		OrderStatus      string         `db:"order_status"`       // 订单状态: NOTPAID未支付;PAYPENDING支付确认中;PAYSUCCESS支付成功;PAYTIMEOUT超时未支付;INSCRIBING铭刻交易等待确认中;ALLSUCCESS订单成功
+		OrderStatus      string         `db:"order_status"`       // 订单状态: NOTPAID未支付;PAYPENDING支付确认中;PAYSUCCESS支付成功;PAYTIMEOUT超时未支付;MINTING铭刻交易等待确认中;ALLSUCCESS订单成功
 		PayTime          sql.NullTime   `db:"pay_time"`           // 支付时间(进入内存池的时间)
 		PayTxid          sql.NullString `db:"pay_txid"`           // 付款交易id(支持批量支付,即一笔交易多个输出到我们平台的收款地址,所以不必设置为唯一索引)
 		PayConfirmedTime sql.NullTime   `db:"pay_confirmed_time"` // 付款交易确认时间
 		PayFromAddress   sql.NullString `db:"pay_from_address"`   // 付款地址
+		RealFeeSat       int64          `db:"real_fee_sat"`       // 实际矿工费
+		RealChangeSat    int64          `db:"real_change_sat"`    // 实际找零(收入)
 		Version          int64          `db:"version"`            // 版本号
 		CreateTime       time.Time      `db:"create_time"`        // 创建时间
 		UpdateTime       time.Time      `db:"update_time"`        // 最后更新时间
@@ -85,15 +81,13 @@ func (m *defaultTbOrderModel) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 
-	tbOrderCommitTxidKey := fmt.Sprintf("%s%v", cacheTbOrderCommitTxidPrefix, data.CommitTxid)
 	tbOrderDepositAddressKey := fmt.Sprintf("%s%v", cacheTbOrderDepositAddressPrefix, data.DepositAddress)
 	tbOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderIdPrefix, id)
 	tbOrderOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderOrderIdPrefix, data.OrderId)
-	tbOrderRevealTxidKey := fmt.Sprintf("%s%v", cacheTbOrderRevealTxidPrefix, data.RevealTxid)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 		return conn.ExecCtx(ctx, query, id)
-	}, tbOrderCommitTxidKey, tbOrderDepositAddressKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
+	}, tbOrderDepositAddressKey, tbOrderIdKey, tbOrderOrderIdKey)
 	return err
 }
 
@@ -104,26 +98,6 @@ func (m *defaultTbOrderModel) FindOne(ctx context.Context, id int64) (*TbOrder, 
 		query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", tbOrderRows, m.table)
 		return conn.QueryRowCtx(ctx, v, query, id)
 	})
-	switch err {
-	case nil:
-		return &resp, nil
-	case sqlc.ErrNotFound:
-		return nil, ErrNotFound
-	default:
-		return nil, err
-	}
-}
-
-func (m *defaultTbOrderModel) FindOneByCommitTxid(ctx context.Context, commitTxid sql.NullString) (*TbOrder, error) {
-	tbOrderCommitTxidKey := fmt.Sprintf("%s%v", cacheTbOrderCommitTxidPrefix, commitTxid)
-	var resp TbOrder
-	err := m.QueryRowIndexCtx(ctx, &resp, tbOrderCommitTxidKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `commit_txid` = ? limit 1", tbOrderRows, m.table)
-		if err := conn.QueryRowCtx(ctx, &resp, query, commitTxid); err != nil {
-			return nil, err
-		}
-		return resp.Id, nil
-	}, m.queryPrimary)
 	switch err {
 	case nil:
 		return &resp, nil
@@ -174,36 +148,14 @@ func (m *defaultTbOrderModel) FindOneByOrderId(ctx context.Context, orderId stri
 	}
 }
 
-func (m *defaultTbOrderModel) FindOneByRevealTxid(ctx context.Context, revealTxid sql.NullString) (*TbOrder, error) {
-	tbOrderRevealTxidKey := fmt.Sprintf("%s%v", cacheTbOrderRevealTxidPrefix, revealTxid)
-	var resp TbOrder
-	err := m.QueryRowIndexCtx(ctx, &resp, tbOrderRevealTxidKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `reveal_txid` = ? limit 1", tbOrderRows, m.table)
-		if err := conn.QueryRowCtx(ctx, &resp, query, revealTxid); err != nil {
-			return nil, err
-		}
-		return resp.Id, nil
-	}, m.queryPrimary)
-	switch err {
-	case nil:
-		return &resp, nil
-	case sqlc.ErrNotFound:
-		return nil, ErrNotFound
-	default:
-		return nil, err
-	}
-}
-
 func (m *defaultTbOrderModel) Insert(ctx context.Context, data *TbOrder) (sql.Result, error) {
-	tbOrderCommitTxidKey := fmt.Sprintf("%s%v", cacheTbOrderCommitTxidPrefix, data.CommitTxid)
 	tbOrderDepositAddressKey := fmt.Sprintf("%s%v", cacheTbOrderDepositAddressPrefix, data.DepositAddress)
 	tbOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderIdPrefix, data.Id)
 	tbOrderOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderOrderIdPrefix, data.OrderId)
-	tbOrderRevealTxidKey := fmt.Sprintf("%s%v", cacheTbOrderRevealTxidPrefix, data.RevealTxid)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbOrderRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.OrderId, data.EventId, data.Count, data.DepositAddress, data.InscriptionData, data.FeeRate, data.TxfeeAmountSat, data.ServiceFeeSat, data.PriceSat, data.TotalAmountSat, data.CommitTxid, data.RevealTxid, data.ReceiveAddress, data.OrderStatus, data.PayTime, data.PayTxid, data.PayConfirmedTime, data.PayFromAddress, data.Version)
-	}, tbOrderCommitTxidKey, tbOrderDepositAddressKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
+		return conn.ExecCtx(ctx, query, data.OrderId, data.EventId, data.Count, data.DepositAddress, data.InscriptionData, data.FeeRate, data.TxfeeAmountSat, data.ServiceFeeSat, data.PriceSat, data.TotalAmountSat, data.ReceiveAddress, data.OrderStatus, data.PayTime, data.PayTxid, data.PayConfirmedTime, data.PayFromAddress, data.RealFeeSat, data.RealChangeSat, data.Version)
+	}, tbOrderDepositAddressKey, tbOrderIdKey, tbOrderOrderIdKey)
 	return ret, err
 }
 
@@ -213,15 +165,13 @@ func (m *defaultTbOrderModel) Update(ctx context.Context, newData *TbOrder) erro
 		return err
 	}
 
-	tbOrderCommitTxidKey := fmt.Sprintf("%s%v", cacheTbOrderCommitTxidPrefix, data.CommitTxid)
 	tbOrderDepositAddressKey := fmt.Sprintf("%s%v", cacheTbOrderDepositAddressPrefix, data.DepositAddress)
 	tbOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderIdPrefix, data.Id)
 	tbOrderOrderIdKey := fmt.Sprintf("%s%v", cacheTbOrderOrderIdPrefix, data.OrderId)
-	tbOrderRevealTxidKey := fmt.Sprintf("%s%v", cacheTbOrderRevealTxidPrefix, data.RevealTxid)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbOrderRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.OrderId, newData.EventId, newData.Count, newData.DepositAddress, newData.InscriptionData, newData.FeeRate, newData.TxfeeAmountSat, newData.ServiceFeeSat, newData.PriceSat, newData.TotalAmountSat, newData.CommitTxid, newData.RevealTxid, newData.ReceiveAddress, newData.OrderStatus, newData.PayTime, newData.PayTxid, newData.PayConfirmedTime, newData.PayFromAddress, newData.Version, newData.Id)
-	}, tbOrderCommitTxidKey, tbOrderDepositAddressKey, tbOrderIdKey, tbOrderOrderIdKey, tbOrderRevealTxidKey)
+		return conn.ExecCtx(ctx, query, newData.OrderId, newData.EventId, newData.Count, newData.DepositAddress, newData.InscriptionData, newData.FeeRate, newData.TxfeeAmountSat, newData.ServiceFeeSat, newData.PriceSat, newData.TotalAmountSat, newData.ReceiveAddress, newData.OrderStatus, newData.PayTime, newData.PayTxid, newData.PayConfirmedTime, newData.PayFromAddress, newData.RealFeeSat, newData.RealChangeSat, newData.Version, newData.Id)
+	}, tbOrderDepositAddressKey, tbOrderIdKey, tbOrderOrderIdKey)
 	return err
 }
 

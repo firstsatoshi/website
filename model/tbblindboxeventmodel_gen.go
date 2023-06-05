@@ -42,9 +42,9 @@ type (
 		Id               int64     `db:"id"`                // id
 		EventName        string    `db:"event_name"`        // 名称
 		EventDescription string    `db:"event_description"` // 描述
-		BtcPrice         int64     `db:"btc_price"`         // BTC价格
+		PriceSats        int64     `db:"price_sats"`        // 价格
 		IsActive         int64     `db:"is_active"`         // 是否激活
-		PaymentCoin      string    `db:"payment_coin"`      // 支付币种
+		PaymentToken     string    `db:"payment_token"`     // 支付币种
 		Supply           int64     `db:"supply"`            // 供应量
 		Avail            int64     `db:"avail"`             // 本批次发行量
 		OnlyWhitelist    int64     `db:"only_whitelist"`    // 是否只有白名单
@@ -92,7 +92,7 @@ func (m *defaultTbBlindboxEventModel) Insert(ctx context.Context, data *TbBlindb
 	tbBlindboxEventIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxEventRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.EventName, data.EventDescription, data.BtcPrice, data.IsActive, data.PaymentCoin, data.Supply, data.Avail, data.OnlyWhitelist, data.StartTime, data.EndTime)
+		return conn.ExecCtx(ctx, query, data.EventName, data.EventDescription, data.PriceSats, data.IsActive, data.PaymentToken, data.Supply, data.Avail, data.OnlyWhitelist, data.StartTime, data.EndTime)
 	}, tbBlindboxEventIdKey)
 	return ret, err
 }
@@ -101,7 +101,7 @@ func (m *defaultTbBlindboxEventModel) Update(ctx context.Context, data *TbBlindb
 	tbBlindboxEventIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventIdPrefix, data.Id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbBlindboxEventRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.EventName, data.EventDescription, data.BtcPrice, data.IsActive, data.PaymentCoin, data.Supply, data.Avail, data.OnlyWhitelist, data.StartTime, data.EndTime, data.Id)
+		return conn.ExecCtx(ctx, query, data.EventName, data.EventDescription, data.PriceSats, data.IsActive, data.PaymentToken, data.Supply, data.Avail, data.OnlyWhitelist, data.StartTime, data.EndTime, data.Id)
 	}, tbBlindboxEventIdKey)
 	return err
 }

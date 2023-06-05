@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -220,7 +221,7 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 
 				// check address whther is bloom filter
-				isExists, err := t.bloomFilter.Exists([]byte(vo.ScriptpubkeyAddress ))
+				isExists, err := t.bloomFilter.Exists([]byte(vo.ScriptpubkeyAddress))
 				if err != nil {
 					logx.Errorf("bloom filter check error: %v ", err.Error())
 					return
@@ -299,36 +300,39 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 
 				// get not lock blindbox
-				count := order.Count
-
 				query := t.tbBlindboxModel.RowBuilder().Where(squirrel.Eq{
-					"is_active":    1,
-					"is_locked":    0,
-					"is_inscribed": 0,
-				}).Limit(uint64(count))
+					"is_active": 1,
+					"is_locked": 0,
+					"status":    "NOTMINT",
+				})
 				boxs, err := t.tbBlindboxModel.FindBlindbox(t.ctx, query)
 				if err != nil {
 					logx.Errorf("FindBlindbox error: %v", err.Error())
 					return
 				}
 
-				if len(boxs) == 0 {
-					logx.Infof("======== NO BLINDBOX COULD BE LOCKED ANY MORE ============")
+				// check boxs count
+				if len(boxs) < int(order.Count) {
+					logx.Infof("======== BLINDBOX NOT ENOUGH TO BE LOCKED ============")
 					return
 				}
 
-				bids := make([]int64, 0)
+				// random lock boxs
+				boxIds := make([]int64, 0)
 				for _, b := range boxs {
-					bids = append(bids, b.Id)
+					boxIds = append(boxIds, b.Id)
 				}
+				rand.Seed(int64(time.Nanosecond))
+				rand.Shuffle(len(boxIds), func(i, j int) { boxIds[i], boxIds[j] = boxIds[j], boxIds[i] })
+				lockBoxIds := boxIds[:order.Count]
 
 				// use Transaction to lock order and blindbox
 				// if could lock, lock it
 				err = t.sqlConn.TransactCtx(t.ctx, func(ctx context.Context, s sqlx.Session) error {
 
 					// lock blindbox
-					for _, b := range boxs {
-						updateBlindbox := fmt.Sprintf("UPDATE tb_blindbox SET is_locked=1 WHERE id=%v", b.Id)
+					for _, boxId := range lockBoxIds {
+						updateBlindbox := fmt.Sprintf("UPDATE tb_blindbox SET is_locked=1 WHERE id=%v", boxId)
 						result, err := s.ExecCtx(ctx, updateBlindbox)
 						if err != nil {
 							return err
@@ -359,7 +363,7 @@ func (t *BtcDepositTask) scanBlock() {
 					return
 				}
 
-				logx.Infof("=== lock order and blindbox success, orderId:%v, blindboxIds: %v ===", order.OrderId, bids)
+				logx.Infof("=== lock order and blindbox success, orderId:%v, lockBoxIds: %v ===", order.OrderId, lockBoxIds)
 
 			}
 		}

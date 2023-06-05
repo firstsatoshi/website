@@ -65,7 +65,8 @@
     {
         "code": 0,
         "msg": "ok",
-        "data": {
+        "data": [
+            {
             "eventId": 1, // 活动id
             "name": "Bitcoin Eagle",  // 盲盒活动名
             "description": "This is Bitcoin Eagle NFT mint", // 盲盒活动描述
@@ -78,7 +79,8 @@
             "onlyWhitelist": false, // 是否仅对白名单用户开放
             "startTime": "2023-05-27 16:28:39 +0800 CST", // 活动开始时间
             "endTime": "2024-05-27 16:28:39 +0800 CST" // 活动结束时间
-        }
+            }
+        ]
     }
     ```
 
@@ -163,34 +165,32 @@
     {
         "code": 0,
         "msg": "ok",
-        "data": {
-            "order": [
-                {
-                    "orderId": "BXHJSY54E7P836W4KU01252023052917044049093727", // 订单id
-                    "eventId": 1,
-                    "depositAddress": "xxxxxxxxxxxxxxxxx", // 充值地址
-                    "total": 1123456, // 总金额（单位，聪），
-                    "receiveAddress": "bc1pp836v6am6mf2pr8dvm6tsx8atjqqfe4w7nrpzgxzd2t5ytm25erqu0w4ku", // 用户的nft接收地址
-                    "orderStatus": "NOTPAID", // 订单状态, NOTPAID:未支付;PAYPENDING:支付确认中;PAYSUCCESS:支付成功;PAYTIMEOUT:超时未支付;INSCRIBING:铭刻交易等待确认中;ALLSUCCESS:订单成功
-                    "paytime": "", // 支付交易发起时间
-                    "payConfirmedTime": "", // 支付交易确认时间
-                    "revealTxid": "", // 铭文交易id
-                    "createTime": "2023-05-27 17:25:47 +0800 CST" // 订单生成时间
-                },
-                {
-                    "orderId": "BXHJSY54E7VLPTMTSL01252023052917044134049267",
-                    "eventId": 1,
-                    "depositAddress": "bc1pvlpt3h7ydtnmraw49wgvme2pcgyrp6ha379uj6xwdsz058kek0vq53mtsl",
-                    "total": 1123456,
-                    "receiveAddress": "bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7",
-                    "orderStatus": "NOTPAID",
-                    "paytime": "",
-                    "payConfirmedTime": "",
-                    "revealTxid": "",
-                    "createTime": "2023-05-27 17:27:23 +0800 CST"
-                }
-            ]
-        }
+        "data": [
+            {
+                "orderId": "BXHJSY54E7P836W4KU01252023052917044049093727", // 订单id
+                "eventId": 1,
+                "depositAddress": "xxxxxxxxxxxxxxxxx", // 充值地址
+                "total": 1123456, // 总金额（单位，聪），
+                "receiveAddress": "bc1pp836v6am6mf2pr8dvm6tsx8atjqqfe4w7nrpzgxzd2t5ytm25erqu0w4ku", // 用户的nft接收地址
+                "orderStatus": "NOTPAID", // 订单状态, NOTPAID:未支付;PAYPENDING:支付确认中;PAYSUCCESS:支付成功;PAYTIMEOUT:超时未支付;INSCRIBING:铭刻交易等待确认中;ALLSUCCESS:订单成功
+                "paytime": "", // 支付交易发起时间
+                "payConfirmedTime": "", // 支付交易确认时间
+                "revealTxid": "", // 铭文交易id
+                "createTime": "2023-05-27 17:25:47 +0800 CST" // 订单生成时间
+            },
+            {
+                "orderId": "BXHJSY54E7VLPTMTSL01252023052917044134049267",
+                "eventId": 1,
+                "depositAddress": "bc1pvlpt3h7ydtnmraw49wgvme2pcgyrp6ha379uj6xwdsz058kek0vq53mtsl",
+                "total": 1123456,
+                "receiveAddress": "bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7",
+                "orderStatus": "NOTPAID",
+                "paytime": "",
+                "payConfirmedTime": "",
+                "revealTxid": "",
+                "createTime": "2023-05-27 17:27:23 +0800 CST"
+            }
+        ]
     }
     ```
 
@@ -209,6 +209,54 @@
         "msg": "ok",
         "data": {
             "btcPriceUsd": 27848   // BTC的价格（美元）
+        }
+    }
+    ```
+
+
+## **querygallerylist**查询图鉴列表(分页)
+
+- 请求方式: `POST`
+
+- 请求参数：
+
+    | 字段 | 说明| 类型 | 可选? | 示例 |
+    |-----|------|------|----|----|
+    | `curPage` | 页号 | integer | 必填 | 0 |
+    | `pageSize` |  页大小 | integer | 必填 | 100 |
+    | `category` | 分类 bald,punk,rich,elite  | string | 必填 | bald |
+
+
+- 请求示例:
+
+    ```json
+    {
+        "curPage":0,
+        "pageSize":100,
+        "category":"bald"
+    }
+    ```
+
+- 响应示例
+
+
+    ```json
+    {
+        "code": 0,
+        "msg": "ok",
+        "data": {
+            "category": "bald",
+            "curPage": 0,
+            "totalPage": 1,
+            "pageSize": 100,
+            "nfts": [
+                {
+                    "id": 1,
+                    "name": "#1",
+                    "description": "bitegale no1",
+                    "imageUrl": "https://c-ssl.dtstatic.com/uploads/item/201504/16/20150416H4223_vG4eY.thumb.1000_0.jpeg"
+                }
+            ]
         }
     }
     ```

@@ -31,7 +31,7 @@ docker-compose up -d
 
 test api:
 
-```
+```shell
 curl  -s -X POST -H 'Content-Type: application/json'  -d '
 {
     "email":"youngqqcn@163.com",
@@ -41,12 +41,28 @@ http://127.0.0.1:8888/api/v1/joinwaitlist | jq
 
 ```
 
+or
+
+```shell
+
+curl  -s -X POST -H 'Content-Type: application/json'  -d '
+{
+    "email":"youngqqcn@163.com",
+    "btcAddress":"bc1p3vs4447e5w0g828adhvpekqndtkpxmr04cj99zurxlqz50v9lz2q656na6"
+}' http://www.biteagle.io/api/v1/joinwaitlist | jq
+
+```
+
+
 response
 ```json
 {
   "code": 0,
   "msg": "ok",
-  "data": "success"
+  "data": {
+    "no": 1,
+    "duplicated": true
+  }
 }
 ```
 
