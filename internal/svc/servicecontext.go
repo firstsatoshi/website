@@ -19,6 +19,7 @@ type ServiceContext struct {
 	TbBlindboxEventModel model.TbBlindboxEventModel
 	TbOrderModel         model.TbOrderModel
 	TbAddressModel       model.TbAddressModel
+	TbBlindboxModel      model.TbBlindboxModel
 
 	// redis
 	Redis *redis.Redis
@@ -58,6 +59,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		TbBlindboxEventModel: model.NewTbBlindboxEventModel(sqlConn, c.CacheRedis),
 		TbOrderModel:         model.NewTbOrderModel(sqlConn, c.CacheRedis),
 		TbAddressModel:       model.NewTbAddressModel(sqlConn, c.CacheRedis),
+		TbBlindboxModel:      model.NewTbBlindboxModel(sqlConn, c.CacheRedis),
 		KeyManager:           km,
 	}
 }
