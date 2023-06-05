@@ -39,8 +39,8 @@ func (l *QueryGalleryListLogic) QueryGalleryList(req *types.QueryGalleryListReq)
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindCount error")
 	}
 
-	if req.PageSize > int(total) {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid request params")
+	if req.CurPage > int(int(total)/req.PageSize) {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid request params PageSize ")
 	}
 
 	rowBuilder := l.svcCtx.TbBlindboxModel.RowBuilder().Where(squirrel.Eq{
