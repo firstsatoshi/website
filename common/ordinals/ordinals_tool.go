@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/btcsuite/btcd/blockchain"
 	"github.com/btcsuite/btcd/btcec/v2"
@@ -137,7 +138,7 @@ func (tool *inscriptionTool) _initTool(net *chaincfg.Params, request *inscriptio
 	if err != nil {
 		return err
 	}
-	
+
 	err = tool.buildCommitTx(changeAddrPkScript, request.CommitTxOutPointList, totalRevealPrevOutput, request.CommitFeeRate)
 	if err != nil {
 		return err
@@ -209,7 +210,7 @@ func createInscriptionTxCtxData(net *chaincfg.Params, inscriptionRequest *inscri
 		return nil, err
 	}
 
-	recoveryPrivateKeyWIF, err := btcutil.NewWIF(txscript.TweakTaprootPrivKey(privateKey, tapHash[:]), net, true)
+	recoveryPrivateKeyWIF, err := btcutil.NewWIF(txscript.TweakTaprootPrivKey(*privateKey, tapHash[:]), net, true)
 	if err != nil {
 		return nil, err
 	}
@@ -572,6 +573,7 @@ func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxH
 	revealTxHashList = make([]*chainhash.Hash, len(tool.revealTx))
 	inscriptions = make([]string, len(tool.txCtxDataList))
 	for i := range tool.revealTx {
+		time.Sleep(time.Second * 3)
 		_revealTxHash, err := tool.sendRawTransaction(tool.revealTx[i])
 		if err != nil {
 			return commitTxHash, revealTxHashList, nil, fees, errors.Wrap(err, fmt.Sprintf("send reveal tx error, %d。", i))

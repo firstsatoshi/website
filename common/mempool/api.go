@@ -285,5 +285,3 @@ func (m *MempoolApiClient) GetAddressUTXOs(address string) (utxos []UTXO, err er
 	utxos = *utxosx
 	return
 }
-
-

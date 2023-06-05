@@ -206,8 +206,8 @@ func (t *BtcInscribeTask) inscribe() {
 			balanceSat += utxo.Output.Value
 		}
 	}
-	totalPriceSat := order.PriceSat * order.Count
-	feeSat := balanceSat - totalPriceSat
+	// totalPriceSat := order.PriceSat * order.Count
+	// feeSat := balanceSat - totalPriceSat
 
 	// make inscribe data
 	inscribeData := make([]ordinals.InscriptionData, 0)
@@ -248,25 +248,25 @@ func (t *BtcInscribeTask) inscribe() {
 		return
 	}
 
-	onlyEstimate := true
-	_, _, feeEstimate, changeSat, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, onlyEstimate)
-	if err != nil {
-		logx.Errorf(" estimate fee error: %v ", err.Error())
-		return
-	}
+	// onlyEstimate := true
+	// _, _, feeEstimate, changeSat, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, onlyEstimate)
+	// if err != nil {
+	// 	logx.Errorf(" estimate fee error: %v ", err.Error())
+	// 	return
+	// }
 
-	if feeEstimate > feeSat {
-		// TODO: we must estimate accuracy FEE before create order
-		logx.Infof("=============== feeEstimate greater than feeSat ================")
-	}
+	// if feeEstimate > feeSat {
+	// 	// TODO: we must estimate accuracy FEE before create order
+	// 	logx.Infof("=============== feeEstimate greater than feeSat ================")
+	// }
 
-	if changeSat < order.PriceSat {
-		// TODO: we must estimate accuracy FEE before create order
-		logx.Infof("=============== changeSat less than PriceSat ================")
-	}
+	// if changeSat < order.PriceSat {
+	// 	// TODO: we must estimate accuracy FEE before create order
+	// 	logx.Infof("=============== changeSat less than PriceSat ================")
+	// }
 
 	// inscrbe images
-	onlyEstimate = false // push tx to blockchain
+	onlyEstimate := false // push tx to blockchain
 	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, onlyEstimate)
 	if err != nil {
 		logx.Errorf("inscribe error: %v ", err.Error())
@@ -286,12 +286,12 @@ func (t *BtcInscribeTask) inscribe() {
 	for nTry := 0; ; nTry++ {
 		err = t.sqlConn.TransactCtx(t.ctx, func(ctx context.Context, s sqlx.Session) error {
 
-			// update blindbox status to MINTING
+			// update blindbox order_status to MINTING
 			for i, b := range blindboxs {
 				revealTxid := revealTxids[i]
 				updateBlindbox := fmt.Sprintf(
-					"UPDATE tb_blindbox SET status='%v',commit_txid='%v',reveal_txid='%v',real_fee_sat=%v,real_change_sat=%v WHERE id=%v",
-					"MINTING", commitTxid, revealTxid, realFee, realChange, b.Id)
+					"UPDATE tb_blindbox SET status='%v',commit_txid='%v',reveal_txid='%v', WHERE id=%v",
+					"MINTING", commitTxid, revealTxid, b.Id)
 				result, err := s.ExecCtx(ctx, updateBlindbox)
 				if err != nil {
 					return err
@@ -303,7 +303,8 @@ func (t *BtcInscribeTask) inscribe() {
 
 			// update order status
 			if true {
-				updateSql := fmt.Sprintf("UPDATE tb_order SET order_status='%v' WHERE id=%v", "INSCRIBING", order.Id)
+				updateSql := fmt.Sprintf("UPDATE tb_order SET order_status='%v',real_fee_sat=%v,real_change_sat=%v WHERE id=%v",
+					"INSCRIBING", realFee, realChange, order.Id)
 				result, err := s.ExecCtx(t.ctx, updateSql)
 				if err != nil {
 					return err
