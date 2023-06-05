@@ -302,6 +302,7 @@ func (t *BtcDepositTask) scanBlock() {
 				order.PayTxid = sql.NullString{Valid: true, String: txid}
 				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
 				order.OrderStatus = "PAYSUCCESS"
+				order.PayConfirmedTime = sql.NullTime{Valid: true, Time: time.Now()}
 				order.Version += 1
 				if err := t.tbOrderModel.Update(t.ctx, order); err != nil {
 					logx.Errorf("Update: %v", err.Error())

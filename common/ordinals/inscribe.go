@@ -35,7 +35,7 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 	commitTxOutPointList := make([]*wire.OutPoint, 0)
 	commitTxPrivateKeyList := make([]*btcec.PrivateKey, 0)
 	for i := range unspentList {
-		if unspentList[i].Output.Value < 10000 {
+		if unspentList[i].Output.Value < 1000 {
 			continue
 		}
 		commitTxOutPointList = append(commitTxOutPointList, unspentList[i].Outpoint)

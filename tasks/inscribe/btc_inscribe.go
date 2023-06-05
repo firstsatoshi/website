@@ -248,7 +248,8 @@ func (t *BtcInscribeTask) inscribe() {
 		return
 	}
 
-	_, _, feeEstimate, changeSat, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, true)
+	onlyEstimate := true
+	_, _, feeEstimate, changeSat, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, onlyEstimate)
 	if err != nil {
 		logx.Errorf(" estimate fee error: %v ", err.Error())
 		return
@@ -265,7 +266,8 @@ func (t *BtcInscribeTask) inscribe() {
 	}
 
 	// inscrbe images
-	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, true)
+	onlyEstimate = false // push tx to blockchain
+	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, onlyEstimate)
 	if err != nil {
 		logx.Errorf("estimate fee error: %v ", err.Error())
 		return
@@ -275,7 +277,7 @@ func (t *BtcInscribeTask) inscribe() {
 
 	// TODO:
 	if len(revealTxids) != len(blindboxs) {
-		logx.Errorf(" revealTxids size NOT MATCH blindboxs size ")
+		logx.Errorf(" revealTxids size %v NOT MATCH blindboxs size %v ", len(revealTxids), len(blindboxs))
 		return // ?????
 	}
 

@@ -351,7 +351,10 @@ func (tool *inscriptionTool) buildCommitTx(changePkScript []byte, commitTxOutPoi
 	fee := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
 	changeAmount := totalSenderAmount - btcutil.Amount(totalRevealPrevOutput) - fee
 
-	fmt.Println((totalSenderAmount - changeAmount).ToBTC())
+	// fmt.Println((totalSenderAmount - changeAmount).ToBTC())
+	logx.Infof("totalSenderAmount: %v", totalSenderAmount.String())
+	logx.Infof("fee : %v", fee.String())
+	logx.Infof("change: %v", changeAmount)
 
 	if changeAmount > 0 {
 		tx.TxOut[len(tx.TxOut)-1].Value = int64(changeAmount)
