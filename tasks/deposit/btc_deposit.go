@@ -196,14 +196,18 @@ func (t *BtcDepositTask) scanBlock() {
 		for tx := range ch {
 
 			txid := tx.Txid
+			logx.Infof("txid: %v", txid)
 
 			// because we only fecth transaction from block, so this is impossible be false
 			if tx.Status.Confirmed != true {
+				logx.Info("===skip===")
 				continue
 			}
 
+			// https://learnmeabitcoin.com/technical/locktime
 			// DO NOT support locktime transaction deposit
-			if tx.Locktime != 0 {
+			if tx.Locktime >= 500000000 || tx.Locktime > tx.Status.BlockHeight+1 {
+				logx.Infof("locktime is %v ", tx.Locktime)
 				continue
 			}
 
@@ -214,10 +218,12 @@ func (t *BtcDepositTask) scanBlock() {
 
 			for _, vo := range tx.Vout {
 				if vo.ScriptpubkeyType != "v1_p2tr" {
+					logx.Infof("is not v1_p2tr address")
 					continue
 				}
 
 				if vo.Value <= 1000 {
+					logx.Infof("too small value")
 					continue
 				}
 
@@ -228,12 +234,14 @@ func (t *BtcDepositTask) scanBlock() {
 					return
 				}
 				if !isExists {
+					logx.Infof("%v is not deposit address", vo.ScriptpubkeyAddress)
 					continue
 				}
 
 				// check again by querying database
 				addr, err := t.tbAddressModel.FindOneByAddress(t.ctx, vo.ScriptpubkeyAddress)
 				if err == model.ErrNotFound {
+					logx.Infof("not found %v ", vo.ScriptpubkeyAddress)
 					continue
 				}
 				if err != nil {
