@@ -28,6 +28,7 @@ type ServiceContext struct {
 	DepositBloomFilter *bmfilter.BloomFilter
 
 	KeyManager *keymanager.KeyManager
+	ChainCfg   *chaincfg.Params
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -61,5 +62,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		TbAddressModel:       model.NewTbAddressModel(sqlConn, c.CacheRedis),
 		TbBlindboxModel:      model.NewTbBlindboxModel(sqlConn, c.CacheRedis),
 		KeyManager:           km,
+		ChainCfg:             &chainCfg,
 	}
 }

@@ -66,14 +66,14 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	}
 
 	// check receiveAddress is valid P2TR address
-	_, err = btcutil.DecodeAddress(req.ReceiveAddress, &chaincfg.MainNetParams)
+	_, err = btcutil.DecodeAddress(req.ReceiveAddress, l.svcCtx.ChainCfg)
 	if err != nil {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
 	}
 
 	// TODO get mempool recommanded feerate
 	// https://mempool.space/api/v1/fees/recommended
-	if req.FeeRate < 10 || req.FeeRate > 200 {
+	if l.svcCtx.ChainCfg.Name == chaincfg.MainNetParams.Name && (req.FeeRate < 10 || req.FeeRate > 200) {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.FEERATE_TOO_SMALL_ERROR), "feeRate too small %v", req.FeeRate)
 	}
 
