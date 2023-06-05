@@ -196,11 +196,11 @@ func (t *BtcDepositTask) scanBlock() {
 		for tx := range ch {
 
 			txid := tx.Txid
-			logx.Infof("txid: %v", txid)
+			// logx.Infof("txid: %v", txid)
 
 			// because we only fecth transaction from block, so this is impossible be false
 			if tx.Status.Confirmed != true {
-				logx.Info("===skip===")
+				logx.Infof("===skip===%v", txid)
 				continue
 			}
 
@@ -218,7 +218,7 @@ func (t *BtcDepositTask) scanBlock() {
 
 			for _, vo := range tx.Vout {
 				if vo.ScriptpubkeyType != "v1_p2tr" {
-					logx.Infof("is not v1_p2tr address")
+					// logx.Infof("is not v1_p2tr address")
 					continue
 				}
 
@@ -234,7 +234,7 @@ func (t *BtcDepositTask) scanBlock() {
 					return
 				}
 				if !isExists {
-					logx.Infof("%v is not deposit address", vo.ScriptpubkeyAddress)
+					// logx.Infof("%v is not deposit address", vo.ScriptpubkeyAddress)
 					continue
 				}
 
@@ -352,9 +352,9 @@ func (t *BtcDepositTask) scanBlock() {
 					}
 
 					// insert
-					for _, b := range boxs {
+					for _, id := range lockBoxIds {
 						insertSql := fmt.Sprintf("INSERT INTO tb_lock_order_blindbox (event_id, order_id, blindbox_id) VALUES(%v, '%v', '%v')",
-							order.EventId, order.OrderId, b.Id)
+							order.EventId, order.OrderId, id)
 						result, err := s.ExecCtx(ctx, insertSql)
 						if err != nil {
 							return err

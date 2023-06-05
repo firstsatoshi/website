@@ -55,6 +55,27 @@ func calcFee(count, feeRate float64) int64 {
 	return int64(total)
 }
 
+func calcFeeTestnet3(count, feeRate float64) int64 {
+	// 每个铭文固定金额
+	utxoSat := float64(546)
+	averageFileSize := float64(500)
+
+	utxoOutputValue := float64(utxoSat) * count
+	commitTxSize := 68 + (43+1)*count
+	commitTxSize += 64
+	revealTxSize := 10.5 + (57.5+43.0)*float64(count)
+	revealTxSize += 64
+	feeSats := math.Ceil((averageFileSize/4 + commitTxSize + revealTxSize) * feeRate)
+	feeSats = 1000 * math.Ceil(feeSats/1000)
+
+	// base fee
+	// baseService := 1000 * math.Ceil(feeRate*0.1/1000)
+	// feeSats += baseService
+
+	total := feeSats + utxoOutputValue
+	return int64(total)
+}
+
 func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.CreateOrderResp, err error) {
 
 	// check count
@@ -153,6 +174,11 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	//      eg: 1 input 1 output: 10.5 + 57.5 * 1 + 43 * 1 = 111 bytes
 
 	totalFee := calcFee(float64(req.Count), float64(req.FeeRate))
+	logx.Infof("==========net name: %v", l.svcCtx.ChainCfg.Name)
+	if l.svcCtx.ChainCfg.Name == chaincfg.TestNet3Params.Name {
+		totalFee = calcFeeTestnet3(float64(req.Count), float64(req.FeeRate))
+		logx.Infof("testnet3 total fee: %v", totalFee)
+	}
 	if totalFee+event.PriceSats < event.PriceSats {
 		panic("invalid price or totalFee")
 	}
