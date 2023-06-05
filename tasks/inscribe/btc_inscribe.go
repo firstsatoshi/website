@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -100,6 +101,43 @@ func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincf
 }
 
 func (t *BtcInscribeTask) Start() {
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			ticker := time.NewTicker(time.Second * 20)
+			select {
+			case <-t.ctx.Done():
+				logx.Info("Gracefully exit tx monitor Task goroutine....")
+				// wait sub-goroutine
+				return
+			case <-ticker.C:
+				logx.Info("======= Btc txmonitor task======")
+				t.txMonitor()
+			}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			ticker := time.NewTicker(time.Second * 20)
+			select {
+			case <-t.ctx.Done():
+				logx.Info("Gracefully exit ordertimeout Task goroutine....")
+				// wait sub-goroutine
+				return
+			case <-ticker.C:
+				logx.Info("======= Btc ordertimeout task======")
+				t.orderTimeout()
+			}
+		}
+	}()
+	defer wg.Wait()
+
 	for {
 		ticker := time.NewTicker(time.Second * 7)
 		select {
@@ -112,6 +150,7 @@ func (t *BtcInscribeTask) Start() {
 			t.inscribe()
 		}
 	}
+
 }
 
 func (t *BtcInscribeTask) Stop() {
@@ -139,7 +178,7 @@ func (t *BtcInscribeTask) inscribe() {
 	// get locked images by order
 	q := t.tbTbLockOrderBlindboxModel.RowBuilder().Where(squirrel.Eq{
 		"order_id": order.OrderId,
-	}).Limit(1)
+	})
 
 	blindboxs, err := t.tbTbLockOrderBlindboxModel.FindAll(t.ctx, q, "")
 	if err != nil {
@@ -359,4 +398,38 @@ func (t *BtcInscribeTask) txMonitor() {
 	}
 
 	// update order status when tx be succeed
+}
+
+func (t *BtcInscribeTask) orderTimeout() {
+
+	// 120 minutes to timeout
+	now := time.Now()
+	timeout := time.Unix(now.Unix()-120*60*60, 0)
+	queryBuilder := t.tbOrderModel.RowBuilder().Where(squirrel.Eq{
+		"order_status": "NOTPAID",
+	}).Where(squirrel.Lt{
+		"create_time": timeout,
+	}).Limit(100)
+
+	orders, err := t.tbOrderModel.FindOrders(t.ctx, queryBuilder)
+	if err != nil {
+		logx.Errorf("FindOrders error: %v", err.Error())
+		return
+	}
+
+	for _, order := range orders {
+		if now.Sub(order.CreateTime).Seconds() < 120*60*60 {
+			continue
+		}
+
+		// timeout
+		order.OrderStatus = "PAYTIMEOUT"
+		err := t.tbOrderModel.Update(t.ctx, order)
+		if err != nil {
+			logx.Errorf("Update error: %v", err.Error())
+			continue
+		}
+
+	}
+
 }
