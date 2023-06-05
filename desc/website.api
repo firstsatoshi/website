@@ -119,3 +119,34 @@ service website-api {
 	@handler coinPrice
 	post /coinprice returns (coinPriceResp)
 }
+
+type queryGalleryListReq {
+	CurPage  int    `json:"curPage"`
+	PageSize int    `json:"pageSize"`
+	Category string `json:"category"`
+}
+
+type NFT {
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	ImageUrl    string `json:"imageUrl"`
+}
+
+type queryGalleryListResp {
+	Category string `json:"category"`
+	CurPage  int    `json:"curPage"`
+	Total    int    `json:"totalPage"`
+	PageSize int    `json:"pageSize"`
+	NFTs     []NFT  `json:"nfts"`
+}
+
+// 获取图鉴
+@server(
+	prefix: api/v1
+	group: queryGalleryList
+)
+service website-api {
+	@handler queryGalleryList
+	post /querygallerylist (queryGalleryListReq)returns (queryGalleryListResp)
+}

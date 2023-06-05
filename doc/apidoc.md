@@ -212,3 +212,51 @@
         }
     }
     ```
+
+
+## **querygallerylist**查询图鉴列表(分页)
+
+- 请求方式: `POST`
+
+- 请求参数：
+
+    | 字段 | 说明| 类型 | 可选? | 示例 |
+    |-----|------|------|----|----|
+    | `curPage` | 页号 | integer | 必填 | 0 |
+    | `pageSize` |  页大小 | integer | 必填 | 100 |
+    | `category` | 分类 bald,punk,rich,elite  | string | 必填 | bald |
+
+
+- 请求示例:
+
+    ```json
+    {
+        "curPage":0,
+        "pageSize":100,
+        "category":"bald"
+    }
+    ```
+
+- 响应示例
+
+
+    ```json
+    {
+        "code": 0,
+        "msg": "ok",
+        "data": {
+            "category": "bald",
+            "curPage": 0,
+            "totalPage": 1,
+            "pageSize": 100,
+            "nfts": [
+                {
+                    "id": 1,
+                    "name": "#1",
+                    "description": "bitegale no1",
+                    "imageUrl": "https://c-ssl.dtstatic.com/uploads/item/201504/16/20150416H4223_vG4eY.thumb.1000_0.jpeg"
+                }
+            ]
+        }
+    }
+    ```

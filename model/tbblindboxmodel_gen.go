@@ -41,7 +41,9 @@ type (
 	TbBlindbox struct {
 		Id          int64          `db:"id"`          // id
 		Name        string         `db:"name"`        // 名称
-		Description sql.NullString `db:"description"` // 描述
+		Description string         `db:"description"` // 描述
+		Category    string         `db:"category"`    // 分类: bald,punk,rich,elite
+		ImgUrl      string         `db:"img_url"`     // 图片url
 		IsActive    int64          `db:"is_active"`   // 是否激活
 		IsLocked    int64          `db:"is_locked"`   // 是否锁定
 		Status      string         `db:"status"`      // 状态,NOTMINT,MINTING,MINT
@@ -88,8 +90,8 @@ func (m *defaultTbBlindboxModel) FindOne(ctx context.Context, id int64) (*TbBlin
 func (m *defaultTbBlindboxModel) Insert(ctx context.Context, data *TbBlindbox) (sql.Result, error) {
 	tbBlindboxIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Name, data.Description, data.IsActive, data.IsLocked, data.Status, data.CommitTxid, data.RevealTxid)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.Name, data.Description, data.Category, data.ImgUrl, data.IsActive, data.IsLocked, data.Status, data.CommitTxid, data.RevealTxid)
 	}, tbBlindboxIdKey)
 	return ret, err
 }
@@ -98,7 +100,7 @@ func (m *defaultTbBlindboxModel) Update(ctx context.Context, data *TbBlindbox) e
 	tbBlindboxIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxIdPrefix, data.Id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbBlindboxRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.Name, data.Description, data.IsActive, data.IsLocked, data.Status, data.CommitTxid, data.RevealTxid, data.Id)
+		return conn.ExecCtx(ctx, query, data.Name, data.Description, data.Category, data.ImgUrl, data.IsActive, data.IsLocked, data.Status, data.CommitTxid, data.RevealTxid, data.Id)
 	}, tbBlindboxIdKey)
 	return err
 }

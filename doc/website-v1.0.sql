@@ -17,7 +17,9 @@ DROP TABLE IF EXISTS `tb_blindbox`;
 CREATE TABLE `tb_blindbox` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `name` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '名称',
-  `description` varchar(200) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '描述',
+  `description` varchar(200) COLLATE utf8mb4_bin DEFAULT '' COMMENT '描述',
+  `category` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '分类: bald,punk,rich,elite',
+  `img_url` varchar(500) COLLATE utf8mb4_bin DEFAULT "" COMMENT '图片url',
   `is_active` tinyint(1) DEFAULT '1' COMMENT '是否激活',
   `is_locked` tinyint(1) DEFAULT '0' COMMENT '是否锁定',
   `status` varchar(20) COLLATE utf8mb4_bin DEFAULT 'NOTMINT'  COMMENT '状态,NOTMINT,MINTING,MINT',
@@ -25,7 +27,8 @@ CREATE TABLE `tb_blindbox` (
   `reveal_txid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '铭文交易id',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_category` (`category`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒表';
 
 DROP TABLE IF EXISTS `tb_blindbox_event`;
