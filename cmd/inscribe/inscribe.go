@@ -23,10 +23,10 @@ func main() {
 	logx.Info("========Btc Inscribe Task Start======")
 
 	chainCfg := &chaincfg.MainNetParams
-	apiHost := ""
+	apiHost := "https://mempool.space/api"
 	if len(os.Getenv("BITEAGLE_TESTNET")) != 0 {
 		chainCfg = &chaincfg.TestNet3Params
-		apiHost = "TODO" // TODO
+		apiHost = "https://mempool.space/testnet/api"
 	}
 
 	inscribeTask := inscribe.NewBtcInscribeTask(apiHost, &c, chainCfg)

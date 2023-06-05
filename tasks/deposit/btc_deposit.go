@@ -11,6 +11,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/firstsatoshi/website/common/bmfilter"
+	"github.com/firstsatoshi/website/common/globalvar"
 	"github.com/firstsatoshi/website/common/mempool"
 	"github.com/firstsatoshi/website/common/task"
 	"github.com/firstsatoshi/website/internal/config"
@@ -71,7 +72,7 @@ func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg
 
 		sqlConn:     sqlConn,
 		apiClient:   apiClient,
-		bloomFilter: bmfilter.NewUpgwBloomFilter(redis, "BTC"),
+		bloomFilter: bmfilter.NewUpgwBloomFilter(redis, globalvar.BTC),
 
 		tbDepositModel:           model.NewTbDepositModel(sqlConn, config.CacheRedis),
 		tbBlockscanModel:         model.NewTbBlockscanModel(sqlConn, config.CacheRedis),
@@ -105,7 +106,7 @@ func (t *BtcDepositTask) Stop() {
 func (t *BtcDepositTask) scanBlock() {
 	// load all listen address into redis bloomfilter
 	counter := 0
-	addresses, err := t.tbAddressModel.FindAll(t.ctx, "BTC")
+	addresses, err := t.tbAddressModel.FindAll(t.ctx, globalvar.BTC)
 	if err != nil {
 		logx.Errorf("error: %v", err.Error())
 		return
@@ -129,12 +130,12 @@ func (t *BtcDepositTask) scanBlock() {
 	}
 
 	// get blockHeight from db
-	blockScan, err := t.tbBlockscanModel.FindOneByCoinType(t.ctx, "BTC")
+	blockScan, err := t.tbBlockscanModel.FindOneByCoinType(t.ctx, globalvar.BTC)
 	if err != nil {
 		// if blockHieght doesn't exists , insert the latest height
 		if err == model.ErrNotFound {
 			_, err := t.tbBlockscanModel.Insert(t.ctx, &model.TbBlockscan{
-				CoinType:    "BTC",
+				CoinType:    globalvar.BTC,
 				BlockNumber: int64(latestBlockHeight),
 			})
 			if err != nil {
@@ -254,7 +255,7 @@ func (t *BtcDepositTask) scanBlock() {
 				_, err := t.tbDepositModel.FindOneByToAddressTxid(t.ctx, depositAddr, txid)
 				if err == model.ErrNotFound {
 					_, err := t.tbDepositModel.Insert(t.ctx, &model.TbDeposit{
-						CoinType:    "BTC",
+						CoinType:    globalvar.BTC,
 						FromAddress: "----NO-USE---",
 						ToAddress:   depositAddr,
 						Txid:        txid,
