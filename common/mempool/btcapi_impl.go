@@ -8,6 +8,7 @@ import (
 
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/firstsatoshi/website/common/btcapi"
 	"github.com/pkg/errors"
@@ -30,9 +31,14 @@ func (m *MempoolApiClient) ListUnspent(address btcutil.Address) ([]*btcapi.Unspe
 		if err != nil {
 			return nil, err
 		}
+		pkScript, err := txscript.PayToAddrScript(address)
+		if err != nil {
+			return nil, err
+		}
 		unspentOutputs = append(unspentOutputs, &btcapi.UnspentOutput{
 			Outpoint: wire.NewOutPoint(txHash, uint32(utxo.Vout)),
-			Output:   wire.NewTxOut(int64(utxo.Value), address.ScriptAddress()),
+			// Output:   wire.NewTxOut(int64(utxo.Value), address.ScriptAddress()),
+			Output: wire.NewTxOut(int64(utxo.Value), pkScript),
 		})
 	}
 	return unspentOutputs, nil

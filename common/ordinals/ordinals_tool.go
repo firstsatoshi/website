@@ -128,13 +128,17 @@ func (tool *inscriptionTool) _initTool(net *chaincfg.Params, request *inscriptio
 	}
 
 	// ChangeAddress to receive all of NFT Sale amount
-	c, err := btcutil.DecodeAddress(request.ChangeAddress, net)
+	changeAddress, err := btcutil.DecodeAddress(request.ChangeAddress, net)
 	if err != nil {
 		return err
 	}
-	changeAddress := c.ScriptAddress()
 
-	err = tool.buildCommitTx(changeAddress, request.CommitTxOutPointList, totalRevealPrevOutput, request.CommitFeeRate)
+	changeAddrPkScript, err := txscript.PayToAddrScript(changeAddress)
+	if err != nil {
+		return err
+	}
+	
+	err = tool.buildCommitTx(changeAddrPkScript, request.CommitTxOutPointList, totalRevealPrevOutput, request.CommitFeeRate)
 	if err != nil {
 		return err
 	}
