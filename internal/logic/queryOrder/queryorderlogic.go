@@ -76,7 +76,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 			depositAddress = ""
 		}
 
-		reavealTxids := make([]string, 0)
+		nftDetails := make([]types.NftDetail, 0)
 		if o.OrderStatus == "MINTING" || o.OrderStatus == "ALLSUCCESS" {
 			builder := l.svcCtx.TbLockOrderBlindboxModel.RowBuilder().Where(squirrel.Eq{
 				"order_id": o.OrderId,
@@ -93,7 +93,14 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 					return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOne error:%v", err.Error())
 				}
 				if b.RevealTxid.Valid {
-					reavealTxids = append(reavealTxids, b.RevealTxid.String)
+					nftDetails = append(nftDetails, types.NftDetail{
+						Txid:        b.RevealTxid.String,
+						TxConfirmed: b.Status == "MINT",
+						Name:        b.Name,
+						Category:    b.Category,
+						Description: b.Description,
+						ImageUrl:    b.ImgUrl,
+					})
 				}
 			}
 		}
@@ -107,7 +114,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 			OrderStatus:      o.OrderStatus,
 			PayTime:          payTime,
 			PayConfirmedTime: payConfirmedTime,
-			RevealTxids:      reavealTxids,
+			NftDetails:       nftDetails,
 			PayTxid:          payTxid,
 			CreateTime:       o.CreateTime.Format("2006-01-02 15:04:05 +0800 CST"),
 		})

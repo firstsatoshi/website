@@ -189,8 +189,15 @@
                 "payTxid": "d9b91d743e2729db532360ad5bfde8b065b97a897cc1040945cec10b834645e1",
                 "paytime": "2023-06-06 14:28:48 +0800 CST",
                 "payConfirmedTime": "2023-06-06 14:28:48 +0800 CST",
-                "revealTxids": [
-                    "f55ff4e061b986747da2791e801e8dc314de98f9b430af54df137beefbd4684c"
+                "nftDetails": [
+                    {
+                        "txid": "5c4fef5b8fd8d716edd482ca42195edf43788ad5598c9b9cd63cf257407202c6",
+                        "confirmed": false,
+                        "name": "#6",
+                        "category": "bald",
+                        "description": "no6",
+                        "imageUrl": "https://c-ssl.dtstatic.com/uploads/item/201504/16/20150416H4223_vG4eY.thumb.1000_0.jpeg"
+                    }
                 ],
                 "createTime": "2023-06-06 14:21:59 +0800 CST"
             }

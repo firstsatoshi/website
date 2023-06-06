@@ -58,18 +58,27 @@ type queryOrderReq {
 	DepositAddress string `json:"depositAddress,optional"`
 }
 
+type NftDetail {
+	Txid        string `json:"txid"`
+	TxConfirmed bool   `json:"confirmed"`
+	Name        string `json:"name"`
+	Category    string `json:"category"`
+	Description string `json:"description"`
+	ImageUrl    string `json:"imageUrl"`
+}
+
 type Order {
-	OrderId          string   `json:"orderId"`
-	EventId          int      `json:"eventId"`
-	DepositAddress   string   `json:"depositAddress"`
-	Total            int      `json:"total"`
-	ReceiveAddress   string   `json:"receiveAddress"`
-	OrderStatus      string   `json:"orderStatus"`
-	PayTxid          string   `json:"payTxid"`
-	PayTime          string   `json:"paytime"`
-	PayConfirmedTime string   `json:"payConfirmedTime"`
-	RevealTxids      []string `json:"revealTxids"`
-	CreateTime       string   `json:"createTime"`
+	OrderId          string      `json:"orderId"`
+	EventId          int         `json:"eventId"`
+	DepositAddress   string      `json:"depositAddress"`
+	Total            int         `json:"total"`
+	ReceiveAddress   string      `json:"receiveAddress"`
+	OrderStatus      string      `json:"orderStatus"`
+	PayTxid          string      `json:"payTxid"`
+	PayTime          string      `json:"paytime"`
+	PayConfirmedTime string      `json:"payConfirmedTime"`
+	NftDetails       []NftDetail `json:"nftDetails"`
+	CreateTime       string      `json:"createTime"`
 }
 
 // 查询订单
