@@ -173,24 +173,26 @@
                 "depositAddress": "tb1pvnphdaypksz6allfdm0e7638uwt2a0tjvtssgser1234324324234", // 充值地址
                 "total": 1123456, // 总金额（单位，聪），
                 "receiveAddress": "tb1pv5d2mmx2v9cx9menxl5zlhacljqu9zqhltl4d303n3rjjcxfrgwq20ej2q", // 用户的nft接收地址
-                "orderStatus": "NOTPAID", // 订单状态, NOTPAID:未支付;PAYPENDING:支付确认中;PAYSUCCESS:支付成功;PAYTIMEOUT:超时未支付;INSCRIBING:铭刻交易等待确认中;ALLSUCCESS:订单成功
+                "orderStatus": "NOTPAID", // 订单状态, NOTPAID:未支付;PAYPENDING:支付确认中;PAYSUCCESS:支付成功;PAYTIMEOUT:超时未支付;MINTING:铭刻交易等待确认中;ALLSUCCESS:订单成功
                 "paytime": "", // 支付交易发起时间
                 "payConfirmedTime": "", // 支付交易确认时间
                 "revealTxids": [], // 铭文交易id数组
                 "createTime": "2023-05-27 17:25:47 +0800 CST" // 订单生成时间
             },
             {
-                "orderId": "BEMV5D2EJ2QVNPH72EJ01032023060612121963229288",
+                "orderId": "BEMV5D2EJ2Q0SX3WGP701042023060614215940101518",
                 "eventId": 1,
-                "depositAddress": "tb1pvnphdaypksz6allfdm0e7638uwt2a0tjvtssgserer9jpkuruwfqxh72ej",
+                "depositAddress": "",
                 "total": 3546,
                 "receiveAddress": "tb1pv5d2mmx2v9cx9menxl5zlhacljqu9zqhltl4d303n3rjjcxfrgwq20ej2q",
-                "orderStatus": "PAYPENDING", // 充值交易确认中
-                "payTxid": "1b4d3c2fa82288020a05619bafbdd10e0c96a43d5edcd1556e504034b9c30a0a",
-                "paytime": "2023-06-06 12:13:26 +0800 CST",
-                "payConfirmedTime": "",
-                "revealTxids": [],
-                "createTime": "2023-06-06 12:12:19 +0800 CST"
+                "orderStatus": "MINTING",
+                "payTxid": "d9b91d743e2729db532360ad5bfde8b065b97a897cc1040945cec10b834645e1",
+                "paytime": "2023-06-06 14:28:48 +0800 CST",
+                "payConfirmedTime": "2023-06-06 14:28:48 +0800 CST",
+                "revealTxids": [
+                    "f55ff4e061b986747da2791e801e8dc314de98f9b430af54df137beefbd4684c"
+                ],
+                "createTime": "2023-06-06 14:21:59 +0800 CST"
             }
         ]
     }
