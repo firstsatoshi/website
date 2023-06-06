@@ -33,15 +33,15 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 	if len(req.OrderId) != 0 {
 		queryBuilder = queryBuilder.Where(squirrel.Eq{
 			"order_id": req.OrderId,
-		}).OrderBy("id ASC")
+		}).OrderBy("id DESC")
 	} else if len(req.ReceiveAddress) != 0 {
 		queryBuilder = queryBuilder.Where(squirrel.Eq{
 			"receive_address": req.ReceiveAddress,
-		}).OrderBy("id ASC")
+		}).OrderBy("id DESC")
 	} else if len(req.DepositAddress) != 0 {
 		queryBuilder = queryBuilder.Where(squirrel.Eq{
 			"deposit_address": req.DepositAddress,
-		}).OrderBy("id ASC")
+		}).OrderBy("id DESC")
 	} else {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "query filter must not be empty")
 	}
