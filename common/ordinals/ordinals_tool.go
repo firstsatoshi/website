@@ -360,30 +360,23 @@ func (tool *inscriptionTool) buildCommitTx(changePkScript []byte, commitTxOutPoi
 	// if fee < 1000 {
 	// 	fee = 1000
 	// }
-
 	changeAmount := totalSenderAmount - btcutil.Amount(totalRevealPrevOutput) - fee
 
-	// fmt.Println((totalSenderAmount - changeAmount).ToBTC())
 	logx.Infof("totalSenderAmount: %v", totalSenderAmount.String())
 	logx.Infof("fee : %v", fee.String())
 	logx.Infof("change: %v", changeAmount)
 
-	if changeAmount > 0 {
+	if changeAmount >= 546 {
 		tx.TxOut[len(tx.TxOut)-1].Value = int64(changeAmount)
 	} else {
-		logx.Errorf("============ CHANGEAMOUNT =============")
-		return fmt.Errorf(" change value is 0 ")
-
-		// tx.TxOut = tx.TxOut[:len(tx.TxOut)-1]
-
-		// if changeAmount < 0 {
-		// 	// impossible case
-
-		// 	feeWithoutChange := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
-		// 	if totalSenderAmount-btcutil.Amount(totalRevealPrevOutput)-feeWithoutChange < 0 {
-		// 		return errors.New("insufficient balance")
-		// 	}
-		// }
+		logx.Errorf("============ Remove Change Txout =============")
+		tx.TxOut = tx.TxOut[:len(tx.TxOut)-1]
+		if changeAmount < 0 {
+			feeWithoutChange := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
+			if totalSenderAmount-btcutil.Amount(totalRevealPrevOutput)-feeWithoutChange < 0 {
+				return errors.New("insufficient balance")
+			}
+		}
 	}
 	tool.commitTx = tx
 	tool.changeSat = int64(changeAmount)
