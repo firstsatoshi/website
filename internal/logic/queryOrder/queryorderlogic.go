@@ -72,7 +72,8 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 
 		depositAddress := o.DepositAddress
 		if o.OrderStatus == "PAYTIMEOUT" || o.OrderStatus == "ALLSUCCESS" || o.OrderStatus == "MINTING" {
-			depositAddress = "" // don't display
+			// don't show deposit for finished status order
+			depositAddress = ""
 		}
 
 		reavealTxids := make([]string, 0)
