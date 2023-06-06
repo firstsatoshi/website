@@ -54,18 +54,19 @@ type Order struct {
 }
 
 type BlindboxEvent struct {
-	EventId      int    `json:"eventId"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	PriceBtcSats int    `json:"priceBtcSats"`
-	PriceUsd     int    `json:"priceUsd"`      // usd价格
-	PaymentToken string `json:"paymentToken"`  // 支付币种
-	Supply       int    `json:"supply"`        // 总数量
-	Avail        int    `json:"avail"`         // 可用数量
-	Enable       bool   `json:"enable"`        // 是否开启
-	OnlyWhiteist bool   `json:"onlyWhitelist"` // 仅白名单
-	StartTime    string `json:"startTime"`     // 开始时间
-	EndTime      string `json:"endTime"`       // 结束时间
+	EventId           int    `json:"eventId"`
+	Name              string `json:"name"`
+	Description       string `json:"description"`
+	PriceBtcSats      int    `json:"priceBtcSats"`
+	PriceUsd          int    `json:"priceUsd"`          // usd价格
+	PaymentToken      string `json:"paymentToken"`      // 支付币种
+	AverageImageBytes int    `json:"averageImageBytes"` // 平均图片大小
+	Supply            int    `json:"supply"`            // 总数量
+	Avail             int    `json:"avail"`             // 可用数量
+	Enable            bool   `json:"enable"`            // 是否开启
+	OnlyWhiteist      bool   `json:"onlyWhitelist"`     // 仅白名单
+	StartTime         string `json:"startTime"`         // 开始时间
+	EndTime           string `json:"endTime"`           // 结束时间
 }
 
 type CoinPriceResp struct {

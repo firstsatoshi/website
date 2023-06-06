@@ -83,7 +83,7 @@ services:
       - ./data/mysql/data:/var/lib/mysql
       - ./doc/website-v1.0.sql:/docker-entrypoint-initdb.d/init.sql
     privileged: true
-    restart: always
+    # restart: always
     networks:
       - website_network
 
@@ -100,7 +100,7 @@ services:
       - ./data/redis/data:/data:rw
     command: "redis-server --requirepass Tisd28478fhkhKSDFsdfk  --appendonly yes"
     privileged: true
-    restart: always
+    # restart: always
     networks:
       - website_network
 

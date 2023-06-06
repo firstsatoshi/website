@@ -10,6 +10,8 @@ import (
 
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/wire"
+	"github.com/firstsatoshi/website/common/globalvar"
 	"github.com/firstsatoshi/website/common/uniqueid"
 	"github.com/firstsatoshi/website/internal/svc"
 	"github.com/firstsatoshi/website/internal/types"
@@ -34,10 +36,16 @@ func NewCreateOrderLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 	}
 }
 
-func calcFee(count, feeRate float64) int64 {
+// https://bitcoinops.org/en/tools/calc-size/
+// https://blockchain-academy.hs-mittweida.de/2023/02/calculation-of-bitcoin-transaction-fees-explained/
+// for p2tr:
+//
+//	Transaction size = Overhead +  57.5 * inputsNumber + 43 * outputsNumber
+//	    eg: 1 input 1 output: 10.5 + 57.5 * 1 + 43 * 1 = 111 bytes
+func calcFee(imgBytes, count, feeRate float64) int64 {
 	// 每个铭文固定金额
-	utxoSat := float64(10000)
-	averageFileSize := float64(2600) // 是 2600byte 不是 2600Byte
+	utxoSat := float64(546)
+	averageFileSize := imgBytes //float64(2600) // 是 2600byte 不是 2600Byte
 
 	utxoOutputValue := float64(utxoSat) * count
 	commitTxSize := 68 + (43+1)*count
@@ -55,10 +63,10 @@ func calcFee(count, feeRate float64) int64 {
 	return int64(total)
 }
 
-func calcFeeTestnet3(count, feeRate float64) int64 {
+func calcFeeTestnet3(imgBytes, count, feeRate float64) int64 {
 	// 每个铭文固定金额
 	utxoSat := float64(546)
-	averageFileSize := float64(500)
+	averageFileSize := imgBytes // float64(500)
 
 	utxoOutputValue := float64(utxoSat) * count
 	commitTxSize := 68 + (43+1)*count
@@ -114,13 +122,6 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 			"avail count %v is not enough %v", event.Avail, req.Count)
 	}
 
-	// query exists unpayment order
-	// queryBuilder := l.svcCtx.TbOrderModel.RowBuilder().Where(squirrel.Eq{
-	// 	"receive_address": req.ReceiveAddress,
-	// 	"order_status": "NOTPAID",
-	// }).OrderBy("id ASC")
-	// l.svcCtx.TbOrderModel.FindOrders(l.ctx, queryBuilder)
-
 	// random generate account_index and address_index
 	time.Sleep(time.Microsecond * 1)
 	rand.Seed(time.Now().UnixNano() + int64(req.Count) + int64(req.FeeRate) + int64(req.ReceiveAddress[10]) + int64(req.ReceiveAddress[17]))
@@ -148,7 +149,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	addresInsertResult, err := l.svcCtx.TbAddressModel.Insert(l.ctx, &model.TbAddress{
 		Address:      depositAddress,
-		CoinType:     "BTC",
+		CoinType:     globalvar.BTC,
 		AccountIndex: int64(accountIndex),
 		AddressIndex: int64(addressIndex),
 	})
@@ -161,22 +162,25 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		addressId = 0
 	}
 
-	prefix := "BX" + req.ReceiveAddress[4:8] + req.ReceiveAddress[len(req.ReceiveAddress)-4:] +
+	prefix := "BE"
+	if l.svcCtx.ChainCfg.Net == wire.TestNet {
+		// for Testnet
+		prefix += "T"
+	} else {
+		// for Mainnet
+		prefix += "M"
+	}
+
+	prefix += req.ReceiveAddress[4:8] + req.ReceiveAddress[len(req.ReceiveAddress)-4:] +
 		depositAddress[4:8] + depositAddress[len(depositAddress)-4:] +
 		fmt.Sprintf("%02d", req.Count) + fmt.Sprintf("%02d", req.FeeRate)
 	prefix = strings.ToUpper(prefix)
 	orderId := uniqueid.GenSn(prefix)
 
-	// https://bitcoinops.org/en/tools/calc-size/
-	// https://blockchain-academy.hs-mittweida.de/2023/02/calculation-of-bitcoin-transaction-fees-explained/
-	// for p2tr:
-	//  Transaction size = Overhead +  57.5 * inputsNumber + 43 * outputsNumber
-	//      eg: 1 input 1 output: 10.5 + 57.5 * 1 + 43 * 1 = 111 bytes
-
-	totalFee := calcFee(float64(req.Count), float64(req.FeeRate))
+	totalFee := calcFee(float64(event.AverageImageBytes), float64(req.Count), float64(req.FeeRate))
 	logx.Infof("==========net name: %v", l.svcCtx.ChainCfg.Name)
 	if l.svcCtx.ChainCfg.Name == chaincfg.TestNet3Params.Name {
-		totalFee = calcFeeTestnet3(float64(req.Count), float64(req.FeeRate))
+		totalFee = calcFeeTestnet3(float64(event.AverageImageBytes), float64(req.Count), float64(req.FeeRate))
 		logx.Infof("testnet3 total fee: %v", totalFee)
 	}
 	if totalFee+event.PriceSats < event.PriceSats {
@@ -194,7 +198,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		FeeRate:         int64(req.FeeRate),
 		TxfeeAmountSat:  totalFee,
 		ServiceFeeSat:   0,
-		PriceSat:        event.PriceSats, // 0.002
+		PriceSat:        event.PriceSats,
 		TotalAmountSat:  totalFee + event.PriceSats,
 		OrderStatus:     "NOTPAID",
 		Version:         0,
@@ -222,13 +226,12 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		DepositAddress: ord.DepositAddress,
 		ReceiveAddress: ord.ReceiveAddress,
 		FeeRate:        int(ord.FeeRate),
-		Bytes:          0,
+		Bytes:          int(event.AverageImageBytes),
 		InscribeFee:    int(ord.TxfeeAmountSat),
 		ServiceFee:     int(ord.ServiceFeeSat),
 		Price:          int(ord.PriceSat),
 		Total:          int(ord.TotalAmountSat),
-		// CreateTime:     time.Now().Format("2006-01-02 15:04:05"),
-		CreateTime: createTime.Format("2006-01-02 15:04:05 +0800 CST"),
+		CreateTime:     createTime.Format("2006-01-02 15:04:05 +0800 CST"),
 	}
 
 	return

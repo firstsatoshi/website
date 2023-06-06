@@ -39,18 +39,19 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp []types.BlindboxEve
 	resp = make([]types.BlindboxEvent, 0)
 	for _, event := range events {
 		resp = append(resp, types.BlindboxEvent{
-			EventId:      int(event.Id),
-			Name:         event.EventName,
-			Description:  event.EventDescription,
-			PriceBtcSats: int(event.PriceSats),
-			PriceUsd:     0, // TODO
-			PaymentToken: event.PaymentToken,
-			Supply:       int(event.Supply),
-			Avail:        int(event.Avail),
-			Enable:       event.IsActive > 0,
-			OnlyWhiteist: event.OnlyWhitelist > 0,
-			StartTime:    event.StartTime.String(),
-			EndTime:      event.EndTime.String(),
+			EventId:           int(event.Id),
+			Name:              event.EventName,
+			Description:       event.EventDescription,
+			PriceBtcSats:      int(event.PriceSats),
+			PriceUsd:          0, // TODO
+			PaymentToken:      event.PaymentToken,
+			AverageImageBytes: int(event.AverageImageBytes),
+			Supply:            int(event.Supply),
+			Avail:             int(event.Avail),
+			Enable:            event.IsActive > 0,
+			OnlyWhiteist:      event.OnlyWhitelist > 0,
+			StartTime:         event.StartTime.String(),
+			EndTime:           event.EndTime.String(),
 		})
 	}
 
