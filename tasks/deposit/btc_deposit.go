@@ -494,6 +494,7 @@ func (t *BtcDepositTask) txMempool() {
 				// update order's status to PAYPENDING
 				order.PayTxid = sql.NullString{Valid: true, String: utxo.Txid}
 				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
+				order.OrderStatus = "PAYPENDING"
 
 				// ignore error
 				t.tbOrderModel.Update(t.ctx, order)
