@@ -49,6 +49,7 @@ CREATE TABLE `tb_blindbox_event` (
   `average_image_bytes` int not NULL COMMENT '平均图片大小(字节数)',
   `supply` int not NULL COMMENT '供应量',
   `avail` int not NULL COMMENT '本批次发行量',
+  `mint_limit` int DEFAULT 2 COMMENT '单个地址限购数量',
   `only_whitelist` tinyint(1) DEFAULT '0' COMMENT '是否只有白名单',
   `start_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '开始时间',
   `end_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '结束时间',
@@ -58,7 +59,7 @@ CREATE TABLE `tb_blindbox_event` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒活动表';
 
 
-INSERT INTO website.tb_blindbox_event (event_name,event_description,price_sats,is_active,payment_token,average_image_bytes,supply,avail,only_whitelist,start_time,end_time,create_time,update_time) VALUES('Bitcoin Eagle','This is Bitcoin Eagle NFT mint',1000,1,'BTC',500,1000,1000,0,'2023-05-27 16:28:39','2024-05-27 16:28:39','2023-05-27 16:28:39','2023-05-27 16:28:48');
+INSERT INTO website.tb_blindbox_event (event_name,event_description,price_sats,is_active,payment_token,average_image_bytes,supply,avail,mint_limit,only_whitelist,start_time,end_time,create_time,update_time) VALUES('Bitcoin Eagle','This is Bitcoin Eagle NFT mint',1000,1,'BTC',500,1000,1000,2,0,'2023-05-27 16:28:39','2024-05-27 16:28:39','2023-05-27 16:28:39','2023-05-27 16:28:48');
 
 
 DROP TABLE IF EXISTS `tb_order`;

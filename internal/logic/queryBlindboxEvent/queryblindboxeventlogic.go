@@ -44,6 +44,7 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp []types.BlindboxEve
 			Description:       event.EventDescription,
 			PriceBtcSats:      int(event.PriceSats),
 			PriceUsd:          0, // TODO
+			MintLimit:         int(event.MintLimit),
 			PaymentToken:      event.PaymentToken,
 			AverageImageBytes: int(event.AverageImageBytes),
 			Supply:            int(event.Supply),

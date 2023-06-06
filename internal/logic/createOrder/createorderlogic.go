@@ -63,26 +63,26 @@ func calcFee(imgBytes, count, feeRate float64) int64 {
 	return int64(total)
 }
 
-func calcFeeTestnet3(imgBytes, count, feeRate float64) int64 {
-	// 每个铭文固定金额
-	utxoSat := float64(546)
-	averageFileSize := imgBytes // float64(500)
+// func calcFeeTestnet3(imgBytes, count, feeRate float64) int64 {
+// 	// 每个铭文固定金额
+// 	utxoSat := float64(546)
+// 	averageFileSize := imgBytes // float64(500)
 
-	utxoOutputValue := float64(utxoSat) * count
-	commitTxSize := 68 + (43+1)*count
-	commitTxSize += 64
-	revealTxSize := 10.5 + (57.5+43.0)*float64(count)
-	revealTxSize += 64
-	feeSats := math.Ceil((averageFileSize/4 + commitTxSize + revealTxSize) * feeRate)
-	feeSats = 1000 * math.Ceil(feeSats/1000)
+// 	utxoOutputValue := float64(utxoSat) * count
+// 	commitTxSize := 68 + (43+1)*count
+// 	commitTxSize += 64
+// 	revealTxSize := 10.5 + (57.5+43.0)*float64(count)
+// 	revealTxSize += 64
+// 	feeSats := math.Ceil((averageFileSize/4 + commitTxSize + revealTxSize) * feeRate)
+// 	feeSats = 1000 * math.Ceil(feeSats/1000)
 
-	// base fee
-	// baseService := 1000 * math.Ceil(feeRate*0.1/1000)
-	// feeSats += baseService
+// 	// base fee
+// 	// baseService := 1000 * math.Ceil(feeRate*0.1/1000)
+// 	// feeSats += baseService
 
-	total := feeSats + utxoOutputValue
-	return int64(total)
-}
+// 	total := feeSats + utxoOutputValue
+// 	return int64(total)
+// }
 
 func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.CreateOrderResp, err error) {
 
@@ -118,8 +118,11 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	// check available count
 	if event.Avail < int64(req.Count) {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.AVAILABLE_COUNT_IS_NOT_ENOUGH),
-			"avail count %v is not enough %v", event.Avail, req.Count)
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.AVAILABLE_COUNT_IS_NOT_ENOUGH), "avail count %v is not enough %v", event.Avail, req.Count)
+	}
+
+	if int64(req.Count) > event.MintLimit {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.EXCEED_MINT_LIMIT_ERROR), "count %v exceed mint limit %v", req.Count, event.MintLimit)
 	}
 
 	// random generate account_index and address_index
@@ -179,10 +182,10 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	totalFee := calcFee(float64(event.AverageImageBytes), float64(req.Count), float64(req.FeeRate))
 	logx.Infof("==========net name: %v", l.svcCtx.ChainCfg.Name)
-	if l.svcCtx.ChainCfg.Name == chaincfg.TestNet3Params.Name {
-		totalFee = calcFeeTestnet3(float64(event.AverageImageBytes), float64(req.Count), float64(req.FeeRate))
-		logx.Infof("testnet3 total fee: %v", totalFee)
-	}
+	// if l.svcCtx.ChainCfg.Name == chaincfg.TestNet3Params.Name {
+	// 	totalFee = calcFeeTestnet3(float64(event.AverageImageBytes), float64(req.Count), float64(req.FeeRate))
+	// 	logx.Infof("testnet3 total fee: %v", totalFee)
+	// }
 	if totalFee+event.PriceSats < event.PriceSats {
 		panic("invalid price or totalFee")
 	}

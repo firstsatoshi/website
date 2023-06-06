@@ -76,6 +76,7 @@
                 "averageImageBytes": 500, // NFT图片的平均大小（字节数）
                 "supply": 1000, // 总供应量（本次活动供应总量）
                 "avail": 1000,  // 当前可用量(背刺活动当前可用库存)
+                "mintLimit": 2, // 限购数
                 "enable": true, // 活动是否开启
                 "onlyWhitelist": false, // 是否仅对白名单用户开放
                 "startTime": "2023-05-27 16:28:39 +0800 CST", // 活动开始时间

@@ -72,6 +72,7 @@ type BlindboxEvent struct {
 	AverageImageBytes int    `json:"averageImageBytes"` // 平均图片大小
 	Supply            int    `json:"supply"`            // 总数量
 	Avail             int    `json:"avail"`             // 可用数量
+	MintLimit         int    `json:"mintLimit"`         // mint 限制
 	Enable            bool   `json:"enable"`            // 是否开启
 	OnlyWhiteist      bool   `json:"onlyWhitelist"`     // 仅白名单
 	StartTime         string `json:"startTime"`         // 开始时间
