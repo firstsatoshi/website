@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/firstsatoshi/website/common/keymanager"
 	"github.com/firstsatoshi/website/common/mempool"
@@ -180,38 +179,15 @@ func (t *BtcInscribeTask) inscribe() {
 		"order_id": order.OrderId,
 	})
 
-	blindboxs, err := t.tbTbLockOrderBlindboxModel.FindAll(t.ctx, q, "")
+	lockOrderBoxs, err := t.tbTbLockOrderBlindboxModel.FindAll(t.ctx, q, "")
 	if err != nil {
 		logx.Errorf("FindAll error: %v", err.Error())
 		return
 	}
 
-	// get utxo
-	depositAddress, err := btcutil.DecodeAddress(order.DepositAddress, t.chainCfg)
-	if err != nil {
-		logx.Errorf("DecodeAddress error: %v", err.Error())
-		return
-	}
-
-	utxos, err := t.apiClient.ListUnspent(depositAddress)
-	if err != nil {
-		logx.Errorf("ListUnspent error: %v", err.Error())
-		return
-	}
-
-	// check balance(utxo) - price > fee
-	balanceSat := int64(0)
-	for _, utxo := range utxos {
-		if utxo.Output.Value > 10000 {
-			balanceSat += utxo.Output.Value
-		}
-	}
-	// totalPriceSat := order.PriceSat * order.Count
-	// feeSat := balanceSat - totalPriceSat
-
 	// make inscribe data
 	inscribeData := make([]ordinals.InscriptionData, 0)
-	for _, bbox := range blindboxs {
+	for _, bbox := range lockOrderBoxs {
 		imgFilePath := fmt.Sprintf("/images/%v.png", bbox.BlindboxId)
 		imgData, err := ioutil.ReadFile(imgFilePath)
 		if err != nil {
@@ -248,23 +224,6 @@ func (t *BtcInscribeTask) inscribe() {
 		return
 	}
 
-	// onlyEstimate := true
-	// _, _, feeEstimate, changeSat, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, onlyEstimate)
-	// if err != nil {
-	// 	logx.Errorf(" estimate fee error: %v ", err.Error())
-	// 	return
-	// }
-
-	// if feeEstimate > feeSat {
-	// 	// TODO: we must estimate accuracy FEE before create order
-	// 	logx.Infof("=============== feeEstimate greater than feeSat ================")
-	// }
-
-	// if changeSat < order.PriceSat {
-	// 	// TODO: we must estimate accuracy FEE before create order
-	// 	logx.Infof("=============== changeSat less than PriceSat ================")
-	// }
-
 	// inscrbe images
 	onlyEstimate := false // push tx to blockchain
 	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, onlyEstimate)
@@ -276,8 +235,8 @@ func (t *BtcInscribeTask) inscribe() {
 	logx.Infof("======= OrderId: %v inscribe finished", order.OrderId)
 
 	// TODO:
-	if len(revealTxids) != len(blindboxs) {
-		logx.Errorf(" revealTxids size %v NOT MATCH blindboxs size %v ", len(revealTxids), len(blindboxs))
+	if len(revealTxids) != len(lockOrderBoxs) {
+		logx.Errorf(" revealTxids size %v NOT MATCH blindboxs size %v ", len(revealTxids), len(lockOrderBoxs))
 		return // ?????
 	}
 
@@ -287,11 +246,11 @@ func (t *BtcInscribeTask) inscribe() {
 		err = t.sqlConn.TransactCtx(t.ctx, func(ctx context.Context, s sqlx.Session) error {
 
 			// update blindbox order_status to MINTING
-			for i, b := range blindboxs {
+			for i, b := range lockOrderBoxs {
 				revealTxid := revealTxids[i]
 				updateBlindbox := fmt.Sprintf(
 					"UPDATE tb_blindbox SET status='%v',commit_txid='%v',reveal_txid='%v' WHERE id=%v",
-					"MINTING", commitTxid, revealTxid, b.Id)
+					"MINTING", commitTxid, revealTxid, b.BlindboxId)
 				result, err := s.ExecCtx(ctx, updateBlindbox)
 				if err != nil {
 					return err
@@ -327,7 +286,7 @@ func (t *BtcInscribeTask) inscribe() {
 		}
 		break
 	}
-	logx.Errorf("update order %v status and blindbox status  SUCCESS ", order.OrderId)
+	logx.Infof("update order %v status and blindbox status  SUCCESS ", order.OrderId)
 }
 
 func (t *BtcInscribeTask) txMonitor() {
