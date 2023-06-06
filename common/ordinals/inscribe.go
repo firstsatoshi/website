@@ -52,7 +52,9 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 		CommitFeeRate:          int64(feeRate),
 		FeeRate:                int64(feeRate),
 		DataList:               inscriptionData,
-		SingleRevealTxOnly:     true,
+
+		// must set false , fix: https://mempool.space/zh/testnet/tx/234e9d7998fcda471f596e5a2d06c311114addb5bbf97e12644cb7e391141523#vin=1
+		SingleRevealTxOnly: false,
 	}
 
 	tool, err := newInscriptionToolWithBtcApiClient(netParams, btcApiClient, &request)
