@@ -15,11 +15,12 @@ import (
 type ServiceContext struct {
 	Config config.Config
 
-	TbWaitlistModel      model.TbWaitlistModel
-	TbBlindboxEventModel model.TbBlindboxEventModel
-	TbOrderModel         model.TbOrderModel
-	TbAddressModel       model.TbAddressModel
-	TbBlindboxModel      model.TbBlindboxModel
+	TbWaitlistModel          model.TbWaitlistModel
+	TbBlindboxEventModel     model.TbBlindboxEventModel
+	TbOrderModel             model.TbOrderModel
+	TbAddressModel           model.TbAddressModel
+	TbBlindboxModel          model.TbBlindboxModel
+	TbLockOrderBlindboxModel model.TbLockOrderBlindboxModel
 
 	// redis
 	Redis *redis.Redis
@@ -53,15 +54,16 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	rds := c.CacheRedis[0].NewRedis()
 
 	return &ServiceContext{
-		Config:               c,
-		Redis:                rds,
-		DepositBloomFilter:   bmfilter.NewUpgwBloomFilter(rds, "BTC"),
-		TbWaitlistModel:      model.NewTbWaitlistModel(sqlConn, c.CacheRedis),
-		TbBlindboxEventModel: model.NewTbBlindboxEventModel(sqlConn, c.CacheRedis),
-		TbOrderModel:         model.NewTbOrderModel(sqlConn, c.CacheRedis),
-		TbAddressModel:       model.NewTbAddressModel(sqlConn, c.CacheRedis),
-		TbBlindboxModel:      model.NewTbBlindboxModel(sqlConn, c.CacheRedis),
-		KeyManager:           km,
-		ChainCfg:             &chainCfg,
+		Config:                   c,
+		Redis:                    rds,
+		DepositBloomFilter:       bmfilter.NewUpgwBloomFilter(rds, "BTC"),
+		TbWaitlistModel:          model.NewTbWaitlistModel(sqlConn, c.CacheRedis),
+		TbBlindboxEventModel:     model.NewTbBlindboxEventModel(sqlConn, c.CacheRedis),
+		TbOrderModel:             model.NewTbOrderModel(sqlConn, c.CacheRedis),
+		TbAddressModel:           model.NewTbAddressModel(sqlConn, c.CacheRedis),
+		TbBlindboxModel:          model.NewTbBlindboxModel(sqlConn, c.CacheRedis),
+		TbLockOrderBlindboxModel: model.NewTbLockOrderBlindboxModel(sqlConn, c.CacheRedis),
+		KeyManager:               km,
+		ChainCfg:                 &chainCfg,
 	}
 }

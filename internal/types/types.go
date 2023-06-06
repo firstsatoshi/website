@@ -40,16 +40,17 @@ type QueryOrderReq struct {
 }
 
 type Order struct {
-	OrderId          string `json:"orderId"`
-	EventId          int    `json:"eventId"`
-	DepositAddress   string `json:"depositAddress"`
-	Total            int    `json:"total"`
-	ReceiveAddress   string `json:"receiveAddress"`
-	OrderStatus      string `json:"orderStatus"`
-	PayTime          string `json:"paytime"`
-	PayConfirmedTime string `json:"payConfirmedTime"`
-	RevealTxid       string `json:"revealTxid"`
-	CreateTime       string `json:"createTime"`
+	OrderId          string   `json:"orderId"`
+	EventId          int      `json:"eventId"`
+	DepositAddress   string   `json:"depositAddress"`
+	Total            int      `json:"total"`
+	ReceiveAddress   string   `json:"receiveAddress"`
+	OrderStatus      string   `json:"orderStatus"`
+	PayTxid          string   `json:"payTxid"`
+	PayTime          string   `json:"paytime"`
+	PayConfirmedTime string   `json:"payConfirmedTime"`
+	RevealTxids      []string `json:"revealTxids"`
+	CreateTime       string   `json:"createTime"`
 }
 
 type BlindboxEvent struct {

@@ -55,25 +55,58 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 	resp = make([]types.Order, 0)
 	for _, o := range orders {
 
-		pt := o.PayTime.Time.String()
+		payTime := o.PayTime.Time.String()
 		if !o.PayTime.Valid {
-			pt = ""
+			payTime = ""
 		}
 
-		pct := o.PayConfirmedTime.Time.String()
+		payConfirmedTime := o.PayConfirmedTime.Time.String()
 		if !o.PayConfirmedTime.Valid {
-			pct = ""
+			payConfirmedTime = ""
 		}
+
+		payTxid := ""
+		if o.PayTxid.Valid {
+			payTxid = o.PayTxid.String
+		}
+
+		depositAddress := o.DepositAddress
+		if o.OrderStatus == "PAYTIMEOUT" || o.OrderStatus == "ALLSUCCESS" || o.OrderStatus == "MINTING" {
+			depositAddress = "" // don't display
+		}
+
+		reavealTxids := make([]string, 0)
+		if o.OrderStatus == "MINTING" || o.OrderStatus == "ALLSUCCESS" {
+			builder := l.svcCtx.TbLockOrderBlindboxModel.RowBuilder().Where(squirrel.Eq{
+				"order_id": o.OrderId,
+			})
+			lks, err := l.svcCtx.TbLockOrderBlindboxModel.FindAll(l.ctx, builder, "")
+			if err != nil {
+				return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindAll error:%v", err.Error())
+			}
+
+			for _, lk := range lks {
+				b, err := l.svcCtx.TbBlindboxModel.FindOne(l.ctx, lk.BlindboxId)
+				if err != nil {
+					return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOne error:%v", err.Error())
+				}
+				if b.RevealTxid.Valid {
+					reavealTxids = append(reavealTxids, b.RevealTxid.String)
+				}
+			}
+		}
+
 		resp = append(resp, types.Order{
 			OrderId:          o.OrderId,
 			EventId:          int(o.EventId),
-			DepositAddress:   o.DepositAddress,
+			DepositAddress:   depositAddress,
 			Total:            int(o.TotalAmountSat),
 			ReceiveAddress:   o.ReceiveAddress,
 			OrderStatus:      o.OrderStatus,
-			PayTime:          pt,
-			PayConfirmedTime: pct,
-			RevealTxid:       "TODO----", // TODO: implement this
+			PayTime:          payTime,
+			PayConfirmedTime: payConfirmedTime,
+			RevealTxids:      reavealTxids,
+			PayTxid:          payTxid,
 			CreateTime:       o.CreateTime.Format("2006-01-02 15:04:05 +0800 CST"),
 		})
 	}
