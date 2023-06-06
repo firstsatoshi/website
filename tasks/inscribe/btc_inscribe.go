@@ -290,76 +290,87 @@ func (t *BtcInscribeTask) inscribe() {
 }
 
 func (t *BtcInscribeTask) txMonitor() {
-	// TODO: if deposit tx in a orphan block ?
 
-	// get peding txs' txids from databases
-	querySql := t.tbBlindboxModel.RowBuilder().Where(squirrel.Eq{
-		"status": "MINTING",
+
+	queryOrdersSql := t.tbBlindboxModel.RowBuilder().Where(squirrel.Eq{
+		"order_status": "MINTING",
 	})
-	mintingBoxs, err := t.tbBlindboxModel.FindBlindbox(t.ctx, querySql)
+	mintingOrders, err := t.tbOrderModel.FindOrders(t.ctx, queryOrdersSql)
 	if err != nil {
-		logx.Errorf("FindBlindbox error: %v", err.Error())
+		logx.Errorf("FindOrders error: %v", err.Error())
 		return
 	}
 
-	// monitor tx status
-	for _, mbx := range mintingBoxs {
-		tx, err := t.apiClient.GetTansaction(mbx.RevealTxid.String)
+	// 1---n
+	orderRevealTxMap := make(map[string]([]int), 0)
+	for _, mo := range mintingOrders {
+		orderRevealTxMap[mo.OrderId] = make([]int, 0)
+
+		q := t.tbTbLockOrderBlindboxModel.RowBuilder().Where(squirrel.Eq{
+			"order_id": mo.OrderId,
+		})
+		lobs, err := t.tbTbLockOrderBlindboxModel.FindAll(t.ctx, q, "")
 		if err != nil {
-			logx.Errorf("GetTansaction error: %v, continue", err.Error())
-			continue
+			logx.Errorf("FindAll error: %v", err.Error())
+			return
 		}
 
-		// still pending
-		if !tx.Status.Confirmed {
-			logx.Infof(" blindbox: %v, revealTxid:%v , still pending", mbx.Id, mbx.RevealTxid.String)
-			continue
-		}
-
-		// if reveal is comfirmed
-		for nTry := 0; ; nTry++ {
-			err = t.sqlConn.TransactCtx(t.ctx, func(ctx context.Context, s sqlx.Session) error {
-
-				// update blindbox status to MINT
-				if true {
-					updateBlindbox := fmt.Sprintf("UPDATE tb_blindbox SET status='%v' WHERE id=%v", "MINT", mbx.Id)
-					result, err := s.ExecCtx(ctx, updateBlindbox)
-					if err != nil {
-						return err
-					}
-					if _, err = result.RowsAffected(); err != nil {
-						return err
-					}
-				}
-
-				// update order status
-				if true {
-					updateSql := fmt.Sprintf("UPDATE tb_order SET order_status='%v' WHERE id=%v", "ALLSUCCESS", mbx.Id)
-					result, err := s.ExecCtx(t.ctx, updateSql)
-					if err != nil {
-						return err
-					}
-					if _, err = result.RowsAffected(); err != nil {
-						return err
-					}
-				}
-
-				return nil
-			})
-			if err != nil {
-				if nTry < 3 {
-					time.Sleep(time.Duration(nTry) * time.Second)
-					logx.Errorf("update order status and blindbox status error, try it later")
-					continue
-				}
-
-				logx.Errorf("update order status and blindbox status error :%v ", err.Error())
-			}
-			break
+		// push  blindbox id
+		for _, lob := range lobs {
+			orderRevealTxMap[mo.OrderId] = append(orderRevealTxMap[mo.OrderId], int(lob.BlindboxId))
 		}
 	}
 
-	// update order status when tx be succeed
+	successOrderMap := make(map[string]bool, 0)
+	for orderId, boxIds := range orderRevealTxMap {
+
+		okCount := 0
+		for _, boxId := range boxIds {
+			mbx, err := t.tbBlindboxModel.FindOne(t.ctx, int64(boxId))
+			if err != nil {
+				logx.Errorf("FindOne error: %v", err.Error())
+				return
+			}
+
+			// monitor tx status
+			tx, err := t.apiClient.GetTansaction(mbx.RevealTxid.String)
+			if err != nil {
+				logx.Errorf("GetTansaction error: %v, continue", err.Error())
+				continue
+			}
+
+			// TODO: if deposit tx in a orphan block ?  waiting more blocks?
+			// still pending
+			if !tx.Status.Confirmed {
+				logx.Infof(" blindbox: %v, revealTxid:%v , still pending", mbx.Id, mbx.RevealTxid.String)
+				continue
+			}
+
+			if mbx.Status != "MINT" {
+				mbx.Status = "MINT"
+				err = t.tbBlindboxModel.Update(t.ctx, mbx)
+				if err != nil {
+					logx.Errorf("update order status and blindbox status error :%v ", err.Error())
+					return
+				}
+			}
+			okCount += 1
+		}
+
+		// all boxs of order has been success, set order's status to ALLSUCCESS
+		if okCount == len(boxIds) {
+			successOrderMap[orderId] = true
+		}
+	}
+
+	// update order's status to ALLSUCCESS
+	for _, mo := range mintingOrders {
+		if orderSuccess, ok := successOrderMap[mo.OrderId]; ok && orderSuccess {
+			mo.OrderStatus = "ALLSUCCESS"
+			t.tbOrderModel.Update(t.ctx, mo)
+		}
+	}
+
 }
 
 func (t *BtcInscribeTask) orderTimeout() {
