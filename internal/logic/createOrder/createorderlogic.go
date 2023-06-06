@@ -63,26 +63,6 @@ func calcFee(imgBytes, count, feeRate float64) int64 {
 	return int64(total)
 }
 
-// func calcFeeTestnet3(imgBytes, count, feeRate float64) int64 {
-// 	// 每个铭文固定金额
-// 	utxoSat := float64(546)
-// 	averageFileSize := imgBytes // float64(500)
-
-// 	utxoOutputValue := float64(utxoSat) * count
-// 	commitTxSize := 68 + (43+1)*count
-// 	commitTxSize += 64
-// 	revealTxSize := 10.5 + (57.5+43.0)*float64(count)
-// 	revealTxSize += 64
-// 	feeSats := math.Ceil((averageFileSize/4 + commitTxSize + revealTxSize) * feeRate)
-// 	feeSats = 1000 * math.Ceil(feeSats/1000)
-
-// 	// base fee
-// 	// baseService := 1000 * math.Ceil(feeRate*0.1/1000)
-// 	// feeSats += baseService
-
-// 	total := feeSats + utxoOutputValue
-// 	return int64(total)
-// }
 
 func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.CreateOrderResp, err error) {
 
