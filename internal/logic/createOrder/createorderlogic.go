@@ -146,7 +146,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	utxoSat := 10000
 	prefix := "BE"
-	if l.svcCtx.ChainCfg.Net == wire.TestNet {
+	if l.svcCtx.ChainCfg.Net == wire.TestNet3 {
 		// for Testnet
 		prefix += "T"
 		utxoSat = 1000
@@ -163,11 +163,8 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	orderId := uniqueid.GenSn(prefix)
 
 	totalFee := calcFee(float64(utxoSat), float64(event.AverageImageBytes), float64(req.Count), float64(req.FeeRate))
+	logx.Infof("==========totalFee : %v", totalFee)
 	logx.Infof("==========net name: %v", l.svcCtx.ChainCfg.Name)
-	// if l.svcCtx.ChainCfg.Name == chaincfg.TestNet3Params.Name {
-	// 	totalFee = calcFeeTestnet3(float64(event.AverageImageBytes), float64(req.Count), float64(req.FeeRate))
-	// 	logx.Infof("testnet3 total fee: %v", totalFee)
-	// }
 	if totalFee+event.PriceSats < event.PriceSats {
 		panic("invalid price or totalFee")
 	}
