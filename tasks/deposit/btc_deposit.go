@@ -83,6 +83,7 @@ func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg
 	}
 }
 
+// Start implement task.Task.Start() interface()
 func (t *BtcDepositTask) Start() {
 
 	for {
@@ -95,14 +96,20 @@ func (t *BtcDepositTask) Start() {
 		case <-ticker.C:
 			logx.Info("======= Btc Deposit Task =================")
 			t.scanBlock()
+
+			//
+			time.Sleep(2)
+			t.txMempool()
 		}
 	}
 }
 
+// Stop implement task.Task.Stop() interface()
 func (t *BtcDepositTask) Stop() {
 	t.stop()
 }
 
+// scanBlock to poll each block and parse deposit transaction
 func (t *BtcDepositTask) scanBlock() {
 	// load all listen address into redis bloomfilter
 	counter := 0
@@ -157,6 +164,12 @@ func (t *BtcDepositTask) scanBlock() {
 	}
 
 	for n := uint64(blockScan.BlockNumber + 1); n <= uint64(latestBlockHeight); n++ {
+		select {
+		case <-t.ctx.Done():
+			return
+		default:
+		}
+
 		// 	get block hash by height
 		blockHash, err := t.apiClient.GetBlockHashByHeight(n)
 		if err != nil {
@@ -190,10 +203,20 @@ func (t *BtcDepositTask) scanBlock() {
 				go t.txFecther(i, &wg, txids[startIdx:endIdx], ch)
 			}
 			wg.Wait()
+
+			// close channel
 			close(ch)
 		}()
 
+		okTxCount := 0
 		for tx := range ch {
+			select {
+			case <-t.ctx.Done():
+				return
+			default:
+			}
+
+			okTxCount += 1
 
 			txid := tx.Txid
 			// logx.Infof("txid: %v", txid)
@@ -379,16 +402,28 @@ func (t *BtcDepositTask) scanBlock() {
 		}
 
 		// update block height
-		blockScan.BlockNumber = int64(n)
-		t.tbBlockscanModel.Update(t.ctx, blockScan)
+		if okTxCount == len(txids) {
+			blockScan.BlockNumber = int64(n)
+			t.tbBlockscanModel.Update(t.ctx, blockScan)
+		} else {
+			logx.Errorf("=======================okTxCount not equal len(txids) ==================")
+			return
+		}
 	}
 
 }
 
+// txFecther to fecth transaction details
 func (t *BtcDepositTask) txFecther(goroutineId int, wg *sync.WaitGroup, txids []string, ch chan<- mempool.Transaction) {
 	defer wg.Done()
 
 	for i := 0; i < len(txids); {
+		select {
+		case <-t.ctx.Done():
+			return
+		default:
+		}
+
 		txid := txids[i]
 		tx, err := t.apiClient.GetTansaction(txid)
 		if err != nil {
@@ -402,4 +437,69 @@ func (t *BtcDepositTask) txFecther(goroutineId int, wg *sync.WaitGroup, txids []
 
 		i += 1
 	}
+}
+
+// txMempool to monitor bitcion mempool transaction and update order status
+func (t *BtcDepositTask) txMempool() {
+	// load all of 0~30 minutes order , order by create time asc
+	now := time.Now()
+	query := t.tbOrderModel.RowBuilder().Where(squirrel.Eq{
+		"order_status": "NOTPAID",
+	}).Where(squirrel.Gt{
+		"create_time": time.Unix(now.Unix()-30*60, 0),
+	}).Where(squirrel.Lt{
+		"create_time": time.Unix(now.Unix()-1*60, 0),
+	}).Limit(500).OrderBy("id DESC")
+
+	orders, err := t.tbOrderModel.FindOrders(t.ctx, query)
+	if err != nil {
+		logx.Errorf("FindOrders error: %v", err.Error())
+		return
+	}
+	if len(orders) == 0 {
+		logx.Infof("==no order need to monitor txmempool==")
+		return
+	}
+
+	// get all of address utxo by listunspent
+	for _, order := range orders {
+		select {
+		case <-t.ctx.Done():
+			return
+		default:
+		}
+
+		// memTxs, err := t.apiClient.GetAddressMempoolTxs( order.DepositAddress)
+		utxos, err := t.apiClient.GetAddressUTXOs(order.DepositAddress)
+		if err != nil {
+			logx.Errorf("GetAddressUTXOs error: %v", err.Error())
+			return
+		}
+
+		if len(utxos) == 0 {
+			continue
+		}
+
+		for _, utxo := range utxos {
+			// if tx has be confirmed, skip it. this should be processed by scanBlock,
+			if utxo.TxStatus.Confirmed {
+				continue
+			}
+
+			// NOTE: we only support single utxo deposit, do not support multiple utxo deposit
+			//
+			// check total amount of all of utxos
+			// if utxo's amount  greater or equal than order's total amount
+			if utxo.Value >= uint64(order.TotalAmountSat) {
+				// update order's status to PAYPENDING
+				order.PayTxid = sql.NullString{Valid: true, String: utxo.Txid}
+				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
+
+				// ignore error
+				t.tbOrderModel.Update(t.ctx, order)
+			}
+		}
+	}
+
+	// NOTE: DO NOT lock any blindboxs until the deposit transaction be confirmed(into block)
 }
