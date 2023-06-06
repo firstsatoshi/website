@@ -42,9 +42,8 @@ func NewCreateOrderLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 //
 //	Transaction size = Overhead +  57.5 * inputsNumber + 43 * outputsNumber
 //	    eg: 1 input 1 output: 10.5 + 57.5 * 1 + 43 * 1 = 111 bytes
-func calcFee(imgBytes, count, feeRate float64) int64 {
+func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
 	// 每个铭文固定金额
-	utxoSat := float64(546)
 	averageFileSize := imgBytes //float64(2600) // 是 2600byte 不是 2600Byte
 
 	utxoOutputValue := float64(utxoSat) * count
@@ -145,13 +144,16 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		addressId = 0
 	}
 
+	utxoSat := 10000
 	prefix := "BE"
 	if l.svcCtx.ChainCfg.Net == wire.TestNet {
 		// for Testnet
 		prefix += "T"
+		utxoSat = 1000
 	} else {
 		// for Mainnet
 		prefix += "M"
+		utxoSat = 10000
 	}
 
 	prefix += req.ReceiveAddress[4:8] + req.ReceiveAddress[len(req.ReceiveAddress)-4:] +
@@ -160,7 +162,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	prefix = strings.ToUpper(prefix)
 	orderId := uniqueid.GenSn(prefix)
 
-	totalFee := calcFee(float64(event.AverageImageBytes), float64(req.Count), float64(req.FeeRate))
+	totalFee := calcFee(float64(utxoSat), float64(event.AverageImageBytes), float64(req.Count), float64(req.FeeRate))
 	logx.Infof("==========net name: %v", l.svcCtx.ChainCfg.Name)
 	// if l.svcCtx.ChainCfg.Name == chaincfg.TestNet3Params.Name {
 	// 	totalFee = calcFeeTestnet3(float64(event.AverageImageBytes), float64(req.Count), float64(req.FeeRate))
