@@ -290,7 +290,7 @@ func (t *BtcInscribeTask) inscribe() {
 			for i, b := range blindboxs {
 				revealTxid := revealTxids[i]
 				updateBlindbox := fmt.Sprintf(
-					"UPDATE tb_blindbox SET status='%v',commit_txid='%v',reveal_txid='%v', WHERE id=%v",
+					"UPDATE tb_blindbox SET status='%v',commit_txid='%v',reveal_txid='%v' WHERE id=%v",
 					"MINTING", commitTxid, revealTxid, b.Id)
 				result, err := s.ExecCtx(ctx, updateBlindbox)
 				if err != nil {
@@ -304,7 +304,7 @@ func (t *BtcInscribeTask) inscribe() {
 			// update order status
 			if true {
 				updateSql := fmt.Sprintf("UPDATE tb_order SET order_status='%v',real_fee_sat=%v,real_change_sat=%v WHERE id=%v",
-					"INSCRIBING", realFee, realChange, order.Id)
+					"MINTING", realFee, realChange, order.Id)
 				result, err := s.ExecCtx(t.ctx, updateSql)
 				if err != nil {
 					return err
