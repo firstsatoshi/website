@@ -350,7 +350,7 @@ func (t *BtcDepositTask) scanBlock() {
 				for _, b := range boxs {
 					boxIds = append(boxIds, b.Id)
 				}
-				rand.Seed(int64(time.Nanosecond))
+				rand.Seed(int64(time.Now().UnixNano()))
 				rand.Shuffle(len(boxIds), func(i, j int) { boxIds[i], boxIds[j] = boxIds[j], boxIds[i] })
 				lockBoxIds := boxIds[:order.Count]
 
