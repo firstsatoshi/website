@@ -71,7 +71,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 		}
 
 		depositAddress := o.DepositAddress
-		if o.OrderStatus == "PAYTIMEOUT" || o.OrderStatus == "ALLSUCCESS" || o.OrderStatus == "MINTING" {
+		if o.OrderStatus == "PAYTIMEOUT" || o.OrderStatus == "PAYPENDING" || o.OrderStatus == "ALLSUCCESS" || o.OrderStatus == "MINTING" {
 			// don't show deposit for finished status order
 			depositAddress = ""
 		}
