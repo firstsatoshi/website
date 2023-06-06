@@ -47,6 +47,7 @@ type BtcDepositTask struct {
 	tbOrderModel             model.TbOrderModel
 	tbBlindboxModel          model.TbBlindboxModel
 	tbLockOrderBlindboxModel model.TbLockOrderBlindboxModel
+	tbBlindboxEventModel     model.TbBlindboxEventModel
 }
 
 func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcDepositTask {
@@ -80,6 +81,7 @@ func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg
 		tbBlindboxModel:          model.NewTbBlindboxModel(sqlConn, config.CacheRedis),
 		tbOrderModel:             model.NewTbOrderModel(sqlConn, config.CacheRedis),
 		tbLockOrderBlindboxModel: model.NewTbLockOrderBlindboxModel(sqlConn, config.CacheRedis),
+		tbBlindboxEventModel:     model.NewTbBlindboxEventModel(sqlConn, config.CacheRedis),
 	}
 }
 
@@ -393,6 +395,25 @@ func (t *BtcDepositTask) scanBlock() {
 
 				logx.Infof("=== lock order and blindbox success, orderId:%v, lockBoxIds: %v ===", order.OrderId, lockBoxIds)
 
+				// update event available count
+				countBuilder := t.tbLockOrderBlindboxModel.CountBuilder("id").Where(squirrel.Eq{
+					"event_id": order.EventId,
+				})
+				count, err := t.tbLockOrderBlindboxModel.FindCount(t.ctx, countBuilder)
+				if err != nil {
+					logx.Errorf("FindCount error: %v ", err.Error())
+					return
+				}
+
+				event, err := t.tbBlindboxEventModel.FindOne(t.ctx, order.EventId)
+				if err != nil {
+					logx.Errorf("FindOne error: %v ", err.Error())
+					return
+				}
+
+				// sub
+				event.Avail -= count
+				t.tbBlindboxEventModel.Update(t.ctx, event)
 			}
 		}
 
