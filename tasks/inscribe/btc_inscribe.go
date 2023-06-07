@@ -289,7 +289,6 @@ func (t *BtcInscribeTask) inscribe() {
 	logx.Infof("update order %v status and blindbox status  SUCCESS ", order.OrderId)
 }
 
-
 // txMonitor monitor tx and update order and blindbox status
 func (t *BtcInscribeTask) txMonitor() {
 
@@ -377,8 +376,9 @@ func (t *BtcInscribeTask) txMonitor() {
 func (t *BtcInscribeTask) orderTimeout() {
 
 	// 120 minutes to timeout
+	timeoutSecs := 120 * 60
 	now := time.Now()
-	timeout := time.Unix(now.Unix()-120*60*60, 0)
+	timeout := time.Unix(now.Unix()-int64(timeoutSecs), 0)
 	queryBuilder := t.tbOrderModel.RowBuilder().Where(squirrel.Eq{
 		"order_status": "NOTPAID",
 	}).Where(squirrel.Lt{
@@ -392,7 +392,7 @@ func (t *BtcInscribeTask) orderTimeout() {
 	}
 
 	for _, order := range orders {
-		if now.Sub(order.CreateTime).Seconds() < 120*60*60 {
+		if now.Sub(order.CreateTime).Seconds() < float64(timeoutSecs) {
 			continue
 		}
 
