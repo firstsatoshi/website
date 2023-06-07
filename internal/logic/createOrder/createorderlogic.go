@@ -104,6 +104,18 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		}
 	}
 
+	// checkwhitelist
+	if event.OnlyWhitelist > 0 {
+		_, err := l.svcCtx.TbWaitlistModel.FindOneByBtcAddress(l.ctx, req.ReceiveAddress)
+		if err != nil {
+			if err == model.ErrNotFound {
+				return nil, errors.Wrapf(xerr.NewErrCode(xerr.ONLY_WHITELIST_ERROR), "not whitelist: %v", req.ReceiveAddress)
+			}
+
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByBtcAddress error: %v", err.Error())
+		}
+	}
+
 	// check available count
 	if event.Avail < int64(req.Count) {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.AVAILABLE_COUNT_IS_NOT_ENOUGH), "avail count %v is not enough %v", event.Avail, req.Count)

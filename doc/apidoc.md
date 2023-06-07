@@ -272,3 +272,34 @@
         }
     }
     ```
+
+##  **checkwhitelist**检查白名单
+
+- 请求方式: `POST`
+
+- 请求参数：
+
+    | 字段 | 说明| 类型 | 可选? | 示例 |
+    |-----|------|------|----|----|
+    | `receiveAddress` | 接收地址  | string | 必填 | bald |
+
+
+- 请求示例:
+
+    ```json
+    {
+        "receiveAddress":"xxxxxxxxxxxxxx"
+    }
+    ```
+
+- 响应示例
+
+    ```json
+    {
+        "code": 0,
+        "msg": "ok",
+        "data": {
+            "isWhitelist": false    // true： 是白名单  ; false 不是白名单
+        }
+    }
+    ```

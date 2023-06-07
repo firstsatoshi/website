@@ -162,3 +162,21 @@ service website-api {
 	@handler queryGalleryList
 	post /querygallerylist (queryGalleryListReq)returns (queryGalleryListResp)
 }
+
+type checkWhitelistReq {
+	ReceiveAddress string `json:"receiveAddress"`
+}
+
+type checkWhitelistResp {
+	IsWhitelist bool `json:"isWhitelist"`
+}
+
+// 判断白名单
+@server(
+	prefix: api/v1
+	group: checkwhitelist
+)
+service website-api {
+	@handler checkWhitelist
+	post /checkwhitelist (checkWhitelistReq)returns (checkWhitelistResp)
+}

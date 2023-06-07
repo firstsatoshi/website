@@ -15,6 +15,7 @@ func init() {
 	message[EVENT_NOT_EXISTS_ERROR] = "event does not exists"
 	message[AVAILABLE_COUNT_IS_NOT_ENOUGH] = "avialable count is not enough"
 	message[EXCEED_MINT_LIMIT_ERROR] = "exceed mint limit"
+	message[ONLY_WHITELIST_ERROR] = "only allow whitelist to mint"
 	message[DB_ERROR] = "db error"
 }
 

@@ -103,3 +103,11 @@ type QueryGalleryListResp struct {
 	PageSize int    `json:"pageSize"`
 	NFTs     []NFT  `json:"nfts"`
 }
+
+type CheckWhitelistReq struct {
+	ReceiveAddress string `json:"receiveAddress"`
+}
+
+type CheckWhitelistResp struct {
+	IsWhitelist bool `json:"isWhitelist"`
+}
