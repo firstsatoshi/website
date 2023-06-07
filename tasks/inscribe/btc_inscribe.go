@@ -10,6 +10,8 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/wire"
+	"github.com/firstsatoshi/website/common/globalvar"
 	"github.com/firstsatoshi/website/common/keymanager"
 	"github.com/firstsatoshi/website/common/mempool"
 	"github.com/firstsatoshi/website/common/ordinals"
@@ -38,8 +40,7 @@ type BtcInscribeTask struct {
 
 	apiClient *mempool.MempoolApiClient
 
-	changeAddressKeyManager *keymanager.KeyManager
-	depositAddressKm        *keymanager.KeyManager
+	depositAddressKm *keymanager.KeyManager
 
 	tbDepositModel             model.TbDepositModel
 	tbAddressModel             model.TbAddressModel
@@ -60,14 +61,6 @@ func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincf
 
 	apiClient := mempool.NewMempoolApiClient(apiHost)
 
-	if len(os.Getenv("CHANGE_SEED")) == 0 {
-		panic("empty CHANGE_SEED")
-	}
-	changeKm, err := keymanager.NewKeyManagerFromSeed(os.Getenv("CHANGE_SEED"), *chainCfg)
-	if err != nil {
-		panic(err)
-	}
-
 	if len(os.Getenv("DEPOSIT_SEED")) == 0 {
 		panic("empty DEPOSIT_SEED")
 	}
@@ -86,8 +79,7 @@ func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincf
 
 		apiClient: apiClient,
 
-		changeAddressKeyManager: changeKm,
-		depositAddressKm:        depositAddressKm,
+		depositAddressKm: depositAddressKm,
 
 		apiHost:                    apiHost,
 		chainCfg:                   chainCfg,
@@ -203,8 +195,12 @@ func (t *BtcInscribeTask) inscribe() {
 		inscribeData = append(inscribeData, insData)
 	}
 
-	_, changeAddress, err := t.changeAddressKeyManager.GetWifKeyAndAddresss(0, uint32(order.Id%5))
-	logx.Infof("orderId:%v, CHANGEADDRESS: %v", order.OrderId, changeAddress)
+	// get change address
+	rndIdx := int(order.Id) % len(globalvar.MainChangeAdddress)
+	changeAddress := globalvar.MainChangeAdddress[rndIdx]
+	if t.chainCfg.Net == wire.TestNet3 {
+		changeAddress = globalvar.TestnetChangeAddress[0]
+	}
 
 	addr, err := t.tbAddressModel.FindOneByAddress(t.ctx, order.DepositAddress)
 	if err != nil {
