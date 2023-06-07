@@ -8,3 +8,4 @@ doc/demo/__pycache__
 images
 
 .env
+.vscode/settings.json
