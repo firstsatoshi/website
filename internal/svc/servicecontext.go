@@ -8,6 +8,7 @@ import (
 	"github.com/firstsatoshi/website/common/keymanager"
 	"github.com/firstsatoshi/website/internal/config"
 	"github.com/firstsatoshi/website/model"
+	"github.com/zeromicro/go-zero/core/limit"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
@@ -30,6 +31,8 @@ type ServiceContext struct {
 
 	KeyManager *keymanager.KeyManager
 	ChainCfg   *chaincfg.Params
+
+	PeriodLimit *limit.PeriodLimit
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -53,6 +56,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 	rds := c.CacheRedis[0].NewRedis()
 
+	periodLimit := limit.NewPeriodLimit(15, 3, rds, "api-createorder-rate-limit-key")
+
 	return &ServiceContext{
 		Config:                   c,
 		Redis:                    rds,
@@ -65,5 +70,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		TbLockOrderBlindboxModel: model.NewTbLockOrderBlindboxModel(sqlConn, c.CacheRedis),
 		KeyManager:               km,
 		ChainCfg:                 &chainCfg,
+		PeriodLimit:              periodLimit,
 	}
 }

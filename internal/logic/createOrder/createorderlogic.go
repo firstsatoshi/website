@@ -19,6 +19,7 @@ import (
 	"github.com/firstsatoshi/website/xerr"
 	"github.com/pkg/errors"
 
+	"github.com/zeromicro/go-zero/core/limit"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -63,6 +64,15 @@ func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
 }
 
 func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.CreateOrderResp, err error) {
+
+	// rate limit
+	code, err := l.svcCtx.PeriodLimit.TakeCtx(l.ctx, req.ReceiveAddress)
+	if err != nil {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "PeriodLimit.TakeCtx error: %v", err.Error())
+	}
+	if code != limit.Allowed {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.TOO_MANY_REQUEST_ERROR), "rate limit error: %v", req.ReceiveAddress)
+	}
 
 	// check count
 	if req.Count <= 0 {

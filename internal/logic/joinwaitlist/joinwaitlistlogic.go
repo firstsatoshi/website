@@ -10,8 +10,8 @@ import (
 	"github.com/firstsatoshi/website/xerr"
 	"github.com/pkg/errors"
 
+	"github.com/zeromicro/go-zero/core/limit"
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 type JoinWaitListLogic struct {
@@ -30,10 +30,19 @@ func NewJoinWaitListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Join
 
 func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.JoinWaitListResp, error) {
 
+	// rate limit
+	code, err := l.svcCtx.PeriodLimit.TakeCtx(l.ctx, req.Email)
+	if err != nil {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "PeriodLimit.TakeCtx error: %v", err.Error())
+	}
+	if code != limit.Allowed {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.TOO_MANY_REQUEST_ERROR), "rate limit error: %v", req.Email)
+	}
+
 	var resp types.JoinWaitListResp
 	// verify email
 	logx.Infof("email is %v", req.Email)
-	_, err := mail.ParseAddress(req.Email)
+	_, err = mail.ParseAddress(req.Email)
 	if err != nil {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_EMAIL_ERROR), "invalid email")
 	}
@@ -46,22 +55,6 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 	if len(btcAddress) != 62 {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid bitcoin p2tr address")
 	}
-
-	// set a lock into redis, to fix concurrent issue
-	lock := redis.NewRedisLock(l.svcCtx.Redis, req.Email)
-	lock.SetExpire(5)
-	ok, err := lock.AcquireCtx(l.ctx)
-	if err != nil {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "get redis lock error")
-	}
-	if !ok {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.TOO_MANY_REQUEST_ERROR), "get redis lock failed")
-	}
-	logx.Info("====get redis lock ok")
-	// defer func() {
-	// 	lock.ReleaseCtx(l.ctx)
-	// 	logx.Info("======release redis lock")
-	// }()
 
 	// check exits
 	if one, err := l.svcCtx.TbWaitlistModel.FindOneByEmail(l.ctx, req.Email); err == nil {
