@@ -62,7 +62,6 @@ func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
 	return int64(total)
 }
 
-
 func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.CreateOrderResp, err error) {
 
 	// check count
@@ -102,6 +101,24 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	if int64(req.Count) > event.MintLimit {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.EXCEED_MINT_LIMIT_ERROR), "count %v exceed mint limit %v", req.Count, event.MintLimit)
+	}
+
+	// each address can't mint over mint limit
+	tmpBuilder := l.svcCtx.TbOrderModel.SumBuilder("`count`").Where(
+		"receive_address=?", req.ReceiveAddress,
+	)
+	tmpBuilder = tmpBuilder.Where("(order_status=? OR order_status=? OR order_status=? OR order_status=? OR order_status=?)",
+		"NOTPAID", "PAYPENDING", "PAYSUCCESS", "MINTING", "ALLSUCCESS")
+
+	sql, _, _ := tmpBuilder.ToSql()
+	logx.Infof("sql: %v", sql)
+	mintCountSum, err := l.svcCtx.TbOrderModel.FindSum(l.ctx, tmpBuilder)
+	if err != nil {
+		logx.Errorf("FindSum error:%v", err.Error())
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindCount error: %v", err.Error())
+	}
+	if int64(req.Count)+int64(mintCountSum) > event.MintLimit {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.EXCEED_MINT_LIMIT_ERROR), "address exceed mint limit %v", event.MintLimit)
 	}
 
 	// random generate account_index and address_index
