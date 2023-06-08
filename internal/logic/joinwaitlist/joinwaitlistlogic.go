@@ -64,14 +64,25 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 		return &resp, nil
 	}
 
+	if one, err := l.svcCtx.TbWaitlistModel.FindOneByBtcAddress(l.ctx, req.BtcAddress); err == nil {
+		resp.Duplicated = true
+		resp.ReferalCode = uniqueid.GetReferalCodeById(one.Id)
+		return &resp, nil
+	}
+
+
+	referalCode := ""
+	if len(req.ReferalCode) > 0 {
+		referalCode = req.ReferalCode
+	}
+
 	// if not exits
 	sqlRet, err := l.svcCtx.TbWaitlistModel.Insert(l.ctx, &model.TbWaitlist{
 		Email:      req.Email,
 		BtcAddress: req.BtcAddress,
-		RefereeId:  uniqueid.GetIdByReferalCode(req.ReferalCode),
+		RefereeId:  uniqueid.GetIdByReferalCode(referalCode),
 	})
 	if err != nil {
-		sqlRet.LastInsertId()
 		logx.Errorf("insert database error: %v", err.Error())
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "database error")
 	}
