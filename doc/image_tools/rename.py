@@ -21,7 +21,10 @@ def main():
         id = name.replace('.png', '')
         newname = rename(id) + '.png'
         newpath = os.path.join(os.path.dirname(file), newname)
-        os.system(f"cp {file} {newpath}")
+        # cmd = f"mv {file} {newpath}"
+        # print(cmd)
+
+        os.system(f"mv {file} {newpath}")
 
 
 

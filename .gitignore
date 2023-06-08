@@ -9,3 +9,7 @@ images
 
 .env
 .vscode/settings.json
+
+
+./website.go
+doc/image_tools/ceshi_50x50

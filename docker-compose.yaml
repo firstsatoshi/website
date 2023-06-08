@@ -55,7 +55,7 @@ services:
      - redis
     volumes:
       - ./data/logs/inscribe:/home/logs
-      - ./images:/images  # NFT 图片目录映射
+      - ./images/nft:/images  # NFT 图片目录映射
     networks:
       - website_network
 

@@ -52,7 +52,6 @@ CREATE TABLE `tb_blindbox_event` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒活动表';
 
 
-INSERT INTO website.tb_blindbox_event (event_name,event_description,price_sats,is_active,payment_token,average_image_bytes,supply,avail,mint_limit,only_whitelist,start_time,end_time,create_time,update_time) VALUES('Bitcoin Eagle','This is Bitcoin Eagle NFT mint',1000,1,'BTC',500,6,6,2,0,'2023-05-27 16:28:39','2024-05-27 16:28:39','2023-05-27 16:28:39','2023-05-27 16:28:48');
 
 
 DROP TABLE IF EXISTS `tb_order`;
