@@ -2,13 +2,14 @@
 package types
 
 type JoinWaitListReq struct {
-	Email      string `json:"email"`
-	BtcAddress string `json:"btcAddress"`
+	Email       string `json:"email"`
+	BtcAddress  string `json:"btcAddress"`
+	ReferalCode string `json:"referalCode,optional"`
 }
 
 type JoinWaitListResp struct {
-	Id         int  `json:"no"`
-	Duplicated bool `json:"duplicated"`
+	ReferalCode string `json:"referalCode"`
+	Duplicated  bool   `json:"duplicated"`
 }
 
 type CreateOrderReq struct {

@@ -34,7 +34,8 @@ func (l *QueryGalleryListLogic) QueryGalleryList(req *types.QueryGalleryListReq)
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid request params")
 	}
 
-	total, err := l.svcCtx.TbBlindboxModel.FindCount(l.ctx)
+	builder := l.svcCtx.TbBlindboxModel.CountBuilder().Where("category = ?", req.Category)
+	total, err := l.svcCtx.TbBlindboxModel.FindCountByBuilder(l.ctx, builder)
 	if err != nil {
 		logx.Errorf("FindCount error: %v", err.Error())
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindCount error")

@@ -17,9 +17,11 @@ type (
 		tbBlindboxModel
 
 		RowBuilder() squirrel.SelectBuilder
+		CountBuilder() squirrel.SelectBuilder
 		FindBlindbox(ctx context.Context, rowBuilder squirrel.SelectBuilder) ([]*TbBlindbox, error)
 		FindPageListByPage(ctx context.Context, rowBuilder squirrel.SelectBuilder, page, pageSize int64, orderBy string) ([]*TbBlindbox, error)
 		FindCount(ctx context.Context) (int64, error)
+		FindCountByBuilder(ctx context.Context, builder squirrel.SelectBuilder) (int64, error)
 		// FindAll(ctx context.Context, coinType string) ([]*TbAddress, error)
 		// FindMaxId(ctx context.Context, coinType string) (int32, error)
 	}
@@ -89,13 +91,30 @@ func (m *customTbBlindboxModel) FindPageListByPage(ctx context.Context, rowBuild
 }
 
 // export logic
-func (m *customTbBlindboxModel) countBuilder() squirrel.SelectBuilder {
+func (m *customTbBlindboxModel) CountBuilder() squirrel.SelectBuilder {
 	return squirrel.Select("COUNT(id)").From(m.table)
 }
 
 func (m *customTbBlindboxModel) FindCount(ctx context.Context) (int64, error) {
 
-	query, values, err := m.countBuilder().Where("is_active = ?", 1).ToSql()
+	query, values, err := m.CountBuilder().Where("is_active = ?", 1).ToSql()
+	if err != nil {
+		return 0, err
+	}
+
+	var resp int64
+	err = m.QueryRowNoCacheCtx(ctx, &resp, query, values...)
+	switch err {
+	case nil:
+		return resp, nil
+	default:
+		return 0, err
+	}
+}
+
+func (m *customTbBlindboxModel) FindCountByBuilder(ctx context.Context, builder squirrel.SelectBuilder) (int64, error) {
+
+	query, values, err := builder.Where("is_active = ?", 1).ToSql()
 	if err != nil {
 		return 0, err
 	}

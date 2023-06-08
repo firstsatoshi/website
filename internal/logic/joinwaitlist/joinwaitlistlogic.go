@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/mail"
 
+	"github.com/firstsatoshi/website/common/uniqueid"
 	"github.com/firstsatoshi/website/internal/svc"
 	"github.com/firstsatoshi/website/internal/types"
 	"github.com/firstsatoshi/website/model"
@@ -59,7 +60,7 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 	// check exits
 	if one, err := l.svcCtx.TbWaitlistModel.FindOneByEmail(l.ctx, req.Email); err == nil {
 		resp.Duplicated = true
-		resp.Id = int(one.Id)
+		resp.ReferalCode = uniqueid.GetReferalCodeById(one.Id)
 		return &resp, nil
 	}
 
@@ -67,6 +68,7 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 	sqlRet, err := l.svcCtx.TbWaitlistModel.Insert(l.ctx, &model.TbWaitlist{
 		Email:      req.Email,
 		BtcAddress: req.BtcAddress,
+		RefereeId:  uniqueid.GetIdByReferalCode(req.ReferalCode),
 	})
 	if err != nil {
 		sqlRet.LastInsertId()
@@ -76,6 +78,6 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 
 	id, _ := sqlRet.LastInsertId()
 	resp.Duplicated = false
-	resp.Id = int(id)
+	resp.ReferalCode = uniqueid.GetReferalCodeById(id)
 	return &resp, nil
 }
