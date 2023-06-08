@@ -411,8 +411,14 @@ func (t *BtcDepositTask) scanBlock() {
 					return
 				}
 
-				// sub
-				event.Avail -= count
+				// update event avail
+				safeAvail :=  event.Supply - count
+				if safeAvail < 0  {
+					logx.Errorf("===================== safeAvail is NEGATIVE %v ===============================", safeAvail)
+					safeAvail = 0
+				}
+
+				event.Avail = safeAvail
 				t.tbBlindboxEventModel.Update(t.ctx, event)
 			}
 		}
