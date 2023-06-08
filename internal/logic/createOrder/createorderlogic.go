@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
@@ -141,6 +142,31 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	}
 	if int64(req.Count)+int64(mintCountSum) > event.MintLimit {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.EXCEED_MINT_LIMIT_ERROR), "address exceed mint limit %v", event.MintLimit)
+	}
+
+	// check safety avail
+	// query PAYPENDING order as pendingOrders, avail = event.avail - len(pendingOrders)
+	queryBuilder := l.svcCtx.TbOrderModel.RowBuilder().Where(squirrel.Eq{
+		"order_status": "PAYPENDING",
+	}).OrderBy("id DESC")
+	payPendingOrders, err := l.svcCtx.TbOrderModel.FindOrders(l.ctx, queryBuilder)
+	if err != nil {
+		logx.Errorf("FindOrders error: %v", err.Error())
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "database error")
+	}
+	orderCounter := 0
+	for _, o := range payPendingOrders {
+		if o.EventId == event.Id {
+			orderCounter += 1
+		}
+	}
+	safeAvail := event.Avail - int64(orderCounter)
+	if safeAvail < 0 {
+		safeAvail = 0
+	}
+	if req.Count > int(safeAvail) {
+		logx.Errorf("avail is not enough, safeavail is %v , request cout is %v", safeAvail, req.Count)
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.AVAILABLE_COUNT_IS_NOT_ENOUGH), "avail is not enough")
 	}
 
 	// random generate account_index and address_index

@@ -36,8 +36,31 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp []types.BlindboxEve
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "database error")
 	}
 
+	// query PAYPENDING order as pendingOrders, avail = event.avail - len(pendingOrders)
+	queryBuilder := l.svcCtx.TbOrderModel.RowBuilder().Where(squirrel.Eq{
+		"order_status": "PAYPENDING",
+	}).OrderBy("id DESC")
+	payPendingOrders, err := l.svcCtx.TbOrderModel.FindOrders(l.ctx, queryBuilder)
+	if err != nil {
+		logx.Errorf("FindOrders error: %v", err.Error())
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "database error")
+	}
+
 	resp = make([]types.BlindboxEvent, 0)
 	for _, event := range events {
+
+		// calculate safety avail
+		orderCounter := 0
+		for _, o := range payPendingOrders {
+			if o.EventId == event.Id {
+				orderCounter += 1
+			}
+		}
+		safeAvail := event.Avail - int64(orderCounter)
+		if safeAvail < 0 {
+			safeAvail = 0
+		}
+
 		resp = append(resp, types.BlindboxEvent{
 			EventId:           int(event.Id),
 			Name:              event.EventName,
@@ -48,7 +71,7 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp []types.BlindboxEve
 			PaymentToken:      event.PaymentToken,
 			AverageImageBytes: int(event.AverageImageBytes),
 			Supply:            int(event.Supply),
-			Avail:             int(event.Avail),
+			Avail:             int(safeAvail),
 			Enable:            event.IsActive > 0,
 			OnlyWhiteist:      event.OnlyWhitelist > 0,
 			StartTime:         event.StartTime.String(),

@@ -85,7 +85,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 			if err != nil {
 				return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindAll error:%v", err.Error())
 			}
-			logx.Infof("lks === %v", len(lks))
+			// logx.Infof("lks === %v", len(lks))
 
 			for _, lk := range lks {
 				b, err := l.svcCtx.TbBlindboxModel.FindOne(l.ctx, lk.BlindboxId)

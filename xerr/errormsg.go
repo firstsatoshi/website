@@ -13,7 +13,7 @@ func init() {
 	message[FEERATE_TOO_SMALL_ERROR] = "fee rate too small"
 	message[COUNT_EXCEED_PER_ORDER_LIMIT_ERROR] = "inscribe count exceed per order limit"
 	message[EVENT_NOT_EXISTS_ERROR] = "event does not exists"
-	message[AVAILABLE_COUNT_IS_NOT_ENOUGH] = "avialable count is not enough"
+	message[AVAILABLE_COUNT_IS_NOT_ENOUGH] = "avialable nft is not enough"
 	message[EXCEED_MINT_LIMIT_ERROR] = "exceed mint limit"
 	message[ONLY_WHITELIST_ERROR] = "only allow whitelist to mint"
 	message[DB_ERROR] = "db error"
