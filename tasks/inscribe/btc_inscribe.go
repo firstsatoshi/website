@@ -2,8 +2,10 @@ package inscribe
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -94,6 +96,25 @@ func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincf
 func (t *BtcInscribeTask) Start() {
 
 	wg := sync.WaitGroup{}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			ticker := time.NewTicker(time.Second * 60)
+			select {
+			case <-t.ctx.Done():
+				logx.Info("Gracefully exit btcCoinPrice Task goroutine....")
+				// wait sub-goroutine
+				return
+			case <-ticker.C:
+				logx.Info("======= Btc btcCoinPrice task======")
+				t.btcCoinPrice()
+			}
+		}
+	}()
+
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -400,6 +421,54 @@ func (t *BtcInscribeTask) orderTimeout() {
 			continue
 		}
 
+	}
+
+}
+
+func (t *BtcInscribeTask) btcCoinPrice() {
+	key := "bitcion-price-usd"
+
+	for i := 0; i < 5; i++ {
+
+		type DataItem struct {
+			PriceUsd string `json:"priceUsd"`
+		}
+		type Resp struct {
+			Data DataItem `json:"data"`
+		}
+
+		rsp, err := http.Get("https://api.coincap.io/v2/assets/bitcoin")
+		if err != nil {
+			logx.Errorf("error: %v", err.Error())
+			time.Sleep(time.Second)
+			continue
+		}
+
+		if rsp.StatusCode != http.StatusOK {
+			logx.Errorf("statusCode: %v", rsp.StatusCode)
+			time.Sleep(time.Second)
+			continue
+		}
+
+		body, err := ioutil.ReadAll(rsp.Body)
+		if err != nil {
+			time.Sleep(time.Second)
+			continue
+		}
+
+		var r Resp
+		if err = json.Unmarshal(body, &r); err != nil {
+			time.Sleep(time.Second)
+			logx.Errorf("json Unmarshal error: %v", err.Error())
+			continue
+		}
+
+		err = t.redis.Set(key, r.Data.PriceUsd)
+		if err != nil {
+			logx.Errorf("t.redis.Set error: %v", err.Error())
+			continue
+		}
+		break
 	}
 
 }
