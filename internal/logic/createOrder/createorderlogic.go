@@ -66,6 +66,17 @@ func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
 
 func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.CreateOrderResp, err error) {
 
+	// verify cloudflare Turnstile token
+	token, err := l.svcCtx.Redis.Get(req.Token)
+	if err != nil {
+		if l.svcCtx.ChainCfg.Net == wire.TestNet3 {
+			logx.Infof("============testnet skip token verify==============")
+		} else {
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_TOKEN_ERROR), "token: %v not exists", req.Token)
+		}
+	}
+	logx.Infof("token: %v", token)
+
 	// rate limit
 	code, err := l.svcCtx.PeriodLimit.TakeCtx(l.ctx, req.ReceiveAddress)
 	if err != nil {

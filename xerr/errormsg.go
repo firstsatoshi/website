@@ -16,6 +16,7 @@ func init() {
 	message[AVAILABLE_COUNT_IS_NOT_ENOUGH] = "avialable nft is not enough"
 	message[EXCEED_MINT_LIMIT_ERROR] = "exceed mint limit"
 	message[ONLY_WHITELIST_ERROR] = "only allow whitelist to mint"
+	message[INVALID_TOKEN_ERROR] = "token expired"
 	message[DB_ERROR] = "db error"
 }
 

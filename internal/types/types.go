@@ -17,6 +17,7 @@ type CreateOrderReq struct {
 	Count          int    `json:"count"`
 	ReceiveAddress string `json:"receiveAddress"`
 	FeeRate        int    `json:"feeRate"`
+	Token          string `json:"token"`
 }
 
 type CreateOrderResp struct {
