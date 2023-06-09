@@ -3,6 +3,7 @@ package turnslite
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -19,10 +20,11 @@ func VeifyToken(ctx context.Context, token string, rds *redis.Redis) (bool, erro
 	SECRET_KEY := "0x4AAAAAAAFdlF0_97nz6ddK51stJbVThuU"
 
 	logx.Infof("token: %v", token)
-	tokenHash := sha256.Sum256([]byte(token))
+	h := sha256.Sum256([]byte(token))
+	tokenHash := hex.EncodeToString(h[:])
 	v, err := rds.GetCtx(ctx, fmt.Sprintf("%v:%v", globalvar.TURNSTILE_TOKEN_PREFIX, string(tokenHash[:])))
 	if err == nil && v == token {
-		logx.Infof("okkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
+		logx.Infof("token ooooooooooooooooooooooooooook")
 		return true, nil
 	}
 
