@@ -347,6 +347,23 @@ func (t *BtcDepositTask) scanBlock() {
 					return
 				}
 
+				// NOTE: duplicated deposit, DO NOT decute avail count
+				if true {
+					countBuilder := t.tbLockOrderBlindboxModel.CountBuilder("id").Where(squirrel.Eq{
+						"event_id": order.EventId,
+						"order_id": order.OrderId,
+					})
+					count, err := t.tbLockOrderBlindboxModel.FindCount(t.ctx, countBuilder)
+					if err != nil {
+						logx.Errorf("FindCount error: %v ", err.Error())
+						return
+					}
+					if count > order.Count {
+						logx.Infof("=========== duplicated deposit =====================")
+						return
+					}
+				}
+
 				// random lock boxs
 				boxIds := make([]int64, 0)
 				for _, b := range boxs {
@@ -412,8 +429,8 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 
 				// update event avail
-				safeAvail :=  event.Supply - count
-				if safeAvail < 0  {
+				safeAvail := event.Supply - count
+				if safeAvail < 0 {
 					logx.Errorf("===================== safeAvail is NEGATIVE %v ===============================", safeAvail)
 					safeAvail = 0
 				}
