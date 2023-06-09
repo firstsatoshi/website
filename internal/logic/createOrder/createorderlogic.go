@@ -100,7 +100,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
 	}
 	if l.svcCtx.ChainCfg.Net == wire.MainNet {
-		if strings.HasPrefix(req.ReceiveAddress, "bc1p") {
+		if !strings.HasPrefix(req.ReceiveAddress, "bc1p") {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
 		}
 	} else {
