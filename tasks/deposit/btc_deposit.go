@@ -463,6 +463,7 @@ func (t *BtcDepositTask) txFecther(goroutineId int, wg *sync.WaitGroup, txids []
 		default:
 		}
 
+
 		txid := txids[i]
 		tx, err := t.apiClient.GetTansaction(txid)
 		if err != nil {
@@ -475,6 +476,7 @@ func (t *BtcDepositTask) txFecther(goroutineId int, wg *sync.WaitGroup, txids []
 		ch <- tx
 
 		i += 1
+		time.Sleep(time.Millisecond * 300)
 	}
 }
 
