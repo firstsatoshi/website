@@ -4,6 +4,7 @@ type JoinWaitListReq {
 	Email       string `json:"email"`
 	BtcAddress  string `json:"btcAddress"`
 	ReferalCode string `json:"referalCode,optional"`
+	Token       string `json:"token"`
 }
 
 type JoinWaitListResp {
@@ -183,6 +184,11 @@ service website-api {
 	post /checkwhitelist (checkWhitelistReq)returns (checkWhitelistResp)
 }
 
+type cloudflareTurnstileTokenVerifyReq {
+	CfTurnstileResponse string `form:"cf-turnstile-response"`
+	CfConnectingIP      string `form:"CF-Connecting-IP"`
+}
+
 // turnstile  token verify
 @server(
 	prefix: api/v1
@@ -190,5 +196,5 @@ service website-api {
 )
 service website-api {
 	@handler cloudflareTurnstileTokenVerify
-	post /cloudflareturnstiletokenverify ()returns (string)
+	post /cloudflareturnstiletokenverify (cloudflareTurnstileTokenVerifyReq)returns (string)
 }

@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/firstsatoshi/website/common/globalvar"
 	"github.com/firstsatoshi/website/internal/svc"
+	"github.com/firstsatoshi/website/internal/types"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -16,32 +18,29 @@ type CloudflareTurnstileTokenVerifyLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
-
-	form *url.Values
 }
 
-func NewCloudflareTurnstileTokenVerifyLogic(ctx context.Context, svcCtx *svc.ServiceContext, form *url.Values) *CloudflareTurnstileTokenVerifyLogic {
+func NewCloudflareTurnstileTokenVerifyLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CloudflareTurnstileTokenVerifyLogic {
 	return &CloudflareTurnstileTokenVerifyLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
-		form:   form,
 	}
 }
 
-func (l *CloudflareTurnstileTokenVerifyLogic) CloudflareTurnstileTokenVerify() (resp string, err error) {
+func (l *CloudflareTurnstileTokenVerifyLogic) CloudflareTurnstileTokenVerify(req *types.CloudflareTurnstileTokenVerifyReq) (resp string, err error) {
 	logx.Infof("==========CloudflareTurnstileTokenVerify======")
 
-	token := l.form.Get("cf-turnstile-response")
-	remoteIp := l.form.Get("CF-Connecting-IP")
+	// token := l.form.Get("cf-turnstile-response")
+	// remoteIp := l.form.Get("CF-Connecting-IP")
 	SECRET_KEY := "0x4AAAAAAAFdlF0_97nz6ddK51stJbVThuU"
 
-	logx.Infof("token: %v", token)
+	logx.Infof("token: %v", req.CfTurnstileResponse)
 
 	postForm := url.Values{}
 	postForm.Set("secret", SECRET_KEY)
-	postForm.Set("response", token)
-	postForm.Set("remoteip", remoteIp)
+	postForm.Set("response", req.CfTurnstileResponse)
+	postForm.Set("remoteip", req.CfConnectingIP)
 
 	url := "https://challenges.cloudflare.com/turnstile/v0/siteverify"
 	rsp, err := http.PostForm(url, postForm)
@@ -77,7 +76,7 @@ func (l *CloudflareTurnstileTokenVerifyLogic) CloudflareTurnstileTokenVerify() (
 	}
 
 	// set expire
-	l.svcCtx.Redis.SetexCtx(l.ctx, token, "ok", 300)
+	l.svcCtx.Redis.SetexCtx(l.ctx, fmt.Sprintf("%v:%v", globalvar.TURNSTILE_TOKEN_PREFIX, req.CfTurnstileResponse), "ok", 300)
 
 	return "valid ok!\n" + string(body), nil
 }

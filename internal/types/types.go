@@ -5,6 +5,7 @@ type JoinWaitListReq struct {
 	Email       string `json:"email"`
 	BtcAddress  string `json:"btcAddress"`
 	ReferalCode string `json:"referalCode,optional"`
+	Token       string `json:"token"`
 }
 
 type JoinWaitListResp struct {
@@ -112,4 +113,9 @@ type CheckWhitelistReq struct {
 
 type CheckWhitelistResp struct {
 	IsWhitelist bool `json:"isWhitelist"`
+}
+
+type CloudflareTurnstileTokenVerifyReq struct {
+	CfTurnstileResponse string `form:"cf-turnstile-response"`
+	CfConnectingIP      string `form:"CF-Connecting-IP"`
 }

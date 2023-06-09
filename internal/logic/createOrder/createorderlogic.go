@@ -67,7 +67,7 @@ func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
 func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.CreateOrderResp, err error) {
 
 	// verify cloudflare Turnstile token
-	token, err := l.svcCtx.Redis.Get(req.Token)
+	token, err := l.svcCtx.Redis.Get(fmt.Sprintf("%v:%v", globalvar.TURNSTILE_TOKEN_PREFIX, req.Token))
 	if err != nil {
 		if l.svcCtx.ChainCfg.Net == wire.TestNet3 {
 			logx.Infof("============testnet skip token verify==============")
