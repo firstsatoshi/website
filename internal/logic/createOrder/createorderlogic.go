@@ -144,8 +144,8 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	tmpBuilder = tmpBuilder.Where("(order_status=? OR order_status=? OR order_status=? OR order_status=? OR order_status=?)",
 		"NOTPAID", "PAYPENDING", "PAYSUCCESS", "MINTING", "ALLSUCCESS")
 
-	sql, _, _ := tmpBuilder.ToSql()
-	logx.Infof("sql: %v", sql)
+	// sql, _, _ := tmpBuilder.ToSql()
+	// logx.Infof("sql: %v", sql)
 	mintCountSum, err := l.svcCtx.TbOrderModel.FindSum(l.ctx, tmpBuilder)
 	if err != nil {
 		logx.Errorf("FindSum error:%v", err.Error())

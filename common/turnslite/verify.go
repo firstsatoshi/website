@@ -20,8 +20,9 @@ func VeifyToken(ctx context.Context, token string, rds *redis.Redis) (bool, erro
 
 	logx.Infof("token: %v", token)
 	tokenHash := sha256.Sum256([]byte(token))
-	_, err := rds.GetCtx(ctx, fmt.Sprintf("%v:%v", globalvar.TURNSTILE_TOKEN_PREFIX, string(tokenHash[:])))
-	if err == nil {
+	v, err := rds.GetCtx(ctx, fmt.Sprintf("%v:%v", globalvar.TURNSTILE_TOKEN_PREFIX, string(tokenHash[:])))
+	if err == nil && v == token {
+		logx.Infof("okkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
 		return true, nil
 	}
 
@@ -63,7 +64,7 @@ func VeifyToken(ctx context.Context, token string, rds *redis.Redis) (bool, erro
 	}
 
 	// set expire
-	rds.SetexCtx(ctx, fmt.Sprintf("%v:%v", globalvar.TURNSTILE_TOKEN_PREFIX, tokenHash), "ok", 300)
+	rds.SetexCtx(ctx, fmt.Sprintf("%v:%v", globalvar.TURNSTILE_TOKEN_PREFIX, tokenHash), token, 300)
 
 	logx.Infof("===========turnslite token verify ok ===================")
 	return true, nil
