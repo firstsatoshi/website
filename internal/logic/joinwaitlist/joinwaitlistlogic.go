@@ -2,11 +2,10 @@ package joinwaitlist
 
 import (
 	"context"
-	"fmt"
 	"net/mail"
 
 	"github.com/btcsuite/btcd/wire"
-	"github.com/firstsatoshi/website/common/globalvar"
+	"github.com/firstsatoshi/website/common/turnslite"
 	"github.com/firstsatoshi/website/common/uniqueid"
 	"github.com/firstsatoshi/website/internal/svc"
 	"github.com/firstsatoshi/website/internal/types"
@@ -34,15 +33,14 @@ func NewJoinWaitListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Join
 
 func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.JoinWaitListResp, error) {
 	// verify cloudflare Turnstile token
-	token, err := l.svcCtx.Redis.Get(fmt.Sprintf("%v:%v", globalvar.TURNSTILE_TOKEN_PREFIX, req.Token))
-	if err != nil {
+	ok, err := turnslite.VeifyToken(l.ctx, req.Token, l.svcCtx.Redis)
+	if !ok || err != nil {
 		if l.svcCtx.ChainCfg.Net == wire.TestNet3 {
 			logx.Infof("============testnet skip token verify==============")
 		} else {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_TOKEN_ERROR), "token: %v not exists", req.Token)
 		}
 	}
-	logx.Infof("token: %v", token)
 
 	// rate limit
 	code, err := l.svcCtx.PeriodLimit.TakeCtx(l.ctx, req.Email)
