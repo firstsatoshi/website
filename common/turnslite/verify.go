@@ -19,6 +19,10 @@ func VeifyToken(ctx context.Context, token string, rds *redis.Redis) (bool, erro
 
 	SECRET_KEY := "0x4AAAAAAAFdlF0_97nz6ddK51stJbVThuU"
 
+	if len(token) < 10 {
+		return false, fmt.Errorf("invalid token")
+	}
+
 	logx.Infof("token: %v", token)
 	h := sha256.Sum256([]byte(token))
 	tokenHash := hex.EncodeToString(h[:])
