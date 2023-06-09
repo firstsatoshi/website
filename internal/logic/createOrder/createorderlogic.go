@@ -96,11 +96,11 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	// check receiveAddress is valid P2TR address
 	_, err = btcutil.DecodeAddress(req.ReceiveAddress, l.svcCtx.ChainCfg)
-	if err != nil {
+	if err != nil || len(req.ReceiveAddress) != 62 {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
 	}
 	if l.svcCtx.ChainCfg.Net == wire.MainNet {
-		if !strings.HasPrefix(req.ReceiveAddress, "bc1p") {
+		if strings.HasPrefix(req.ReceiveAddress, "bc1p") {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
 		}
 	} else {
