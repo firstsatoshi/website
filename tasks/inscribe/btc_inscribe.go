@@ -186,6 +186,7 @@ func (t *BtcInscribeTask) inscribe() {
 	}
 
 	order := orders[0]
+	logx.Infof("orderId: %v, orderInfo: %v", order.OrderId, order)
 
 	// get locked images by order
 	q := t.tbTbLockOrderBlindboxModel.RowBuilder().Where(squirrel.Eq{
@@ -198,6 +199,8 @@ func (t *BtcInscribeTask) inscribe() {
 		return
 	}
 
+	logx.Infof("lockOrderBoxs: %v", lockOrderBoxs)
+
 	// make inscribe data
 	inscribeData := make([]ordinals.InscriptionData, 0)
 	for _, bbox := range lockOrderBoxs {
@@ -207,6 +210,7 @@ func (t *BtcInscribeTask) inscribe() {
 			logx.Errorf("ReadFile read image %v error: %v", imgFilePath, err.Error())
 			return
 		}
+		logx.Infof("img size: %v", len(imgData))
 
 		insData := ordinals.InscriptionData{
 			ContentType: "image/png",

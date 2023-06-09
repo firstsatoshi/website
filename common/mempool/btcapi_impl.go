@@ -12,6 +12,7 @@ import (
 	"github.com/btcsuite/btcd/wire"
 	"github.com/firstsatoshi/website/common/btcapi"
 	"github.com/pkg/errors"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 // implement  BTCAPIClient interface
@@ -77,7 +78,10 @@ func (m *MempoolApiClient) BroadcastTx(tx *wire.MsgTx) (*chainhash.Hash, error) 
 	}
 
 	url := fmt.Sprintf("%s/tx", m.host)
-	fmt.Printf("url: %v", url)
+	// fmt.Printf("url: %v", url)
+	txHex :=  hex.EncodeToString(buf.Bytes())
+	logx.Infof("BroadcastTx rawtx: %v", txHex)
+
 	resp, err := m.client.R().SetBody([]byte(hex.EncodeToString(buf.Bytes()))).Post(url)
 	if err != nil {
 		return nil, err
@@ -95,5 +99,6 @@ func (m *MempoolApiClient) BroadcastTx(tx *wire.MsgTx) (*chainhash.Hash, error) 
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("failed to parse tx hash, %s", string(txid)))
 	}
+	logx.Infof("txid: %v", txHash)
 	return txHash, nil
 }
