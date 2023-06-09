@@ -114,7 +114,6 @@ func (t *BtcInscribeTask) Start() {
 		}
 	}()
 
-
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -174,7 +173,7 @@ func (t *BtcInscribeTask) inscribe() {
 	// get order from db, 1 order per time
 	query := t.tbOrderModel.RowBuilder().Where(squirrel.Eq{
 		"order_status": "PAYSUCCESS",
-	}).Limit(1)
+	}).Limit(1).OrderBy("id DESC")
 	orders, err := t.tbOrderModel.FindOrders(t.ctx, query)
 	if err != nil {
 		logx.Errorf("error: %v", err.Error())
@@ -185,8 +184,13 @@ func (t *BtcInscribeTask) inscribe() {
 		return
 	}
 
-	order := orders[0]
-	logx.Infof("orderId: %v, orderInfo: %v", order.OrderId, order)
+	for _, order := range orders {
+		logx.Infof("orderId: %v, orderInfo: %v", order.OrderId, order)
+		t.orderInscribe(order)
+	}
+}
+
+func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 
 	// get locked images by order
 	q := t.tbTbLockOrderBlindboxModel.RowBuilder().Where(squirrel.Eq{
