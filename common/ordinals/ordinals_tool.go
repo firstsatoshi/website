@@ -57,6 +57,20 @@ type blockchainClient struct {
 	btcApiClient btcapi.BTCAPIClient
 }
 
+type BroadTx struct {
+	RawTx  string `json:"rawtx"`
+	Txid   string `json:"txid"`
+	Status bool   `json:"status"`
+}
+
+// OrderBroadcastAtom  the response of broadcast
+type OrderBroadcastAtom struct {
+	OrderId string     `json:"orderId"`
+	Commit  *BroadTx   `json:"commit"`
+	Reveals []*BroadTx `json:"reveals"`
+	Status  bool       `json:"status"`
+}
+
 type inscriptionTool struct {
 	net                       *chaincfg.Params
 	client                    *blockchainClient
@@ -557,20 +571,59 @@ func (tool *inscriptionTool) calculateFee() int64 {
 	return fees
 }
 
-func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxHashList []*chainhash.Hash, inscriptions []string, fees int64, err error) {
+func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxHashList []*chainhash.Hash, inscriptions []string, fees int64, orderBroadcastAtom *OrderBroadcastAtom, err error) {
+
+	//========= save rawtx
+	hexCommitRawTx, err := tool.getCommitTxHex()
+	if err != nil {
+		return
+	}
+	hexRevealTxHexLists, err := tool.getRevealTxHexList()
+	if err != nil {
+		return
+	}
+	atom := OrderBroadcastAtom{
+		OrderId: "",
+		Commit: &BroadTx{
+			RawTx:  hexCommitRawTx,
+			Txid:   "",
+			Status: false,
+		},
+		Reveals: []*BroadTx{},
+		Status:  false,
+	}
+	for _, hexRevealTx := range hexRevealTxHexLists {
+		atom.Reveals = append(atom.Reveals, &BroadTx{
+			RawTx:  hexRevealTx,
+			Txid:   "",
+			Status: false,
+		})
+	}
+	//===============
+
 	fees = tool.calculateFee()
 	commitTxHash, err = tool.sendRawTransaction(tool.commitTx)
 	if err != nil {
-		return nil, nil, nil, fees, errors.Wrap(err, "send commit tx error")
+		return nil, nil, nil, fees, &atom, errors.Wrap(err, "send commit tx error")
 	}
+
+	// commit tx broadcast success
+	orderBroadcastAtom.Commit.Txid = commitTxHash.String()
+	orderBroadcastAtom.Commit.Status = true
+
 	revealTxHashList = make([]*chainhash.Hash, len(tool.revealTx))
 	inscriptions = make([]string, len(tool.txCtxDataList))
 	for i := range tool.revealTx {
 		time.Sleep(time.Second * 3)
 		_revealTxHash, err := tool.sendRawTransaction(tool.revealTx[i])
 		if err != nil {
-			return commitTxHash, revealTxHashList, nil, fees, errors.Wrap(err, fmt.Sprintf("send reveal tx error, %d。", i))
+			return commitTxHash, revealTxHashList, nil, fees, &atom, errors.Wrap(err, fmt.Sprintf("send reveal tx error, %d。", i))
 		}
+
+		// commit tx broadcast success
+		orderBroadcastAtom.Reveals[i].Txid = _revealTxHash.String()
+		orderBroadcastAtom.Reveals[i].Status = true
+
 		revealTxHashList[i] = _revealTxHash
 		if len(tool.revealTx) == len(tool.txCtxDataList) {
 			inscriptions[i] = fmt.Sprintf("%si0", _revealTxHash)
@@ -583,5 +636,9 @@ func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxH
 			inscriptions[i] = fmt.Sprintf("%s%d", inscriptions[0], i)
 		}
 	}
-	return commitTxHash, revealTxHashList, inscriptions, fees, nil
+
+	// all tx broadcast ok
+	orderBroadcastAtom.Status = true
+
+	return commitTxHash, revealTxHashList, inscriptions, fees, &atom, nil
 }

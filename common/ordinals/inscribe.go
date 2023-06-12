@@ -15,7 +15,10 @@ import (
 )
 
 func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Params, feeRate int,
-	inscriptionData []InscriptionData, revealValueSats int64, onlyEstimate bool) (commitTxid string, revealsTxids []string, fee int64, change int64, err error) {
+	inscriptionData []InscriptionData, revealValueSats int64, onlyEstimate bool) (
+	commitTxid string, revealsTxids []string, fee int64, change int64,
+	orderBroadcastAtom *OrderBroadcastAtom, err error,
+) {
 
 	// initial
 	commitTxid = ""
@@ -91,7 +94,8 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 	}
 
 	logx.Infof("before tool.Inscribe .....")
-	commitTxHash, revealTxHashList, _, _, err := tool.Inscribe()
+
+	commitTxHash, revealTxHashList, _, _, orderBroadcastAtom, err := tool.Inscribe()
 	if err != nil {
 		logx.Errorf("inscribe error: %v", err.Error())
 		err = fmt.Errorf("send tx errr, %v", err)

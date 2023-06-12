@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -84,12 +85,58 @@ func (m *MempoolApiClient) BroadcastTx(tx *wire.MsgTx) (txHash *chainhash.Hash, 
 	txHex := hex.EncodeToString(buf.Bytes())
 	logx.Infof("BroadcastTx rawtx: %v", txHex)
 
+	rand.Seed(time.Now().UnixMilli())
 	txHash = nil
 	txid := ""
-	for iTry := 0; iTry < 60; iTry++ {
-		logx.Infof(" BroadcastTx  try %v times ", iTry)
-		time.Sleep(time.Second * 1)
+	for iTry := 0; iTry < 120; iTry++ {
+		logx.Infof(" BroadcastTx  try %v times , hexRawTx: %v", iTry, txHex)
+		sleepSecs := rand.Int()%2 + 1
+		time.Sleep(time.Second * time.Duration(sleepSecs))
+
 		resp, err := m.client.R().SetBody([]byte(hex.EncodeToString(buf.Bytes()))).Post(url)
+		if err != nil {
+			continue
+		}
+		if resp.StatusCode() != http.StatusOK {
+			continue
+		}
+
+		txid = string(resp.Body())
+		if len(txid) != 64 {
+			continue
+		}
+		_, e := hex.DecodeString(txid)
+		if e != nil {
+			continue
+		}
+
+		// everything is ok
+		txHash, err := chainhash.NewHashFromStr(txid)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("failed to parse tx hash, %s", string(txid)))
+		}
+		logx.Infof("txid: %v", txHash)
+		return txHash, nil
+	}
+
+	logx.Infof("BroadcastTx rawtx error %v ", err.Error())
+
+	return nil, err
+}
+
+// BroadcastTx https://mempool.space/zh/docs/api/rest#post-transaction
+func (m *MempoolApiClient) BroadcastTxHex(hexRawTx string) (txHash *chainhash.Hash, err error) {
+
+	url := fmt.Sprintf("%s/tx", m.host)
+	txHash = nil
+	txid := ""
+	rand.Seed(time.Now().UnixMilli())
+	for iTry := 0; iTry < 120; iTry++ {
+		logx.Infof(" BroadcastTx  try %v times , hexRawTx : %v", iTry, hexRawTx)
+		sleepSecs := rand.Int()%2 + 1
+		time.Sleep(time.Second * time.Duration(sleepSecs))
+
+		resp, err := m.client.R().SetBody([]byte(hexRawTx)).Post(url)
 		if err != nil {
 			continue
 		}

@@ -257,9 +257,71 @@ func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 
 	// inscrbe images
 	onlyEstimate := false // push tx to blockchain
-	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe(
-		changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, int64(revealValueSats), onlyEstimate)
+	commitTxid := ""
+	revealTxids := []string{}
+	realFee := int64(0)
+	realChange := int64(0)
+	var orderBroadcastAtom *ordinals.OrderBroadcastAtom = nil
+	tmpAtomKey := fmt.Sprintf("broadcasttx:%v", order.OrderId)
+	tmpAtomValue, _ := t.redis.Get(tmpAtomKey)
+	if len(tmpAtomValue) > 1 {
+		// an old failed order to process again, broadcast txs directly
+		orderBroadcastAtom = &ordinals.OrderBroadcastAtom{}
+		err := json.Unmarshal([]byte(tmpAtomValue), orderBroadcastAtom)
+		if err != nil {
+			logx.Errorf("json.Unmarshal error: %v", err.Error())
+			return
+		}
+
+		// broadcast rawtx directly
+		if orderBroadcastAtom.Commit.Status == false {
+			txhash, err := t.apiClient.BroadcastTxHex(orderBroadcastAtom.Commit.RawTx)
+			if err == nil {
+				orderBroadcastAtom.Commit.Txid = txhash.String()
+				orderBroadcastAtom.Commit.Status = true
+
+				for i, x := range orderBroadcastAtom.Reveals {
+					if x.Status == false {
+						txhash, err := t.apiClient.BroadcastTxHex(x.RawTx)
+						if err == nil {
+							orderBroadcastAtom.Reveals[i].Txid = txhash.String()
+							orderBroadcastAtom.Reveals[i].Status = true
+						} else {
+							// error
+							break
+						}
+					}
+				}
+			}
+		}
+
+		// if all is ok
+		if err == nil {
+			commitTxid = orderBroadcastAtom.Commit.Txid
+			for _, x := range orderBroadcastAtom.Reveals {
+				revealTxids = append(revealTxids, x.Txid)
+			}
+
+		}
+
+	} else {
+		// new order to process
+		commitTxid, revealTxids, realFee, realChange, orderBroadcastAtom, err = ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, int64(revealValueSats), onlyEstimate)
+	}
 	if err != nil {
+		// save all of broadcast tx info
+		if orderBroadcastAtom != nil {
+			if orderBroadcastAtom.Commit != nil && orderBroadcastAtom.Reveals != nil {
+				orderBroadcastAtom.OrderId = order.OrderId // set orderId
+				data, err := json.Marshal(orderBroadcastAtom)
+				if err != nil {
+					panic(fmt.Errorf("json.Marshal error: %v", err.Error()))
+				}
+
+				t.redis.Set(tmpAtomKey, string(data))
+			}
+		}
+
 		logx.Errorf("inscribe error: %v ", err.Error())
 		return
 	}
@@ -318,6 +380,10 @@ func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 		}
 		break
 	}
+
+	// if everything is ok , rm redis key, ignore error
+	t.redis.Del(tmpAtomKey)
+
 	logx.Infof("update order %v status and blindbox status  SUCCESS ", order.OrderId)
 }
 
