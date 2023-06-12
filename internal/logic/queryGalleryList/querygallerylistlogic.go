@@ -41,7 +41,9 @@ func (l *QueryGalleryListLogic) QueryGalleryList(req *types.QueryGalleryListReq)
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindCount error")
 	}
 
-	if req.CurPage > int(int(total)/req.PageSize) {
+	totalPage := int(math.Ceil(float64(total) / float64(req.PageSize)))
+
+	if req.CurPage > totalPage {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid request params PageSize ")
 	}
 
@@ -58,7 +60,7 @@ func (l *QueryGalleryListLogic) QueryGalleryList(req *types.QueryGalleryListReq)
 	resp.Category = req.Category
 	resp.CurPage = req.CurPage
 	resp.PageSize = req.PageSize
-	resp.Total = int(math.Ceil(float64(total) / float64(req.PageSize)))
+	resp.Total = totalPage
 
 	for _, box := range boxs {
 		resp.NFTs = append(resp.NFTs, types.NFT{
