@@ -187,7 +187,7 @@ func (t *BtcDepositTask) scanBlock() {
 		}
 
 		// multi goroutine txfecther
-		goroutineCount := 30
+		goroutineCount := 10
 		ch := make(chan mempool.Transaction, 50000)
 		go func() {
 			wg := sync.WaitGroup{}
@@ -202,6 +202,7 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 
 				wg.Add(1)
+				time.Sleep(time.Millisecond * 33)
 				go t.txFecther(i, &wg, txids[startIdx:endIdx], ch)
 			}
 			wg.Wait()
@@ -476,7 +477,7 @@ func (t *BtcDepositTask) txFecther(goroutineId int, wg *sync.WaitGroup, txids []
 		ch <- tx
 
 		i += 1
-		time.Sleep(time.Millisecond * 300)
+		time.Sleep(time.Millisecond * 373)
 	}
 }
 
