@@ -188,13 +188,3 @@ type cloudflareTurnstileTokenVerifyReq {
 	CfTurnstileResponse string `form:"cf-turnstile-response"`
 	CfConnectingIP      string `form:"CF-Connecting-IP"`
 }
-
-// turnstile  token verify
-@server(
-	prefix: api/v1
-	group: cloudflareTurnstileTokenVerify
-)
-service website-api {
-	@handler cloudflareTurnstileTokenVerify
-	post /cloudflareturnstiletokenverify (cloudflareTurnstileTokenVerifyReq)returns (string)
-}

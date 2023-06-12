@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	checkwhitelist "github.com/firstsatoshi/website/internal/handler/checkwhitelist"
-	cloudflareTurnstileTokenVerify "github.com/firstsatoshi/website/internal/handler/cloudflareTurnstileTokenVerify"
 	coinPrice "github.com/firstsatoshi/website/internal/handler/coinPrice"
 	createOrder "github.com/firstsatoshi/website/internal/handler/createOrder"
 	joinwaitlist "github.com/firstsatoshi/website/internal/handler/joinwaitlist"
@@ -90,17 +89,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPost,
 				Path:    "/checkwhitelist",
 				Handler: checkwhitelist.CheckWhitelistHandler(serverCtx),
-			},
-		},
-		rest.WithPrefix("/api/v1"),
-	)
-
-	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodPost,
-				Path:    "/cloudflareturnstiletokenverify",
-				Handler: cloudflareTurnstileTokenVerify.CloudflareTurnstileTokenVerifyHandler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/api/v1"),

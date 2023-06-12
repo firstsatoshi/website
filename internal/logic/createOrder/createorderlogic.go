@@ -2,6 +2,8 @@ package createOrder
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"math"
 	"math/rand"
@@ -78,7 +80,9 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	}
 
 	// rate limit
-	code, err := l.svcCtx.PeriodLimit.TakeCtx(l.ctx, req.ReceiveAddress)
+	s := sha256.Sum256([]byte(req.Token))
+	tokenHash := hex.EncodeToString(s[:])
+	code, err := l.svcCtx.PeriodLimit.TakeCtx(l.ctx, "createorderapiperiodlimit:" + tokenHash)
 	if err != nil {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "PeriodLimit.TakeCtx error: %v", err.Error())
 	}

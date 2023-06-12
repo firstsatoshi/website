@@ -2,8 +2,12 @@ package joinwaitlist
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"net/mail"
+	"strings"
 
+	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/firstsatoshi/website/common/turnslite"
 	"github.com/firstsatoshi/website/common/uniqueid"
@@ -43,7 +47,9 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 	}
 
 	// rate limit
-	code, err := l.svcCtx.PeriodLimit.TakeCtx(l.ctx, req.Email)
+	s := sha256.Sum256([]byte(req.Token))
+	tokenHash := hex.EncodeToString(s[:])
+	code, err := l.svcCtx.PeriodLimit.TakeCtx(l.ctx, "joinwaitlistapiperiodlimit:"+tokenHash)
 	if err != nil {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "PeriodLimit.TakeCtx error: %v", err.Error())
 	}
@@ -66,6 +72,21 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 	btcAddress := req.BtcAddress
 	if len(btcAddress) != 62 {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid bitcoin p2tr address")
+	}
+	// check receiveAddress is valid P2TR address
+	_, err = btcutil.DecodeAddress(req.BtcAddress, l.svcCtx.ChainCfg)
+	if err != nil || len(req.BtcAddress) != 62 {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid btcaddress %v", req.BtcAddress)
+	}
+	if l.svcCtx.ChainCfg.Net == wire.MainNet {
+		if !strings.HasPrefix(req.BtcAddress, "bc1p") {
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid btcaddress  %v", req.BtcAddress)
+		}
+	} else {
+		// testnet3
+		if !strings.HasPrefix(req.BtcAddress, "tb1p") {
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid btcaddress  %v", req.BtcAddress)
+		}
 	}
 
 	// check exits
