@@ -114,8 +114,3 @@ type CheckWhitelistReq struct {
 type CheckWhitelistResp struct {
 	IsWhitelist bool `json:"isWhitelist"`
 }
-
-type CloudflareTurnstileTokenVerifyReq struct {
-	CfTurnstileResponse string `form:"cf-turnstile-response"`
-	CfConnectingIP      string `form:"CF-Connecting-IP"`
-}

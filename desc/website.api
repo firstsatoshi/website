@@ -183,8 +183,3 @@ service website-api {
 	@handler checkWhitelist
 	post /checkwhitelist (checkWhitelistReq)returns (checkWhitelistResp)
 }
-
-type cloudflareTurnstileTokenVerifyReq {
-	CfTurnstileResponse string `form:"cf-turnstile-response"`
-	CfConnectingIP      string `form:"CF-Connecting-IP"`
-}
