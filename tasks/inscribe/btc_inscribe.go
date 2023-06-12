@@ -249,9 +249,16 @@ func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 		return
 	}
 
+	// set reveal output value
+	revealValueSats := 10000 // 10000 sats
+	if t.chainCfg.Net == wire.TestNet3 {
+		revealValueSats = 546 // only for testnet
+	}
+
 	// inscrbe images
 	onlyEstimate := false // push tx to blockchain
-	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, onlyEstimate)
+	commitTxid, revealTxids, realFee, realChange, err := ordinals.Inscribe(
+		changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, int64(revealValueSats), onlyEstimate)
 	if err != nil {
 		logx.Errorf("inscribe error: %v ", err.Error())
 		return
