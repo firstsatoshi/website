@@ -48,18 +48,20 @@ func NewCreateOrderLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 //	Transaction size = Overhead +  57.5 * inputsNumber + 43 * outputsNumber
 //	    eg: 1 input 1 output: 10.5 + 57.5 * 1 + 43 * 1 = 111 bytes
 func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
-	averageFileSize := imgBytes * count
+	averageFileSize := float64(imgBytes)
 
-	utxoOutputValue := float64(utxoSat) * count
-	commitTxSize := 68 + (43+1)*count
+	utxoOutputValue := float64(utxoSat)
+	commitTxSize := float64(68 + (43 + 1))
 	commitTxSize += 64
-	revealTxSize := 10.5 + (57.5+43.0)*float64(count)
+	revealTxSize := 10.5 + (57.5+43.0)
 	revealTxSize += 64
 	feeSats := math.Ceil((averageFileSize/4 + commitTxSize + revealTxSize) * feeRate)
 	feeSats = 1000 * math.Ceil(feeSats/1000)
 
+	feeSats *= count
+
 	// base fee
-	baseService := 1000 * math.Ceil(feeRate*0.1/1000)
+	baseService := 1000 * math.Ceil(feeSats*0.1/1000)
 	feeSats += baseService
 
 	total := feeSats + utxoOutputValue
@@ -81,7 +83,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	// rate limit
 	s := sha256.Sum256([]byte(req.Token))
 	tokenHash := hex.EncodeToString(s[:])
-	code, err := l.svcCtx.PeriodLimit.TakeCtx(l.ctx, "createorderapiperiodlimit:" + tokenHash)
+	code, err := l.svcCtx.PeriodLimit.TakeCtx(l.ctx, "createorderapiperiodlimit:"+tokenHash)
 	if err != nil {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "PeriodLimit.TakeCtx error: %v", err.Error())
 	}
@@ -297,7 +299,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		DepositAddress: ord.DepositAddress,
 		ReceiveAddress: ord.ReceiveAddress,
 		FeeRate:        int(ord.FeeRate),
-		Bytes:          int(event.AverageImageBytes),
+		Bytes:          int(event.AverageImageBytes * ord.Count),
 		InscribeFee:    int(ord.TxfeeAmountSat),
 		ServiceFee:     int(ord.ServiceFeeSat),
 		Price:          int(ord.PriceSat),
