@@ -57,6 +57,7 @@ type Order struct {
 	DepositAddress   string      `json:"depositAddress"`
 	Count            int         `json:"count"`
 	Total            int         `json:"total"`
+	FeeRate          int         `json:"feeRate"`
 	ReceiveAddress   string      `json:"receiveAddress"`
 	OrderStatus      string      `json:"orderStatus"`
 	PayTxid          string      `json:"payTxid"`
@@ -114,4 +115,16 @@ type CheckWhitelistReq struct {
 
 type CheckWhitelistResp struct {
 	IsWhitelist bool `json:"isWhitelist"`
+}
+
+type QueryAddressReq struct {
+	EventId        int    `json:"eventId"`
+	ReceiveAddress string `json:"receiveAddress"`
+}
+
+type QueryAddressResp struct {
+	EventId            int  `json:"eventId"`
+	IsWhitelist        bool `json:"isWhitelist"`
+	EventMintLimit     int  `json:"eventMintLimit"`
+	CurrentOrdersTotal int  `json:"currentOrdersTotal"`
 }

@@ -76,6 +76,7 @@ type Order {
 	DepositAddress   string      `json:"depositAddress"`
 	Count            int         `json:"count"`
 	Total            int         `json:"total"`
+	FeeRate          int         `json:"feeRate"`
 	ReceiveAddress   string      `json:"receiveAddress"`
 	OrderStatus      string      `json:"orderStatus"`
 	PayTxid          string      `json:"payTxid"`
@@ -183,4 +184,26 @@ type checkWhitelistResp {
 service website-api {
 	@handler checkWhitelist
 	post /checkwhitelist (checkWhitelistReq)returns (checkWhitelistResp)
+}
+
+// 查询地址信息（是否是白名单，当前订单数量）
+type queryAddressReq {
+	EventId        int    `json:"eventId"`
+	ReceiveAddress string `json:"receiveAddress"`
+}
+
+type queryAddressResp {
+	EventId            int  `json:"eventId"`
+	IsWhitelist        bool `json:"isWhitelist"`
+	EventMintLimit     int  `json:"eventMintLimit"`
+	CurrentOrdersTotal int  `json:"currentOrdersTotal"`
+}
+
+@server(
+	prefix: api/v1
+	group: queryAddress
+)
+service website-api {
+	@handler queryAddress
+	post /queryaddress (queryAddressReq)returns (queryAddressResp)
 }

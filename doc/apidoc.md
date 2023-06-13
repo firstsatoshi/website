@@ -305,3 +305,41 @@
         }
     }
     ```
+
+##  **queryaddress**检查当前地址订单数量
+
+
+- 请求方式: `POST`
+
+- 请求参数：
+
+    | 字段 | 说明| 类型 | 可选? | 示例 |
+    |-----|------|------|----|----|
+    | `eventId` | 活动id | integer | 必填 |  1 |
+    | `receiveAddress` | 接收地址  | string | 必填 | tb1pv5d2mmx2v9cx9menxl5zlhacljqu9zqhltl4d303n3rjjcxfrgwq20ej2q |
+
+
+- 请求示例:
+
+    ```json
+    {
+        "eventId":1,
+        "receiveAddress":"tb1pj2rglj70gwfydjed9w8l4n5vcurxdpahpcj02076wdykz376376q8l8w3h"
+    }
+    ```
+
+- 响应示例
+
+
+    ```json
+    {
+        "code": 0,
+        "msg": "ok",
+        "data": {
+            "eventId": 1,
+            "isWhitelist": true,
+            "eventMintLimit": 10,
+            "currentOrdersTotal": 3
+        }
+    }
+    ```
