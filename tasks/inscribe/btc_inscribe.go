@@ -276,6 +276,8 @@ func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 	tmpAtomValue, _ := t.redis.Get(tmpAtomKey)
 
 	if len(tmpAtomValue) > 2 {
+		logx.Infof("============= After orderBroadcastAtom ============")
+
 		// an old failed order to process again, broadcast txs directly
 		orderBroadcastAtom = &ordinals.OrderBroadcastAtom{}
 		err = json.Unmarshal([]byte(tmpAtomValue), orderBroadcastAtom)
@@ -331,10 +333,13 @@ func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 			break
 		}
 
+		logx.Infof("============= After orderBroadcastAtom ============")
 	} else {
 		// new order to process, it's the first time be processed.
+		logx.Infof("============= Before Inscribe ============")
 		commitTxid, revealTxids, realFee, realChange, orderBroadcastAtom, err =
 			ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, int64(revealValueSats), onlyEstimate)
+		logx.Infof("============= After Inscribe ============")
 	}
 	if err != nil {
 		// save all of broadcast tx info
@@ -353,7 +358,7 @@ func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 			}
 		}
 
-		logx.Errorf("inscribe error: %v ", err.Error())
+		logx.Errorf("====== inscribe orderId:%v error: %v ", order.OrderId, err.Error())
 		return
 	}
 	depositWif = ""
@@ -413,7 +418,7 @@ func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 	}
 
 	// if everything is ok , rm redis key, ignore error
-	t.redis.Del(tmpAtomKey)
+	// t.redis.Del(tmpAtomKey)
 
 	logx.Infof("update order %v status and blindbox status  SUCCESS ", order.OrderId)
 }

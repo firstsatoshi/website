@@ -570,18 +570,18 @@ func (tool *inscriptionTool) calculateFee() int64 {
 	return fees
 }
 
-func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxHashList []*chainhash.Hash, inscriptions []string, fees int64, orderBroadcastAtom *OrderBroadcastAtom, err error) {
+func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxHashList []*chainhash.Hash, inscriptions []string, fees int64, atom *OrderBroadcastAtom, err error) {
 	fees = tool.calculateFee()
 	//========= save rawtx
 	hexCommitRawTx, err := tool.getCommitTxHex()
 	if err != nil {
-		return
+		panic(err)
 	}
 	hexRevealTxHexLists, err := tool.getRevealTxHexList()
 	if err != nil {
-		return
+		panic(err)
 	}
-	atom := OrderBroadcastAtom{
+	atom = &OrderBroadcastAtom{
 		OrderId: "",
 		Commit: &BroadTx{
 			RawTx:  hexCommitRawTx,
@@ -601,28 +601,32 @@ func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxH
 		})
 	}
 	//===============
-
+	logx.Infof("======== Before send  commit tx ==============")
 	commitTxHash, err = tool.sendRawTransaction(tool.commitTx)
 	if err != nil {
-		return nil, nil, nil, fees, &atom, errors.Wrap(err, "send commit tx error")
+		return nil, nil, nil, fees, atom, errors.Wrap(err, "send commit tx error")
 	}
+	logx.Infof("======== After send  commit tx ==============")
 
 	// commit tx broadcast success
-	orderBroadcastAtom.Commit.Txid = commitTxHash.String()
-	orderBroadcastAtom.Commit.Status = true
+	atom.Commit.Txid = commitTxHash.String()
+	atom.Commit.Status = true
 
+	logx.Infof("======== Before send  revealTxs ==============")
 	revealTxHashList = make([]*chainhash.Hash, len(tool.revealTx))
 	inscriptions = make([]string, len(tool.txCtxDataList))
 	for i := range tool.revealTx {
+		logx.Infof(" ====== Before broadcast revealTx[%v] ====", i)
 		time.Sleep(time.Second * 3)
 		_revealTxHash, err := tool.sendRawTransaction(tool.revealTx[i])
 		if err != nil {
-			return commitTxHash, revealTxHashList, nil, fees, &atom, errors.Wrap(err, fmt.Sprintf("send reveal tx error, %d。", i))
+			return commitTxHash, revealTxHashList, nil, fees, atom, errors.Wrap(err, fmt.Sprintf("send reveal tx error, %d。", i))
 		}
+		logx.Infof(" ====== After broadcast revealTx[%v] ====", i)
 
 		// commit tx broadcast success
-		orderBroadcastAtom.Reveals[i].Txid = _revealTxHash.String()
-		orderBroadcastAtom.Reveals[i].Status = true
+		atom.Reveals[i].Txid = _revealTxHash.String()
+		atom.Reveals[i].Status = true
 
 		revealTxHashList[i] = _revealTxHash
 		if len(tool.revealTx) == len(tool.txCtxDataList) {
@@ -637,8 +641,9 @@ func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxH
 		}
 	}
 
+	logx.Infof("======== After send revealTxs ==============")
 	// all tx broadcast ok
-	orderBroadcastAtom.Status = true
+	atom.Status = true
 
-	return commitTxHash, revealTxHashList, inscriptions, fees, &atom, nil
+	return commitTxHash, revealTxHashList, inscriptions, fees, atom, nil
 }

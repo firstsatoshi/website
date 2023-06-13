@@ -115,7 +115,7 @@ func (m *MempoolApiClient) BroadcastTx(tx *wire.MsgTx) (txHash *chainhash.Hash, 
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("failed to parse tx hash, %s", string(txid)))
 		}
-		logx.Infof("txid: %v", txHash)
+		logx.Infof("broadcasd succeed, txid: %v", txHash)
 		return txHash, nil
 	}
 

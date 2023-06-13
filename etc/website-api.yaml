@@ -14,8 +14,8 @@ CacheRedis:
 
 
 LogConf:
-  Mode: file
-  Encoding: plain
-  Path: /logs
-  Rotation: daily
-  KeepDays: 365
+  Mode: console
+  Encoding: json
+  # Path: /logs
+  # Rotation: daily
+  # KeepDays: 365
