@@ -48,8 +48,7 @@ func NewCreateOrderLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 //	Transaction size = Overhead +  57.5 * inputsNumber + 43 * outputsNumber
 //	    eg: 1 input 1 output: 10.5 + 57.5 * 1 + 43 * 1 = 111 bytes
 func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
-	// 每个铭文固定金额
-	averageFileSize := imgBytes //float64(2600) // 是 2600byte 不是 2600Byte
+	averageFileSize := imgBytes * count
 
 	utxoOutputValue := float64(utxoSat) * count
 	commitTxSize := 68 + (43+1)*count
