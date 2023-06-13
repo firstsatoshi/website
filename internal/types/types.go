@@ -55,6 +55,7 @@ type Order struct {
 	OrderId          string      `json:"orderId"`
 	EventId          int         `json:"eventId"`
 	DepositAddress   string      `json:"depositAddress"`
+	Count            int         `json:"count"`
 	Total            int         `json:"total"`
 	ReceiveAddress   string      `json:"receiveAddress"`
 	OrderStatus      string      `json:"orderStatus"`

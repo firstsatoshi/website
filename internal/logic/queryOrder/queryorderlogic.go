@@ -110,6 +110,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 			OrderId:          o.OrderId,
 			EventId:          int(o.EventId),
 			DepositAddress:   depositAddress,
+			Count:            int(o.Count),
 			Total:            int(o.TotalAmountSat),
 			ReceiveAddress:   o.ReceiveAddress,
 			OrderStatus:      o.OrderStatus,
