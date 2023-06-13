@@ -11,3 +11,11 @@ MySql:
 CacheRedis:
   - Host: 172.29.0.1:36379
     Pass: Tisd28478fhkhKSDFsdfk
+
+
+LogConf:
+  Mode: file
+  Encoding: plain
+  Path: /logs
+  Rotation: daily
+  KeepDays: 365

@@ -15,7 +15,7 @@ services:
      - mysql
      - redis
     volumes:
-      - ./data/logs/website:/home/logs
+      - ./data/logs/website:/logs
     networks:
       - website_network
 
@@ -35,7 +35,7 @@ services:
      - mysql
      - redis
     volumes:
-      - ./data/logs/deposit:/home/logs
+      - ./data/logs/deposit:/logs
     networks:
       - website_network
 
@@ -54,7 +54,7 @@ services:
      - mysql
      - redis
     volumes:
-      - ./data/logs/inscribe:/home/logs
+      - ./data/logs/inscribe:/logs
       - ./images/nft:/images  # NFT 图片目录映射
     networks:
       - website_network

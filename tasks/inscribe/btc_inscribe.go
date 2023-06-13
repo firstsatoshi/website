@@ -207,7 +207,11 @@ func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 		return
 	}
 
-	logx.Infof("lockOrderBoxs: %v", lockOrderBoxs)
+	blindboxIdStr := ""
+	for _, x := range lockOrderBoxs {
+		blindboxIdStr += fmt.Sprintf("%v,", x.BlindboxId)
+	}
+	logx.Infof("lockOrderBoxs: %v", blindboxIdStr)
 
 	// make inscribe data
 	inscribeData := make([]ordinals.InscriptionData, 0)
