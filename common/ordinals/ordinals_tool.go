@@ -65,10 +65,12 @@ type BroadTx struct {
 
 // OrderBroadcastAtom  the response of broadcast
 type OrderBroadcastAtom struct {
-	OrderId string     `json:"orderId"`
-	Commit  *BroadTx   `json:"commit"`
-	Reveals []*BroadTx `json:"reveals"`
-	Status  bool       `json:"status"`
+	OrderId    string     `json:"orderId"`
+	Commit     *BroadTx   `json:"commit"`
+	Reveals    []*BroadTx `json:"reveals"`
+	Status     bool       `json:"status"`
+	FeeSats    int64      `json:"fee"`
+	ChangeSats int64      `json:"change"`
 }
 
 type inscriptionTool struct {
@@ -371,16 +373,13 @@ func (tool *inscriptionTool) buildCommitTx(changePkScript []byte, commitTxOutPoi
 
 	// relay fee
 	// https://bitcoin.stackexchange.com/questions/69282/what-is-the-min-relay-min-fee-code-26
-	// if fee < 1000 {
-	// 	fee = 1000
-	// }
 	changeAmount := totalSenderAmount - btcutil.Amount(totalRevealPrevOutput) - fee
 
 	logx.Infof("totalSenderAmount: %v", totalSenderAmount.String())
 	logx.Infof("fee : %v", fee.String())
 	logx.Infof("change: %v", changeAmount)
 
-	if changeAmount >= 546 {
+	if changeAmount >= 1000 {
 		tx.TxOut[len(tx.TxOut)-1].Value = int64(changeAmount)
 	} else {
 		logx.Errorf("============ Remove Change Txout =============")
@@ -572,7 +571,7 @@ func (tool *inscriptionTool) calculateFee() int64 {
 }
 
 func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxHashList []*chainhash.Hash, inscriptions []string, fees int64, orderBroadcastAtom *OrderBroadcastAtom, err error) {
-
+	fees = tool.calculateFee()
 	//========= save rawtx
 	hexCommitRawTx, err := tool.getCommitTxHex()
 	if err != nil {
@@ -589,8 +588,10 @@ func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxH
 			Txid:   "",
 			Status: false,
 		},
-		Reveals: []*BroadTx{},
-		Status:  false,
+		Reveals:    []*BroadTx{},
+		Status:     false,
+		FeeSats:    fees,
+		ChangeSats: tool.changeSat,
 	}
 	for _, hexRevealTx := range hexRevealTxHexLists {
 		atom.Reveals = append(atom.Reveals, &BroadTx{
@@ -601,7 +602,6 @@ func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxH
 	}
 	//===============
 
-	fees = tool.calculateFee()
 	commitTxHash, err = tool.sendRawTransaction(tool.commitTx)
 	if err != nil {
 		return nil, nil, nil, fees, &atom, errors.Wrap(err, "send commit tx error")

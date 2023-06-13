@@ -12,6 +12,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/firstsatoshi/website/common/globalvar"
 	"github.com/firstsatoshi/website/common/keymanager"
@@ -192,6 +193,9 @@ func (t *BtcInscribeTask) inscribe() {
 
 func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 
+	// common error
+	var err error
+
 	// get locked images by order
 	q := t.tbTbLockOrderBlindboxModel.RowBuilder().Where(squirrel.Eq{
 		"order_id": order.OrderId,
@@ -249,70 +253,93 @@ func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 		return
 	}
 
-	// set reveal output value
-	revealValueSats := 10000 // 10000 sats
+	// set reveal output value, ordinals default is 10000 sats.
+	// Although 546sats also is ok, we should keep step with ordinals official standard.
+	revealValueSats := 10000
 	if t.chainCfg.Net == wire.TestNet3 {
 		revealValueSats = 546 // only for testnet
 	}
 
-	// inscrbe images
 	onlyEstimate := false // push tx to blockchain
 	commitTxid := ""
 	revealTxids := []string{}
 	realFee := int64(0)
 	realChange := int64(0)
+
+	// get brodcast info from redis , if the order was failed before
 	var orderBroadcastAtom *ordinals.OrderBroadcastAtom = nil
 	tmpAtomKey := fmt.Sprintf("broadcasttx:%v", order.OrderId)
 	tmpAtomValue, _ := t.redis.Get(tmpAtomKey)
-	if len(tmpAtomValue) > 1 {
+
+	if len(tmpAtomValue) > 2 {
 		// an old failed order to process again, broadcast txs directly
 		orderBroadcastAtom = &ordinals.OrderBroadcastAtom{}
-		err := json.Unmarshal([]byte(tmpAtomValue), orderBroadcastAtom)
+		err = json.Unmarshal([]byte(tmpAtomValue), orderBroadcastAtom)
 		if err != nil {
 			logx.Errorf("json.Unmarshal error: %v", err.Error())
 			return
 		}
 
 		// broadcast rawtx directly
-		if orderBroadcastAtom.Commit.Status == false {
-			txhash, err := t.apiClient.BroadcastTxHex(orderBroadcastAtom.Commit.RawTx)
-			if err == nil {
+		// we use for and break to implement goto
+		for i := 0; i < 1; i++ {
+			txhash := new(chainhash.Hash)
+
+			// broadcast failed commit rawtx directly
+			if orderBroadcastAtom.Commit.Status == false {
+				txhash, err = t.apiClient.BroadcastTxHex(orderBroadcastAtom.Commit.RawTx)
+				if err != nil {
+					logx.Errorf("=== BroadcastTxHex(orderBroadcastAtom.Commit.RawTx) error: %v", err.Error())
+
+					// any errors occured
+					break
+				}
 				orderBroadcastAtom.Commit.Txid = txhash.String()
 				orderBroadcastAtom.Commit.Status = true
+			}
 
-				for i, x := range orderBroadcastAtom.Reveals {
-					if x.Status == false {
-						txhash, err := t.apiClient.BroadcastTxHex(x.RawTx)
-						if err == nil {
-							orderBroadcastAtom.Reveals[i].Txid = txhash.String()
-							orderBroadcastAtom.Reveals[i].Status = true
-						} else {
-							// error
-							break
-						}
+			// broadcast failed reveal rawtx directly
+			for i, x := range orderBroadcastAtom.Reveals {
+				if x.Status == false {
+					txhash = new(chainhash.Hash)
+					txhash, err = t.apiClient.BroadcastTxHex(x.RawTx)
+					if err != nil {
+						logx.Errorf("=== BroadcastTxHex(orderBroadcastAtom.Reveals[%v] ) error: %v", i, err.Error())
+
+						// any errors occured
+						break
 					}
+					orderBroadcastAtom.Reveals[i].Txid = txhash.String()
+					orderBroadcastAtom.Reveals[i].Status = true
 				}
 			}
-		}
 
-		// if all is ok
-		if err == nil {
+			// if all of above is successed, we make reponses for order info update
+			logx.Infof("====== all of orderBroadcastAtom is ok =========")
 			commitTxid = orderBroadcastAtom.Commit.Txid
 			for _, x := range orderBroadcastAtom.Reveals {
 				revealTxids = append(revealTxids, x.Txid)
 			}
+			realFee = orderBroadcastAtom.FeeSats
+			realChange = orderBroadcastAtom.ChangeSats
 
+			// always break
+			break
 		}
 
 	} else {
-		// new order to process
-		commitTxid, revealTxids, realFee, realChange, orderBroadcastAtom, err = ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, int64(revealValueSats), onlyEstimate)
+		// new order to process, it's the first time be processed.
+		commitTxid, revealTxids, realFee, realChange, orderBroadcastAtom, err =
+			ordinals.Inscribe(changeAddress, depositWif, t.chainCfg, int(order.FeeRate), inscribeData, int64(revealValueSats), onlyEstimate)
 	}
 	if err != nil {
 		// save all of broadcast tx info
 		if orderBroadcastAtom != nil {
 			if orderBroadcastAtom.Commit != nil && orderBroadcastAtom.Reveals != nil {
-				orderBroadcastAtom.OrderId = order.OrderId // set orderId
+
+				// must set back orderId here
+				orderBroadcastAtom.OrderId = order.OrderId
+
 				data, err := json.Marshal(orderBroadcastAtom)
 				if err != nil {
 					panic(fmt.Errorf("json.Marshal error: %v", err.Error()))
