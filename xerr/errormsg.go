@@ -14,7 +14,7 @@ func init() {
 	message[COUNT_EXCEED_PER_ORDER_LIMIT_ERROR] = "Sorry mint count exceed order limit 50, please reduce count and try again"
 	message[EVENT_NOT_EXISTS_ERROR] = "event does not exists"
 	message[AVAILABLE_COUNT_IS_NOT_ENOUGH] = "Sorry, current avialable count is not enough."
-	message[EXCEED_MINT_LIMIT_ERROR] = "Mint count exceeds mint limit, please reducce your mint count and try again."
+	message[EXCEED_MINT_LIMIT_ERROR] = "Sorry, your total mint count exceeds the mint limit, please check it and try again."
 	message[ONLY_WHITELIST_ERROR] = "Only allow whitelist to mint"
 	message[INVALID_TOKEN_ERROR] = "Token expired, please refresh and try again."
 	message[DB_ERROR] = "system error"
