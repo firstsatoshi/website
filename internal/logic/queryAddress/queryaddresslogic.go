@@ -2,7 +2,10 @@ package queryAddress
 
 import (
 	"context"
+	"strings"
 
+	"github.com/btcsuite/btcd/btcutil"
+	"github.com/btcsuite/btcd/wire"
 	"github.com/firstsatoshi/website/internal/svc"
 	"github.com/firstsatoshi/website/internal/types"
 	"github.com/firstsatoshi/website/model"
@@ -30,16 +33,33 @@ func (l *QueryAddressLogic) QueryAddress(req *types.QueryAddressReq) (*types.Que
 
 	resp := types.QueryAddressResp{}
 
+	// check receiveAddress is valid P2TR address
+	_, err := btcutil.DecodeAddress(req.ReceiveAddress, l.svcCtx.ChainCfg)
+	if err != nil || len(req.ReceiveAddress) != 62 {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
+	}
+	if l.svcCtx.ChainCfg.Net == wire.MainNet {
+		if !strings.HasPrefix(req.ReceiveAddress, "bc1p") {
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
+		}
+	} else {
+		// testnet3
+		if !strings.HasPrefix(req.ReceiveAddress, "tb1p") {
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
+		}
+	}
+
 	// check whitelist
-	_, err := l.svcCtx.TbWaitlistModel.FindOneByBtcAddress(l.ctx, req.ReceiveAddress)
+	_, err = l.svcCtx.TbWaitlistModel.FindOneByBtcAddress(l.ctx, req.ReceiveAddress)
 	if err != nil {
 		if err == model.ErrNotFound {
 			resp.IsWhitelist = false
 		} else {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByBtcAddress error: %v", err.Error())
 		}
+	} else {
+		resp.IsWhitelist = true
 	}
-	resp.IsWhitelist = true
 
 	// get address current orders
 	// each address can't mint over mint limit
