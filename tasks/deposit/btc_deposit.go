@@ -88,6 +88,26 @@ func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg
 // Start implement task.Task.Start() interface()
 func (t *BtcDepositTask) Start() {
 
+	wg := sync.WaitGroup{}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			ticker := time.NewTicker(time.Second * 3)
+			select {
+			case <-t.ctx.Done():
+				logx.Info("Gracefully exit txMempool Task goroutine....")
+				// wait sub-goroutine
+				return
+			case <-ticker.C:
+				logx.Info("======= Btc txMempool task======")
+				t.txMempool()
+			}
+		}
+	}()
+	defer wg.Wait()
+
 	for {
 		ticker := time.NewTicker(time.Second * 7)
 		select {
@@ -98,10 +118,6 @@ func (t *BtcDepositTask) Start() {
 		case <-ticker.C:
 			logx.Info("======= Btc Deposit Task =================")
 			t.scanBlock()
-
-			//
-			time.Sleep(2)
-			t.txMempool()
 		}
 	}
 }
@@ -464,7 +480,6 @@ func (t *BtcDepositTask) txFecther(goroutineId int, wg *sync.WaitGroup, txids []
 		default:
 		}
 
-
 		txid := txids[i]
 		tx, err := t.apiClient.GetTansaction(txid)
 		if err != nil {
@@ -512,6 +527,7 @@ func (t *BtcDepositTask) txMempool() {
 		}
 
 		// memTxs, err := t.apiClient.GetAddressMempoolTxs( order.DepositAddress)
+		time.Sleep(time.Millisecond * 137)
 		utxos, err := t.apiClient.GetAddressUTXOs(order.DepositAddress)
 		if err != nil {
 			logx.Errorf("GetAddressUTXOs error: %v", err.Error())
@@ -533,13 +549,25 @@ func (t *BtcDepositTask) txMempool() {
 			// check total amount of all of utxos
 			// if utxo's amount  greater or equal than order's total amount
 			if utxo.Value >= uint64(order.TotalAmountSat) {
+				// we should get order latest status again before update
+				o, err := t.tbOrderModel.FindOne(t.ctx, order.Id)
+				if err != nil {
+					logx.Errorf("FindOne error: %v", err.Error())
+					return
+				}
+
+				// the status was greater than PAYPENDING, we DOT NOT set it back
+				if o.OrderStatus == "PAYSUCCESS" || o.OrderStatus == "MINTING" || o.OrderStatus == "ALLSUCCESS" {
+					continue
+				}
+
 				// update order's status to PAYPENDING
-				order.PayTxid = sql.NullString{Valid: true, String: utxo.Txid}
-				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
-				order.OrderStatus = "PAYPENDING"
+				o.PayTxid = sql.NullString{Valid: true, String: utxo.Txid}
+				o.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
+				o.OrderStatus = "PAYPENDING"
 
 				// ignore error
-				t.tbOrderModel.Update(t.ctx, order)
+				t.tbOrderModel.Update(t.ctx, o)
 			}
 		}
 	}
