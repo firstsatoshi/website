@@ -53,7 +53,7 @@ func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
 	utxoOutputValue := float64(utxoSat)
 	commitTxSize := float64(68 + (43 + 1))
 	commitTxSize += 64
-	revealTxSize := 10.5 + (57.5+43.0)
+	revealTxSize := 10.5 + (57.5 + 43.0)
 	revealTxSize += 64
 	feeSats := math.Ceil((averageFileSize/4 + commitTxSize + revealTxSize) * feeRate)
 	feeSats = 1000 * math.Ceil(feeSats/1000)
@@ -174,6 +174,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	// query PAYPENDING order as pendingOrders, avail = event.avail - len(pendingOrders)
 	queryBuilder := l.svcCtx.TbOrderModel.RowBuilder().Where(squirrel.Eq{
 		"order_status": "PAYPENDING",
+		"event_id":     req.EventId,
 	}).OrderBy("id DESC")
 	payPendingOrders, err := l.svcCtx.TbOrderModel.FindOrders(l.ctx, queryBuilder)
 	if err != nil {

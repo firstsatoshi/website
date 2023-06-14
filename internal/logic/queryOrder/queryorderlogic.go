@@ -6,6 +6,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/firstsatoshi/website/internal/svc"
 	"github.com/firstsatoshi/website/internal/types"
+	"github.com/firstsatoshi/website/model"
 	"github.com/firstsatoshi/website/xerr"
 	"github.com/pkg/errors"
 
@@ -71,10 +72,54 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 		}
 
 		depositAddress := o.DepositAddress
-		if o.OrderStatus == "PAYTIMEOUT" || o.OrderStatus == "PAYPENDING" || o.OrderStatus == "PAYSUCCESS" ||
-			o.OrderStatus == "ALLSUCCESS" || o.OrderStatus == "MINTING" {
-			// don't show deposit for finished status order
+
+		if req.OrderId == "" {
+			// !for safety, only display deposit address , when query by orderId,
 			depositAddress = ""
+		} else if o.OrderStatus == "PAYTIMEOUT" || o.OrderStatus == "PAYPENDING" || o.OrderStatus == "PAYSUCCESS" ||
+			o.OrderStatus == "ALLSUCCESS" || o.OrderStatus == "MINTING" {
+			// !for safety , don't show deposit address for paypending/finished status order
+			depositAddress = ""
+		} else if o.OrderStatus == "NOTPAID" {
+			// FIX: for NOTPAID,  the frontend must queryorder frequently(1s) to get the latest info, to avoid available being NOT ENOUGH!
+			event, err := l.svcCtx.TbBlindboxEventModel.FindOne(l.ctx, int64(o.EventId))
+			if err != nil {
+				if err == model.ErrNotFound {
+					return nil, errors.Wrapf(xerr.NewErrCode(xerr.EVENT_NOT_EXISTS_ERROR), "event id does not exists %v", o.EventId)
+				} else {
+					logx.Errorf("FindOne error:%v", err.Error())
+					return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOne error: %v", err.Error())
+				}
+			}
+
+			// check safety avail
+			// query PAYPENDING order as pendingOrders, avail = event.avail - len(pendingOrders)
+			queryBuilder := l.svcCtx.TbOrderModel.RowBuilder().Where(squirrel.Eq{
+				"event_id":     o.EventId,
+				"order_status": "PAYPENDING",
+			}).OrderBy("id DESC")
+			payPendingOrders, err := l.svcCtx.TbOrderModel.FindOrders(l.ctx, queryBuilder)
+			if err != nil {
+				logx.Errorf("FindOrders error: %v", err.Error())
+				return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "database error")
+			}
+			orderCounter := 0
+			for _, o := range payPendingOrders {
+				if o.EventId == event.Id {
+					orderCounter += 1
+				}
+			}
+			safeAvail := event.Avail - int64(orderCounter)
+			if safeAvail < 0 {
+				safeAvail = 0
+			}
+
+			// !NOTE: When safeAvail is NOT enough, for safety, DO NOT display depositaddress any more
+			if safeAvail < o.Count {
+				depositAddress = ""
+			}
+		} else {
+			// Display deposit address
 		}
 
 		nftDetails := make([]types.NftDetail, 0)
