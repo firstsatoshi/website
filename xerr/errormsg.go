@@ -5,19 +5,19 @@ var message map[uint32]string
 func init() {
 	message = make(map[uint32]string)
 	message[OK] = "ok"
-	message[SERVER_COMMON_ERROR] = "system error, try it later"
-	message[REUQEST_PARAM_ERROR] = "invalid request parameter error, please check it"
-	message[INVALID_EMAIL_ERROR] = "invalid email"
-	message[TOO_MANY_REQUEST_ERROR] = "too many requests"
-	message[INVALID_BTCP2TRADDRESS_ERROR] = "invalid bitcoin P2TR(Taproot) inscription receive address, it must be prefix with 'bc1p'"
-	message[FEERATE_TOO_SMALL_ERROR] = "fee rate too small"
-	message[COUNT_EXCEED_PER_ORDER_LIMIT_ERROR] = "inscribe count exceed per order limit"
+	message[SERVER_COMMON_ERROR] = "System error, please try again later"
+	message[REUQEST_PARAM_ERROR] = "Invalid request parameter error, please check it"
+	message[INVALID_EMAIL_ERROR] = "Invalid email"
+	message[TOO_MANY_REQUEST_ERROR] = "Too many requests, please try it later"
+	message[INVALID_BTCP2TRADDRESS_ERROR] = "Invalid Bitcoin Taproot(P2TR) inscription receive address, it must starts with 'bc1p'"
+	message[FEERATE_TOO_SMALL_ERROR] = "Fee rate is not safe, too small or too large, please set a proper fee rate and try again"
+	message[COUNT_EXCEED_PER_ORDER_LIMIT_ERROR] = "Sorry mint count exceed order limit 50, please reduce count and try again"
 	message[EVENT_NOT_EXISTS_ERROR] = "event does not exists"
-	message[AVAILABLE_COUNT_IS_NOT_ENOUGH] = "avialable nft is not enough"
-	message[EXCEED_MINT_LIMIT_ERROR] = "exceed mint limit"
-	message[ONLY_WHITELIST_ERROR] = "only allow whitelist to mint"
-	message[INVALID_TOKEN_ERROR] = "token expired"
-	message[DB_ERROR] = "db error"
+	message[AVAILABLE_COUNT_IS_NOT_ENOUGH] = "Sorry, current avialable count is not enough."
+	message[EXCEED_MINT_LIMIT_ERROR] = "Mint count exceeds mint limit, please reducce your mint count and try again."
+	message[ONLY_WHITELIST_ERROR] = "Only allow whitelist to mint"
+	message[INVALID_TOKEN_ERROR] = "Token expired, please refresh and try again."
+	message[DB_ERROR] = "system error"
 }
 
 func MapErrMsg(errcode uint32) string {

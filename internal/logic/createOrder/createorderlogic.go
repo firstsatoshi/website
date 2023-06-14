@@ -95,7 +95,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	if req.Count <= 0 {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "count is invalid %v", req.Count)
 	}
-	if req.Count > 10 {
+	if req.Count > 50 {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.COUNT_EXCEED_PER_ORDER_LIMIT_ERROR), "count is too large %v", req.Count)
 	}
 
@@ -117,7 +117,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	// TODO get mempool recommanded feerate
 	// https://mempool.space/api/v1/fees/recommended
-	if l.svcCtx.ChainCfg.Name == chaincfg.MainNetParams.Name && (req.FeeRate < 10 || req.FeeRate > 200) {
+	if l.svcCtx.ChainCfg.Name == chaincfg.MainNetParams.Name && (req.FeeRate < 5 || req.FeeRate > 300) {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.FEERATE_TOO_SMALL_ERROR), "feeRate too small %v", req.FeeRate)
 	}
 
