@@ -382,11 +382,14 @@ func (tool *inscriptionTool) buildCommitTx(changePkScript []byte, commitTxOutPoi
 	if changeAmount >= 1000 {
 		tx.TxOut[len(tx.TxOut)-1].Value = int64(changeAmount)
 	} else {
+		logx.Infof("============ Remove Change Txout =============")
 		logx.Errorf("============ Remove Change Txout =============")
 		tx.TxOut = tx.TxOut[:len(tx.TxOut)-1]
 		if changeAmount < 0 {
 			feeWithoutChange := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
 			if totalSenderAmount-btcutil.Amount(totalRevealPrevOutput)-feeWithoutChange < 0 {
+				logx.Errorf("============ Insufficient Balance =============")
+				logx.Infof("============ Insufficient Balance =============")
 				return errors.New("======== Insufficient Balance ========")
 			}
 		}
