@@ -64,7 +64,7 @@ func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
 	baseService := 1000 * math.Ceil(feeSats*0.1/1000)
 	feeSats += baseService
 
-	total := feeSats + utxoOutputValue
+	total := feeSats + utxoOutputValue * count
 	return int64(total)
 }
 
