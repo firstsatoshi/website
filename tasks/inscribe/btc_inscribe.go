@@ -259,7 +259,7 @@ func (t *BtcInscribeTask) orderInscribe(order *model.TbOrder) {
 
 	// set reveal output value, ordinals default is 10000 sats.
 	// Although 546sats also is ok, we should keep step with ordinals official standard.
-	revealValueSats := 10000
+	revealValueSats := 546  // !only fix two order
 	if t.chainCfg.Net == wire.TestNet3 {
 		revealValueSats = 546 // only for testnet
 	}
