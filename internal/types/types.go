@@ -71,6 +71,7 @@ type BlindboxEvent struct {
 	EventId           int    `json:"eventId"`
 	Name              string `json:"name"`
 	Description       string `json:"description"`
+	ImageUrl          string `json:"imageUrl"`
 	PriceBtcSats      int    `json:"priceBtcSats"`
 	PriceUsd          int    `json:"priceUsd"`          // usd价格
 	PaymentToken      string `json:"paymentToken"`      // 支付币种

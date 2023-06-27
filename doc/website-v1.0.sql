@@ -40,6 +40,7 @@ CREATE TABLE `tb_blindbox_event` (
   `price_sats` int not NULL COMMENT '价格',
   `is_active` tinyint(1) DEFAULT '1' COMMENT '是否激活',
   `payment_token` varchar(20) NOT NULL COMMENT '支付币种',
+  `img_url` varchar(500) COLLATE utf8mb4_bin DEFAULT "" COMMENT '图片url',
   `average_image_bytes` int not NULL COMMENT '平均图片大小(字节数)',
   `supply` int not NULL COMMENT '供应量',
   `avail` int not NULL COMMENT '当前可用',
@@ -86,7 +87,52 @@ CREATE TABLE `tb_order` (
   KEY `tb_order_order_status_IDX` (`order_status`) USING BTREE,
   KEY `tb_order_pay_from_address_IDX` (`pay_from_address`) USING BTREE,
   KEY `tb_order_pay_txid_IDX` (`pay_txid`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='订单表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒订单表';
+
+
+DROP TABLE IF EXISTS `tb_inscribe_order`;
+CREATE TABLE `tb_inscribe_order` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单id',
+  `content_type` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '类型: 如 image/img',
+  `count` int not NULL COMMENT '数量(批量)',
+  `deposit_address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '充值地址',
+  `fee_rate` int NOT NULL COMMENT '费率 n/sat',
+  `data_bytes` int NOT NULL COMMENT '数据大小(字节数)',
+  `txfee_amount_sat` int NOT NULL COMMENT '矿工费',
+  `service_fee_sat` int NOT NULL COMMENT '服务费',
+  `price_sat` int NOT NULL COMMENT '价格',
+  `total_amount_sat` int NOT NULL COMMENT '总费用sat',
+  `receive_address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '铭刻内容接收地址',
+  `order_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '订单状态: NOTPAID未支付;PAYPENDING支付确认中;PAYSUCCESS支付成功;PAYTIMEOUT超时未支付;MINTING铭刻交易等待确认中;ALLSUCCESS订单成功',
+  `pay_time` datetime DEFAULT NULL COMMENT '支付时间(进入内存池的时间)',
+  `pay_txid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '付款交易id(支持批量支付,即一笔交易多个输出到我们平台的收款地址,所以不必设置为唯一索引)',
+  `pay_confirmed_time` datetime DEFAULT NULL COMMENT '付款交易确认时间',
+  `pay_from_address` varchar(100) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '付款地址',
+  `real_fee_sat` int DEFAULT '0' COMMENT '实际矿工费',
+  `real_change_sat` int DEFAULT '0' COMMENT '实际找零(收入)',
+  `version` bigint NOT NULL DEFAULT '0' COMMENT '版本号',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `order_id` (`order_id`) USING BTREE,
+  UNIQUE KEY `tb_order_deposit_address_UIDX` (`deposit_address`) USING BTREE,
+  KEY `tb_order_receive_address_IDX` (`receive_address`) USING BTREE,
+  KEY `tb_order_order_status_IDX` (`order_status`) USING BTREE,
+  KEY `tb_order_pay_from_address_IDX` (`pay_from_address`) USING BTREE,
+  KEY `tb_order_pay_txid_IDX` (`pay_txid`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='铭文订单表';
+
+
+DROP TABLE IF EXISTS `tb_inscribe_data`;
+CREATE TABLE `tb_inscribe_data` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单id',
+  `data` mediumblob NOT NULL COMMENT '铭文数据',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='铭文数据表';
 
 
 
