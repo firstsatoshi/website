@@ -24,6 +24,7 @@ require (
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/vincent-petithory/dataurl v1.0.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 )
 

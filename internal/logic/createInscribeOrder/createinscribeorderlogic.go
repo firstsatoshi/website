@@ -21,6 +21,7 @@ import (
 	"github.com/firstsatoshi/website/model"
 	"github.com/firstsatoshi/website/xerr"
 	"github.com/pkg/errors"
+	"github.com/vincent-petithory/dataurl"
 
 	"github.com/zeromicro/go-zero/core/limit"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -179,8 +180,16 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	prefix = strings.ToUpper(prefix)
 	orderId := uniqueid.GenSn(prefix)
 
-	// TODO: parse dataUrl and get data size
-	dataSize := 100
+	// dataURL, err := dataurl.DecodeString(`data:text/plain;charset=utf-8;base64,aGV5YQ==`)
+	dataSize := 0
+	for _, v := range req.FileUploads {
+		dataURL, e := dataurl.DecodeString(v.DataUrl)
+		if e != nil {
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "parse dataUrl error: %v", e)
+		}
+
+		dataSize += len(dataURL.Data)
+	}
 
 	totalFee := calcFee(float64(utxoSat), float64(dataSize), float64(req.Count), float64(req.FeeRate))
 	logx.Infof("==========totalFee : %v", totalFee)

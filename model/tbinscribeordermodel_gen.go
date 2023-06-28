@@ -45,7 +45,6 @@ type (
 	TbInscribeOrder struct {
 		Id               int64          `db:"id"`                 // id
 		OrderId          string         `db:"order_id"`           // 订单id
-		ContentType      string         `db:"content_type"`       // 类型: 如 image/img
 		Count            int64          `db:"count"`              // 数量(批量)
 		DepositAddress   string         `db:"deposit_address"`    // 充值地址
 		FeeRate          int64          `db:"fee_rate"`           // 费率 n/sat
@@ -152,8 +151,8 @@ func (m *defaultTbInscribeOrderModel) Insert(ctx context.Context, data *TbInscri
 	tbInscribeOrderIdKey := fmt.Sprintf("%s%v", cacheTbInscribeOrderIdPrefix, data.Id)
 	tbInscribeOrderOrderIdKey := fmt.Sprintf("%s%v", cacheTbInscribeOrderOrderIdPrefix, data.OrderId)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbInscribeOrderRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.OrderId, data.ContentType, data.Count, data.DepositAddress, data.FeeRate, data.DataBytes, data.TxfeeAmountSat, data.ServiceFeeSat, data.TotalAmountSat, data.ReceiveAddress, data.OrderStatus, data.PayTime, data.PayTxid, data.PayConfirmedTime, data.PayFromAddress, data.RealFeeSat, data.RealChangeSat, data.Version)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbInscribeOrderRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.OrderId, data.Count, data.DepositAddress, data.FeeRate, data.DataBytes, data.TxfeeAmountSat, data.ServiceFeeSat, data.TotalAmountSat, data.ReceiveAddress, data.OrderStatus, data.PayTime, data.PayTxid, data.PayConfirmedTime, data.PayFromAddress, data.RealFeeSat, data.RealChangeSat, data.Version)
 	}, tbInscribeOrderDepositAddressKey, tbInscribeOrderIdKey, tbInscribeOrderOrderIdKey)
 	return ret, err
 }
@@ -169,7 +168,7 @@ func (m *defaultTbInscribeOrderModel) Update(ctx context.Context, newData *TbIns
 	tbInscribeOrderOrderIdKey := fmt.Sprintf("%s%v", cacheTbInscribeOrderOrderIdPrefix, data.OrderId)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbInscribeOrderRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.OrderId, newData.ContentType, newData.Count, newData.DepositAddress, newData.FeeRate, newData.DataBytes, newData.TxfeeAmountSat, newData.ServiceFeeSat, newData.TotalAmountSat, newData.ReceiveAddress, newData.OrderStatus, newData.PayTime, newData.PayTxid, newData.PayConfirmedTime, newData.PayFromAddress, newData.RealFeeSat, newData.RealChangeSat, newData.Version, newData.Id)
+		return conn.ExecCtx(ctx, query, newData.OrderId, newData.Count, newData.DepositAddress, newData.FeeRate, newData.DataBytes, newData.TxfeeAmountSat, newData.ServiceFeeSat, newData.TotalAmountSat, newData.ReceiveAddress, newData.OrderStatus, newData.PayTime, newData.PayTxid, newData.PayConfirmedTime, newData.PayFromAddress, newData.RealFeeSat, newData.RealChangeSat, newData.Version, newData.Id)
 	}, tbInscribeOrderDepositAddressKey, tbInscribeOrderIdKey, tbInscribeOrderOrderIdKey)
 	return err
 }

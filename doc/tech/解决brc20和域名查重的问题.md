@@ -28,7 +28,7 @@
 
 - 查询brc20： https://unisat.io/brc20-api-v2/inscriptions/category/sats/search/v2?name=hello&limit=32&start=0
 
-
+- sats: https://unisat.io/brc20-api-v2/inscriptions/category/sats/existence
 
 
 

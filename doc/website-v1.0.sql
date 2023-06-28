@@ -94,7 +94,6 @@ DROP TABLE IF EXISTS `tb_inscribe_order`;
 CREATE TABLE `tb_inscribe_order` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单id',
-  `content_type` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '类型: 如 image/img',
   `count` int not NULL COMMENT '数量(批量)',
   `deposit_address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '充值地址',
   `fee_rate` int NOT NULL COMMENT '费率 n/sat',
@@ -127,6 +126,8 @@ DROP TABLE IF EXISTS `tb_inscribe_data`;
 CREATE TABLE `tb_inscribe_data` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单id',
+  `content_type` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '类型: 如 image/img',
+  `file_name` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '文件名',
   `data` mediumblob NOT NULL COMMENT '铭文数据',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',

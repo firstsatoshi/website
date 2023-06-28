@@ -130,13 +130,18 @@ type QueryAddressResp struct {
 	CurrentOrdersTotal int  `json:"currentOrdersTotal"`
 }
 
+type FileUpload struct {
+	FileName string `json:"fileName"`
+	DataUrl  string `json:"dataUrl"` // dataURL schema
+}
+
 type CreateInscribeOrderReq struct {
-	Count          int    `json:"count"`
-	DataUrl        string `json:"dataUrl"` // dataURL schema
-	ReceiveAddress string `json:"receiveAddress"`
-	FeeRate        int    `json:"feeRate"`
-	Checksum       string `json:"checksum"` // checksum of data and contentType and dataBytes and token
-	Token          string `json:"token"`
+	Count          int          `json:"count"`
+	FileUploads    []FileUpload `json:"fileUploads"`
+	ReceiveAddress string       `json:"receiveAddress"`
+	FeeRate        int          `json:"feeRate"`
+	Checksum       string       `json:"checksum"` // checksum of data and contentType and dataBytes and token
+	Token          string       `json:"token"`
 }
 
 type CreateInscribeOrderResp struct {
