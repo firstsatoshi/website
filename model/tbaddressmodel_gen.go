@@ -48,6 +48,7 @@ type (
 		CoinType     string    `db:"coin_type"`     // 地址类型,BTC,ETH,USDT
 		AccountIndex int64     `db:"account_index"` // account_index
 		AddressIndex int64     `db:"address_index"` // address_index
+		BussinesType string    `db:"bussines_type"` // 业务类型: BLINDBOX, INSCRIBE
 		CreateTime   time.Time `db:"create_time"`   // 创建时间
 		UpdateTime   time.Time `db:"update_time"`   // 最后更新时间
 	}
@@ -138,8 +139,8 @@ func (m *defaultTbAddressModel) Insert(ctx context.Context, data *TbAddress) (sq
 	tbAddressCoinTypeAccountIndexAddressIndexKey := fmt.Sprintf("%s%v:%v:%v", cacheTbAddressCoinTypeAccountIndexAddressIndexPrefix, data.CoinType, data.AccountIndex, data.AddressIndex)
 	tbAddressIdKey := fmt.Sprintf("%s%v", cacheTbAddressIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?)", m.table, tbAddressRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Address, data.CoinType, data.AccountIndex, data.AddressIndex)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?)", m.table, tbAddressRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.Address, data.CoinType, data.AccountIndex, data.AddressIndex, data.BussinesType)
 	}, tbAddressAddressKey, tbAddressCoinTypeAccountIndexAddressIndexKey, tbAddressIdKey)
 	return ret, err
 }
@@ -155,7 +156,7 @@ func (m *defaultTbAddressModel) Update(ctx context.Context, newData *TbAddress) 
 	tbAddressIdKey := fmt.Sprintf("%s%v", cacheTbAddressIdPrefix, data.Id)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbAddressRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.Address, newData.CoinType, newData.AccountIndex, newData.AddressIndex, newData.Id)
+		return conn.ExecCtx(ctx, query, newData.Address, newData.CoinType, newData.AccountIndex, newData.AddressIndex, newData.BussinesType, newData.Id)
 	}, tbAddressAddressKey, tbAddressCoinTypeAccountIndexAddressIndexKey, tbAddressIdKey)
 	return err
 }

@@ -64,7 +64,7 @@ func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
 	baseService := 1000 * math.Ceil(feeSats*0.1/1000)
 	feeSats += baseService
 
-	total := feeSats + utxoOutputValue * count
+	total := feeSats + utxoOutputValue*count
 	return int64(total)
 }
 
@@ -224,6 +224,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 	addresInsertResult, err := l.svcCtx.TbAddressModel.Insert(l.ctx, &model.TbAddress{
 		Address:      depositAddress,
 		CoinType:     globalvar.BTC,
+		BussinesType: globalvar.BussinesTypeBlindbox,
 		AccountIndex: int64(accountIndex),
 		AddressIndex: int64(addressIndex),
 	})

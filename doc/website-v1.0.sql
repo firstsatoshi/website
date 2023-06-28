@@ -143,6 +143,7 @@ CREATE TABLE `tb_address` (
   `coin_type`varchar(10) COLLATE utf8mb4_bin NOT NULL COMMENT '地址类型,BTC,ETH,USDT',
   `account_index` bigint NOT NULL COMMENT 'account_index',
   `address_index` bigint NOT NULL COMMENT 'address_index',
+  `bussines_type` varchar(20) COLLATE utf8mb4_bin DEFAULT 'BLINDBOX' COMMENT '业务类型: BLINDBOX, INSCRIBE',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`),

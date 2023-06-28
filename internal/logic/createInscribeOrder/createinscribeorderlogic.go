@@ -69,8 +69,6 @@ func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
 }
 
 func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribeOrderReq) (resp *types.CreateInscribeOrderResp, err error) {
-	// todo: add your logic here and delete this line
-
 	// verify cloudflare Turnstile token
 	ok, err := turnslite.VeifyToken(l.ctx, req.Token, l.svcCtx.Redis)
 	if !ok || err != nil {
@@ -150,6 +148,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	addresInsertResult, err := l.svcCtx.TbAddressModel.Insert(l.ctx, &model.TbAddress{
 		Address:      depositAddress,
 		CoinType:     globalvar.BTC,
+		BussinesType: globalvar.BussinesTypeInscribe,
 		AccountIndex: int64(accountIndex),
 		AddressIndex: int64(addressIndex),
 	})
@@ -183,12 +182,25 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	// dataURL, err := dataurl.DecodeString(`data:text/plain;charset=utf-8;base64,aGV5YQ==`)
 	dataSize := 0
 	for _, v := range req.FileUploads {
-		dataURL, e := dataurl.DecodeString(v.DataUrl)
-		if e != nil {
-			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "parse dataUrl error: %v", e)
+		dataURL, err := dataurl.DecodeString(v.DataUrl)
+		if err != nil {
+			logx.Errorf("parse dataUrl error error: %v", err.Error())
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "parse dataUrl error: %v", err.Error())
 		}
 
 		dataSize += len(dataURL.Data)
+
+		// insert inscribe data into db
+		_, err = l.svcCtx.TbInscribeDataModel.Insert(l.ctx, &model.TbInscribeData{
+			OrderId:     orderId,
+			Data:        string(dataURL.Data), // is it ok?
+			ContentType: dataURL.ContentType(),
+			FileName:    v.FileName,
+		})
+		if err != nil {
+			logx.Errorf("insert inscribedata error %v", err.Error())
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "insert inscribedata error %v", err.Error())
+		}
 	}
 
 	totalFee := calcFee(float64(utxoSat), float64(dataSize), float64(req.Count), float64(req.FeeRate))
