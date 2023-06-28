@@ -129,3 +129,25 @@ type QueryAddressResp struct {
 	EventMintLimit     int  `json:"eventMintLimit"`
 	CurrentOrdersTotal int  `json:"currentOrdersTotal"`
 }
+
+type CreateInscribeOrderReq struct {
+	Count          int    `json:"count"`
+	DataUrl        string `json:"dataUrl"` // dataURL schema
+	ReceiveAddress string `json:"receiveAddress"`
+	FeeRate        int    `json:"feeRate"`
+	Checksum       string `json:"checksum"` // checksum of data and contentType and dataBytes and token
+	Token          string `json:"token"`
+}
+
+type CreateInscribeOrderResp struct {
+	OrderId        string `json:"orderId"`
+	Count          int    `json:"count"`
+	DepositAddress string `json:"depositAddress"`
+	ReceiveAddress string `json:"receiveAddress"`
+	FeeRate        int    `json:"feeRate"`
+	Bytes          int    `json:"bytes"`
+	InscribeFee    int    `json:"inscribeFee"`
+	ServiceFee     int    `json:"serviceFee"`
+	Total          int    `json:"total"`
+	CreateTime     string `json:"createTime"`
+}

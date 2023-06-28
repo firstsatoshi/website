@@ -6,6 +6,7 @@ import (
 
 	checkwhitelist "github.com/firstsatoshi/website/internal/handler/checkwhitelist"
 	coinPrice "github.com/firstsatoshi/website/internal/handler/coinPrice"
+	createInscribeOrder "github.com/firstsatoshi/website/internal/handler/createInscribeOrder"
 	createOrder "github.com/firstsatoshi/website/internal/handler/createOrder"
 	joinwaitlist "github.com/firstsatoshi/website/internal/handler/joinwaitlist"
 	queryAddress "github.com/firstsatoshi/website/internal/handler/queryAddress"
@@ -101,6 +102,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPost,
 				Path:    "/queryaddress",
 				Handler: queryAddress.QueryAddressHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/createinscribeorder",
+				Handler: createInscribeOrder.CreateInscribeOrderHandler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/api/v1"),

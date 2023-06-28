@@ -101,7 +101,6 @@ CREATE TABLE `tb_inscribe_order` (
   `data_bytes` int NOT NULL COMMENT '数据大小(字节数)',
   `txfee_amount_sat` int NOT NULL COMMENT '矿工费',
   `service_fee_sat` int NOT NULL COMMENT '服务费',
-  `price_sat` int NOT NULL COMMENT '价格',
   `total_amount_sat` int NOT NULL COMMENT '总费用sat',
   `receive_address` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '铭刻内容接收地址',
   `order_status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '订单状态: NOTPAID未支付;PAYPENDING支付确认中;PAYSUCCESS支付成功;PAYTIMEOUT超时未支付;MINTING铭刻交易等待确认中;ALLSUCCESS订单成功',
