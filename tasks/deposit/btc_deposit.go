@@ -446,7 +446,7 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 
 				// update event avail
-				safeAvail := event.Supply - count
+				safeAvail := event.Supply - count  - event.LockCount
 				if safeAvail < 0 {
 					logx.Errorf("===================== safeAvail is NEGATIVE %v ===============================", safeAvail)
 					safeAvail = 0
