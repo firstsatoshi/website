@@ -181,16 +181,15 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	prefix = strings.ToUpper(prefix)
 	orderId := uniqueid.GenSn(prefix)
 
-	// dataURL, err := dataurl.DecodeString(`data:text/plain;charset=utf-8;base64,aGV5YQ==`)
 	dataSize := 0
+	totalFee := int64(0)
 	for _, v := range req.FileUploads {
+		// eg: dataURL, err := dataurl.DecodeString(`data:text/plain;charset=utf-8;base64,aGV5YQ==`)
 		dataURL, err := dataurl.DecodeString(v.DataUrl)
 		if err != nil {
 			logx.Errorf("parse dataUrl error error: %v", err.Error())
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "parse dataUrl error: %v", err.Error())
 		}
-
-		dataSize += len(dataURL.Data)
 
 		// insert inscribe data into db
 		_, err = l.svcCtx.TbInscribeDataModel.Insert(l.ctx, &model.TbInscribeData{
@@ -203,9 +202,9 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 			logx.Errorf("insert inscribedata error %v", err.Error())
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "insert inscribedata error %v", err.Error())
 		}
+		totalFee += calcFee(float64(utxoSat), float64(len(dataURL.Data)), 1, float64(req.FeeRate))
 	}
 
-	totalFee := calcFee(float64(utxoSat), float64(dataSize), float64(count), float64(req.FeeRate))
 	logx.Infof("==========totalFee : %v", totalFee)
 	logx.Infof("==========net name: %v", l.svcCtx.ChainCfg.Name)
 
