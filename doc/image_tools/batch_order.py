@@ -15,7 +15,8 @@ token = "youngqqcn@gmail.com"
 #     "token":"dffffffffffffffffff"
 # }
 def createorder(recv_addr):
-    url = "http://18.181.187.89/api/v1/createorder"
+    # url = "http://18.181.187.89:8888/api/v1/createorder"
+    url = "http://127.0.0.1:8888/api/v1/createorder"
     data = {
         "eventId": 1,
         "count": 1,
