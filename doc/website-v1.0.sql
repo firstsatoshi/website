@@ -44,7 +44,7 @@ CREATE TABLE `tb_blindbox_event` (
   `average_image_bytes` int not NULL COMMENT '平均图片大小(字节数)',
   `supply` int not NULL COMMENT '供应量',
   `avail` int not NULL COMMENT '当前可用',
-  `lock_count` int not NULL COMMENT '锁定数量',
+  `lock_count` int DEFAULT 0 COMMENT '锁定数量',
   `mint_limit` int DEFAULT 2 COMMENT '单个地址限购数量',
   `only_whitelist` tinyint(1) DEFAULT '0' COMMENT '是否只有白名单',
   `start_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '开始时间',
