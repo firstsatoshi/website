@@ -136,7 +136,6 @@ type FileUpload struct {
 }
 
 type CreateInscribeOrderReq struct {
-	Count          int          `json:"count"`
 	FileUploads    []FileUpload `json:"fileUploads"`
 	ReceiveAddress string       `json:"receiveAddress"`
 	FeeRate        int          `json:"feeRate"`

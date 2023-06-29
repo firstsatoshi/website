@@ -216,7 +216,6 @@ type FileUpload {
 }
 
 type createInscribeOrderReq {
-	Count          int          `json:"count"`
 	FileUploads    []FileUpload `json:"fileUploads"`
 	ReceiveAddress string       `json:"receiveAddress"`
 	FeeRate        int          `json:"feeRate"`

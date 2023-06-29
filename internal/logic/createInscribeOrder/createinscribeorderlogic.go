@@ -90,12 +90,14 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.TOO_MANY_REQUEST_ERROR), "rate limit error: %v", req.ReceiveAddress)
 	}
 
+	count := len(req.FileUploads)
+
 	// check count
-	if req.Count <= 0 {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "count is invalid %v", req.Count)
+	if count <= 0 {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "count is invalid %v", count)
 	}
-	if req.Count > 50 {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.COUNT_EXCEED_PER_ORDER_LIMIT_ERROR), "count is too large %v", req.Count)
+	if count > 50 {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.COUNT_EXCEED_PER_ORDER_LIMIT_ERROR), "count is too large %v", count)
 	}
 
 	// check receiveAddress is valid P2TR address
@@ -122,7 +124,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 	// random generate account_index and address_index
 	time.Sleep(time.Microsecond * 1)
-	rand.Seed(time.Now().UnixNano() + int64(req.Count) + int64(req.FeeRate) + int64(req.ReceiveAddress[10]) + int64(req.ReceiveAddress[17]))
+	rand.Seed(time.Now().UnixNano() + int64(count) + int64(req.FeeRate) + int64(req.ReceiveAddress[10]) + int64(req.ReceiveAddress[17]))
 
 	accountIndex := rand.Uint32()
 	addressIndex := rand.Uint32()
@@ -175,7 +177,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 	prefix += req.ReceiveAddress[4:8] + req.ReceiveAddress[len(req.ReceiveAddress)-4:] +
 		depositAddress[4:8] + depositAddress[len(depositAddress)-4:] +
-		fmt.Sprintf("%02d", req.Count) + fmt.Sprintf("%02d", req.FeeRate)
+		fmt.Sprintf("%02d", len(req.FileUploads)) + fmt.Sprintf("%02d", req.FeeRate)
 	prefix = strings.ToUpper(prefix)
 	orderId := uniqueid.GenSn(prefix)
 
@@ -203,14 +205,14 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		}
 	}
 
-	totalFee := calcFee(float64(utxoSat), float64(dataSize), float64(req.Count), float64(req.FeeRate))
+	totalFee := calcFee(float64(utxoSat), float64(dataSize), float64(count), float64(req.FeeRate))
 	logx.Infof("==========totalFee : %v", totalFee)
 	logx.Infof("==========net name: %v", l.svcCtx.ChainCfg.Name)
 
 	createTime := time.Now()
 	ord := model.TbInscribeOrder{
 		OrderId:        orderId,
-		Count:          int64(req.Count),
+		Count:          int64(count),
 		DepositAddress: depositAddress,
 		ReceiveAddress: req.ReceiveAddress,
 		DataBytes:      int64(dataSize),
@@ -239,7 +241,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 	resp = &types.CreateInscribeOrderResp{
 		OrderId:        ord.OrderId,
-		Count:          int(ord.Count),
+		Count:          count,
 		DepositAddress: ord.DepositAddress,
 		ReceiveAddress: ord.ReceiveAddress,
 		FeeRate:        int(ord.FeeRate),
