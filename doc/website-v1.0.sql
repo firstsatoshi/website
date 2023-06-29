@@ -115,11 +115,11 @@ CREATE TABLE `tb_inscribe_order` (
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `order_id` (`order_id`) USING BTREE,
-  UNIQUE KEY `tb_order_deposit_address_UIDX` (`deposit_address`) USING BTREE,
-  KEY `tb_order_receive_address_IDX` (`receive_address`) USING BTREE,
-  KEY `tb_order_order_status_IDX` (`order_status`) USING BTREE,
-  KEY `tb_order_pay_from_address_IDX` (`pay_from_address`) USING BTREE,
-  KEY `tb_order_pay_txid_IDX` (`pay_txid`) USING BTREE
+  UNIQUE KEY `tb_inscribe_order_deposit_address_UIDX` (`deposit_address`) USING BTREE,
+  KEY `tb_inscribe_order_receive_address_IDX` (`receive_address`) USING BTREE,
+  KEY `tb_inscribe_order_order_status_IDX` (`order_status`) USING BTREE,
+  KEY `tb_inscribe_order_pay_from_address_IDX` (`pay_from_address`) USING BTREE,
+  KEY `tb_inscribe_order_pay_txid_IDX` (`pay_txid`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='铭文订单表';
 
 

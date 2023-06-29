@@ -48,6 +48,8 @@ type BtcDepositTask struct {
 	tbBlindboxModel          model.TbBlindboxModel
 	tbLockOrderBlindboxModel model.TbLockOrderBlindboxModel
 	tbBlindboxEventModel     model.TbBlindboxEventModel
+
+	tbInscribeOrderModel 	model.TbInscribeOrderModel
 }
 
 func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcDepositTask {
@@ -82,6 +84,8 @@ func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg
 		tbOrderModel:             model.NewTbOrderModel(sqlConn, config.CacheRedis),
 		tbLockOrderBlindboxModel: model.NewTbLockOrderBlindboxModel(sqlConn, config.CacheRedis),
 		tbBlindboxEventModel:     model.NewTbBlindboxEventModel(sqlConn, config.CacheRedis),
+
+		tbInscribeOrderModel: model.NewTbInscribeOrderModel(sqlConn, config.CacheRedis),
 	}
 }
 
@@ -103,6 +107,23 @@ func (t *BtcDepositTask) Start() {
 			case <-ticker.C:
 				logx.Info("======= Btc txMempool task======")
 				t.txMempool()
+			}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			ticker := time.NewTicker(time.Second * 3)
+			select {
+			case <-t.ctx.Done():
+				logx.Info("Gracefully exit txMempool Task goroutine....")
+				// wait sub-goroutine
+				return
+			case <-ticker.C:
+				logx.Info("======= Btc txMempoolInscribe task======")
+				t.txMempoolInscribe()
 			}
 		}
 	}()
@@ -446,7 +467,7 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 
 				// update event avail
-				safeAvail := event.Supply - count  - event.LockCount
+				safeAvail := event.Supply - count - event.LockCount
 				if safeAvail < 0 {
 					logx.Errorf("===================== safeAvail is NEGATIVE %v ===============================", safeAvail)
 					safeAvail = 0
@@ -568,6 +589,87 @@ func (t *BtcDepositTask) txMempool() {
 
 				// ignore error
 				t.tbOrderModel.Update(t.ctx, o)
+			}
+		}
+	}
+
+	// NOTE: DO NOT lock any blindboxs until the deposit transaction be confirmed(into block)
+}
+
+
+
+// txMempool to monitor bitcion mempool transaction and update inscribeOrder status
+func (t *BtcDepositTask) txMempoolInscribe() {
+	// load all of 0~30 minutes order , order by create time asc
+	now := time.Now()
+	query := t.tbInscribeOrderModel.RowBuilder().Where(squirrel.Eq{
+		"order_status": "NOTPAID",
+	}).Where(squirrel.Gt{
+		"create_time": time.Unix(now.Unix()-30*60, 0),
+	}).Where(squirrel.Lt{
+		"create_time": time.Unix(now.Unix()-1*60, 0),
+	}).Limit(1000).OrderBy("id DESC")
+
+	orders, err := t.tbInscribeOrderModel.FindOrders(t.ctx, query)
+	if err != nil {
+		logx.Errorf("FindOrders error: %v", err.Error())
+		return
+	}
+	if len(orders) == 0 {
+		logx.Infof("==no order need to monitor txmempool==")
+		return
+	}
+
+	// get all of address utxo by listunspent
+	for _, order := range orders {
+		select {
+		case <-t.ctx.Done():
+			return
+		default:
+		}
+
+		// memTxs, err := t.apiClient.GetAddressMempoolTxs( order.DepositAddress)
+		time.Sleep(time.Millisecond * 137)
+		utxos, err := t.apiClient.GetAddressUTXOs(order.DepositAddress)
+		if err != nil {
+			logx.Errorf("GetAddressUTXOs error: %v", err.Error())
+			return
+		}
+
+		if len(utxos) == 0 {
+			continue
+		}
+
+		for _, utxo := range utxos {
+			// if tx has be confirmed, skip it. this should be processed by scanBlock,
+			if utxo.TxStatus.Confirmed {
+				continue
+			}
+
+			// NOTE: we only support single utxo deposit, do not support multiple utxo deposit
+			//
+			// check total amount of all of utxos
+			// if utxo's amount  greater or equal than order's total amount
+			if utxo.Value >= uint64(order.TotalAmountSat) {
+				// we should get order latest status again before update
+				o, err := t.tbInscribeOrderModel.FindOne(t.ctx, order.Id)
+				if err != nil {
+					logx.Errorf("FindOne error: %v", err.Error())
+					return
+				}
+
+				// the status was greater than PAYPENDING, we DOT NOT set it back
+				if o.OrderStatus == "PAYSUCCESS" || o.OrderStatus == "MINTING" || o.OrderStatus == "ALLSUCCESS" {
+					continue
+				}
+
+				// update order's status to PAYPENDING
+				o.PayTxid = sql.NullString{Valid: true, String: utxo.Txid}
+				o.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
+				o.OrderStatus = "PAYPENDING"
+
+				// ignore error
+				t.tbInscribeOrderModel.Update(t.ctx, o)
 			}
 		}
 	}
