@@ -3,7 +3,7 @@
 import json
 import requests
 
-token = "0.eVwj9zq8skPVHmmbYrpiRhqU14LkF6VcQvx3KrsVgzRpUlkrfeaqr5Shdj6ls4YO3aNH09U-uY3aFg1drRtLWRnD7ZJOzu2v9Hwy_49isSNaFP8Ehdr1TmsFF_kDWk9L9uxhwFqqcOJn6RkxiZlH4jVdorb9MDn4vWNST40PPbrDdIeFVRXbCZP84Xruuoo-uK58JqfXMy04RZL43rCcF0Q81y4eMjpS6Nb978QMvwa0NeT1JNuCtKlHhagOc1llba_aFimZsliEfVIqDBcRkyoTFe1clokFpxiPjrgFod-_qcwanr-O4nw5sIwVS_EEBF9Pi4ok00gvxJYMiPG8aTi-2mdiCP12T4RNd69iNb33qK3xWFJVRb3RMLkq9epV.AZCz-E4cTVaXe4rh7cNt8w.cbd20f324b600a47a6c3b6454ff095be3985c5128eaa255fa619b5b7183e5a90"
+token = "youngqqcn@gmail.com"
 
 # 实现一个post接口请求，打印请求结果，请求参数为json格式,接口url为 https://www.biteagle.io/api/v1/createorder
 #  请求参数示例 如下：
@@ -15,7 +15,7 @@ token = "0.eVwj9zq8skPVHmmbYrpiRhqU14LkF6VcQvx3KrsVgzRpUlkrfeaqr5Shdj6ls4YO3aNH0
 #     "token":"dffffffffffffffffff"
 # }
 def createorder(recv_addr):
-    url = "https://www.biteagle.io/api/v1/createorder"
+    url = "http://18.181.187.89/api/v1/createorder"
     data = {
         "eventId": 1,
         "count": 1,
@@ -47,7 +47,7 @@ def read_file():
 
 if __name__ == '__main__':
     addrs = read_file()
-    with open('b_100.csv', 'w') as outfile:
+    with open('b_100.csv', 'a') as outfile:
         for addr in addrs:
             a, t = createorder(addr)
             if a is None or t is None:
