@@ -169,8 +169,9 @@ func (t *BtcInscribeTask) Start() {
 			// wait sub-goroutine
 			return
 		case <-ticker.C:
-			logx.Info("======= Btc Inscribe Task =================")
-			t.run()
+			logx.Info("======= run =================")
+			t.runBlindboxOrder()
+			t.runInscribeOrder()
 		}
 	}
 
@@ -180,10 +181,11 @@ func (t *BtcInscribeTask) Stop() {
 	t.stop()
 }
 
-func (t *BtcInscribeTask) run() {
+func (t *BtcInscribeTask) runBlindboxOrder() {
 
 	// get order from db, 1 order per time
 	if true {
+		logx.Info("======= Blindbox order inscribe =================")
 		query := t.tbOrderModel.RowBuilder().Where(squirrel.Eq{
 			"order_status": "PAYSUCCESS",
 		}).Limit(1).OrderBy("id DESC")
@@ -203,8 +205,14 @@ func (t *BtcInscribeTask) run() {
 		}
 	}
 
+}
+
+func (t *BtcInscribeTask) runInscribeOrder() {
+
 	///==============
 	if true {
+		logx.Info("======= inscribe order inscribe =================")
+
 		// get order from db, 1 order per time
 		query := t.tbInscribeOrderModel.RowBuilder().Where(squirrel.Eq{
 			"order_status": "PAYSUCCESS",
@@ -813,7 +821,7 @@ func (t *BtcInscribeTask) txMonitorInscribe() {
 			// TODO: if deposit tx in a orphan block ?  waiting more blocks?
 			// still pending
 			if !tx.Status.Confirmed {
-				logx.Infof(" blindbox: %v, revealTxid:%v , still pending", d.Id, d.RevealTxid.String)
+				logx.Infof(" inscribeDataId: %v, revealTxid:%v , still pending", d.Id, d.RevealTxid.String)
 				continue
 			}
 
@@ -821,7 +829,7 @@ func (t *BtcInscribeTask) txMonitorInscribe() {
 				d.Status = "MINT"
 				err = t.tbInscribeDataModel.Update(t.ctx, d)
 				if err != nil {
-					logx.Errorf("update order status and blindbox status error :%v ", err.Error())
+					logx.Errorf("update order status and inscribeData status error :%v ", err.Error())
 					return
 				}
 			}
