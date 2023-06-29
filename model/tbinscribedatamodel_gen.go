@@ -39,13 +39,17 @@ type (
 	}
 
 	TbInscribeData struct {
-		Id          int64     `db:"id"`           // id
-		OrderId     string    `db:"order_id"`     // 订单id
-		ContentType string    `db:"content_type"` // 类型: 如 image/img
-		FileName    string    `db:"file_name"`    // 文件名
-		Data        string    `db:"data"`         // 铭文数据
-		CreateTime  time.Time `db:"create_time"`  // 创建时间
-		UpdateTime  time.Time `db:"update_time"`  // 最后更新时间
+		Id          int64          `db:"id"`           // id
+		OrderId     string         `db:"order_id"`     // 订单id
+		ContentType string         `db:"content_type"` // 类型: 如 image/img
+		FileName    string         `db:"file_name"`    // 文件名
+		Data        string         `db:"data"`         // 铭文数据
+		Status      string         `db:"status"`       // 状态,NOTMINT,MINTING,MINT
+		CommitTxid  sql.NullString `db:"commit_txid"`  // commit_txid
+		RevealTxid  sql.NullString `db:"reveal_txid"`  // 铭文交易id
+		Deleted     int64          `db:"deleted"`      // 逻辑删除
+		CreateTime  time.Time      `db:"create_time"`  // 创建时间
+		UpdateTime  time.Time      `db:"update_time"`  // 最后更新时间
 	}
 )
 
@@ -85,8 +89,8 @@ func (m *defaultTbInscribeDataModel) FindOne(ctx context.Context, id int64) (*Tb
 func (m *defaultTbInscribeDataModel) Insert(ctx context.Context, data *TbInscribeData) (sql.Result, error) {
 	tbInscribeDataIdKey := fmt.Sprintf("%s%v", cacheTbInscribeDataIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?)", m.table, tbInscribeDataRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.OrderId, data.ContentType, data.FileName, data.Data)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbInscribeDataRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.OrderId, data.ContentType, data.FileName, data.Data, data.Status, data.CommitTxid, data.RevealTxid, data.Deleted)
 	}, tbInscribeDataIdKey)
 	return ret, err
 }
@@ -95,7 +99,7 @@ func (m *defaultTbInscribeDataModel) Update(ctx context.Context, data *TbInscrib
 	tbInscribeDataIdKey := fmt.Sprintf("%s%v", cacheTbInscribeDataIdPrefix, data.Id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbInscribeDataRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.OrderId, data.ContentType, data.FileName, data.Data, data.Id)
+		return conn.ExecCtx(ctx, query, data.OrderId, data.ContentType, data.FileName, data.Data, data.Status, data.CommitTxid, data.RevealTxid, data.Deleted, data.Id)
 	}, tbInscribeDataIdKey)
 	return err
 }

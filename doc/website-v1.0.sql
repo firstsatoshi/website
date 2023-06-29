@@ -130,6 +130,10 @@ CREATE TABLE `tb_inscribe_data` (
   `content_type` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '类型: 如 image/img',
   `file_name` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '文件名',
   `data` mediumblob NOT NULL COMMENT '铭文数据',
+  `status` varchar(20) COLLATE utf8mb4_bin DEFAULT 'NOTMINT'  COMMENT '状态,NOTMINT,MINTING,MINT',
+  `commit_txid` varchar(100) COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'commit_txid',
+  `reveal_txid` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '铭文交易id',
+  `deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`) USING BTREE
