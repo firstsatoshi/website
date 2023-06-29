@@ -133,6 +133,9 @@ func (t *BtcInscribeTask) Start() {
 			case <-ticker.C:
 				logx.Info("======= Btc txmonitor task======")
 				t.txMonitor()
+				logx.Info("======= Btc txMonitorInscribe task======")
+				time.Sleep(time.Millisecond * 333)
+				t.txMonitorInscribe()
 			}
 		}
 	}()
@@ -150,6 +153,9 @@ func (t *BtcInscribeTask) Start() {
 			case <-ticker.C:
 				logx.Info("======= Btc ordertimeout task======")
 				t.orderTimeout()
+				logx.Info("======= Btc inscribeOrderTimeout task======")
+				time.Sleep(time.Millisecond * 333)
+				t.inscribeOrderTimeout()
 			}
 		}
 	}()
@@ -453,7 +459,6 @@ func (t *BtcInscribeTask) blindboxOrderMint(order *model.TbOrder) {
 	logx.Infof("update order %v status and blindbox status  SUCCESS ", order.OrderId)
 }
 
-
 // inscribe order inscribe
 func (t *BtcInscribeTask) inscribeOrderInscribe(order *model.TbInscribeOrder) {
 
@@ -514,7 +519,7 @@ func (t *BtcInscribeTask) inscribeOrderInscribe(order *model.TbInscribeOrder) {
 
 	// set reveal output value, ordinals default is 10000 sats.
 	// Although 546sats also is ok, we should keep step with ordinals official standard.
-	revealValueSats := 546  // !only 546 for inscribe files
+	revealValueSats := 546 // !only 546 for inscribe files
 	// if t.chainCfg.Net == wire.TestNet3 {
 	// 	revealValueSats = 546 // only for testnet
 	// }
