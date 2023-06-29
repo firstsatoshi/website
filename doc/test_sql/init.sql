@@ -1,4 +1,1 @@
-INSERT INTO website.tb_blindbox_event (event_name,event_description,price_sats,is_active,payment_token,average_image_bytes,supply,avail,mint_limit,only_whitelist,start_time,end_time,create_time,update_time)
-VALUES('Bitcoin Eagle','This is Bitcoin Eagle NFT mint',0,1,'BTC',650,100,100,2,1,'2023-05-27 16:28:39','2024-05-27 16:28:39','2023-05-27 16:28:39','2023-05-27 16:28:48');
-
-
+INSERT INTO website.tb_blindbox_event (id, event_name, event_description, price_sats, is_active, payment_token, img_url, average_image_bytes, supply, avail, lock_count, mint_limit, only_whitelist, start_time, end_time, create_time, update_time) VALUES(1, 'Bitcoin Eagle', 'This is Bitcoin Eagle NFT mint', 0, 1, 'BTC', 'https://www.baidu.com', 650, 100, 100, 0, 2, 1, '2023-05-27 16:28:39', '2024-05-27 16:28:39', '2023-05-27 16:28:39', '2023-05-27 16:28:48');

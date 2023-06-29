@@ -33,7 +33,7 @@ func NewTbInscribeDataModel(conn sqlx.SqlConn, c cache.CacheConf) TbInscribeData
 
 // export to logic use
 func (m *customTbInscribeDataModel) RowBuilder() squirrel.SelectBuilder {
-	return squirrel.Select(tbOrderRows).From(m.table)
+	return squirrel.Select(tbInscribeDataRows).From(m.table)
 }
 
 // FindOrders query order by custom sql
