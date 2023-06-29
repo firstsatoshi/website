@@ -14,3 +14,4 @@ images
 ./website.go
 doc/image_tools/ceshi_50x50
 website.go
+doc/image_tools/__pycache__/copy.cpython-311.pyc
