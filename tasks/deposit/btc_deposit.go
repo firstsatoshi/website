@@ -49,7 +49,7 @@ type BtcDepositTask struct {
 	tbLockOrderBlindboxModel model.TbLockOrderBlindboxModel
 	tbBlindboxEventModel     model.TbBlindboxEventModel
 
-	tbInscribeOrderModel 	model.TbInscribeOrderModel
+	tbInscribeOrderModel model.TbInscribeOrderModel
 }
 
 func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcDepositTask {
@@ -273,6 +273,7 @@ func (t *BtcDepositTask) scanBlock() {
 
 			// support multi order deposit in one transaction
 			totalDepositValueMap := make(map[string]uint64, 0)
+			totalInscribeOrderDepositValueMap := make(map[string]uint64, 0)
 
 			for _, vo := range tx.Vout {
 				if vo.ScriptpubkeyType != "v1_p2tr" {
@@ -312,8 +313,14 @@ func (t *BtcDepositTask) scanBlock() {
 					return
 				}
 
-				// is deposit, accumulate the value
-				totalDepositValueMap[addr.Address] += vo.Value
+				// check whether is inscribe  or blindbox deposit
+				if addr.BussinesType == globalvar.BussinesTypeInscribe {
+					// inscribe
+					totalInscribeOrderDepositValueMap[addr.Address] += vo.Value
+				} else {
+					// is  blindbox deposit, accumulate the value
+					totalDepositValueMap[addr.Address] += vo.Value
+				}
 			}
 
 			// insert into db
@@ -336,6 +343,37 @@ func (t *BtcDepositTask) scanBlock() {
 					logx.Infof("==== insert db ok! === ")
 				}
 			}
+
+			// update inscribeOrder status
+			for depositAddr, value := range totalInscribeOrderDepositValueMap {
+				order, err := t.tbInscribeOrderModel.FindOneByDepositAddress(t.ctx, depositAddr)
+				if err != nil {
+					if err == model.ErrNotFound {
+						logx.Errorf("=========== inscribe-DEPOSIT ADDRESS NOT MATCH ORDER: %v =======", depositAddr)
+						continue
+					}
+					logx.Errorf("FindOneByDepositAddress error: %v", err.Error())
+					continue
+				}
+
+				if value < uint64(order.TotalAmountSat) {
+					// TODO ??
+					logx.Infof(" ============ inscribe-DEPOSIT AMOUNT IS NOT ENOUGH, order total is %v, got %v ====", order.TotalAmountSat, value)
+					continue
+				}
+
+				// update order
+				order.PayTxid = sql.NullString{Valid: true, String: txid}
+				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
+				order.OrderStatus = "PAYSUCCESS"
+				order.PayConfirmedTime = sql.NullTime{Valid: true, Time: time.Now()}
+				order.Version += 1
+				if err := t.tbInscribeOrderModel.Update(t.ctx, order); err != nil {
+					logx.Errorf("Update: %v", err.Error())
+					return
+				}
+			}
+
 
 			// lock blindbox
 			//  if tx is deposit transaction check the value whether equal or greater than order's payment value
@@ -595,8 +633,6 @@ func (t *BtcDepositTask) txMempool() {
 
 	// NOTE: DO NOT lock any blindboxs until the deposit transaction be confirmed(into block)
 }
-
-
 
 // txMempool to monitor bitcion mempool transaction and update inscribeOrder status
 func (t *BtcDepositTask) txMempoolInscribe() {
