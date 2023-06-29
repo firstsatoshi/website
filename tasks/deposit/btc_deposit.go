@@ -374,7 +374,6 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 			}
 
-
 			// lock blindbox
 			//  if tx is deposit transaction check the value whether equal or greater than order's payment value
 			for depositAddr, value := range totalDepositValueMap {

@@ -50,6 +50,9 @@ type BtcInscribeTask struct {
 	tbOrderModel               model.TbOrderModel
 	tbBlindboxModel            model.TbBlindboxModel
 	tbTbLockOrderBlindboxModel model.TbLockOrderBlindboxModel
+
+	tbInscribeOrderModel model.TbInscribeOrderModel
+	tbInscribeDataModel  model.TbInscribeDataModel
 }
 
 func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcInscribeTask {
@@ -91,6 +94,8 @@ func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincf
 		tbOrderModel:               model.NewTbOrderModel(sqlConn, config.CacheRedis),
 		tbBlindboxModel:            model.NewTbBlindboxModel(sqlConn, config.CacheRedis),
 		tbTbLockOrderBlindboxModel: model.NewTbLockOrderBlindboxModel(sqlConn, config.CacheRedis),
+		tbInscribeOrderModel:       model.NewTbInscribeOrderModel(sqlConn, config.CacheRedis),
+		tbInscribeDataModel:        model.NewTbInscribeDataModel(sqlConn, config.CacheRedis),
 	}
 }
 
@@ -507,6 +512,85 @@ func (t *BtcInscribeTask) txMonitor() {
 
 }
 
+// txMonitor monitor tx and update order and blindbox status
+func (t *BtcInscribeTask) txMonitorInscribe() {
+
+	queryOrdersSql := t.tbInscribeOrderModel.RowBuilder().Where(squirrel.Eq{
+		"order_status": "MINTING",
+	})
+	mintingInscribeOrders, err := t.tbInscribeOrderModel.FindOrders(t.ctx, queryOrdersSql)
+	if err != nil {
+		logx.Errorf("FindOrders error: %v", err.Error())
+		return
+	}
+
+	// 1---n
+	orderRevealTxMap := make(map[string]([]*model.TbInscribeData), 0)
+	for _, mo := range mintingInscribeOrders {
+		orderRevealTxMap[mo.OrderId] = make([]*model.TbInscribeData, 0)
+
+		q := t.tbInscribeDataModel.RowBuilder().Where(squirrel.Eq{
+			"order_id": mo.OrderId,
+		})
+		inscribeDatas, err := t.tbInscribeDataModel.FindInscribeDatas(t.ctx, q)
+		if err != nil {
+			logx.Errorf("FindInscribeDatas error: %v", err.Error())
+			return
+		}
+
+		// append inscribe datas
+		for _, d := range inscribeDatas {
+			orderRevealTxMap[mo.OrderId] = append(orderRevealTxMap[mo.OrderId], d)
+		}
+	}
+
+	successOrderMap := make(map[string]bool, 0)
+	for orderId, inscribeDatas := range orderRevealTxMap {
+
+		okCount := 0
+		for _, d := range inscribeDatas {
+			// monitor tx status
+			tx, err := t.apiClient.GetTansaction(d.RevealTxid.String)
+			if err != nil {
+				logx.Errorf("GetTansaction error: %v, continue", err.Error())
+				continue
+			}
+
+			// TODO: if deposit tx in a orphan block ?  waiting more blocks?
+			// still pending
+			if !tx.Status.Confirmed {
+				logx.Infof(" blindbox: %v, revealTxid:%v , still pending", d.Id, d.RevealTxid.String)
+				continue
+			}
+
+			if d.Status != "MINT" {
+				d.Status = "MINT"
+				err = t.tbInscribeDataModel.Update(t.ctx, d)
+				if err != nil {
+					logx.Errorf("update order status and blindbox status error :%v ", err.Error())
+					return
+				}
+			}
+			okCount += 1
+		}
+
+		// all boxs of order has been success, set order's status to ALLSUCCESS
+		if okCount == len(inscribeDatas) {
+			successOrderMap[orderId] = true
+		}
+	}
+
+	// update order's status to ALLSUCCESS
+	for _, mo := range mintingInscribeOrders {
+		if orderSuccess, ok := successOrderMap[mo.OrderId]; ok && orderSuccess {
+			mo.OrderStatus = "ALLSUCCESS"
+			t.tbInscribeOrderModel.Update(t.ctx, mo)
+		}
+	}
+
+}
+
+// blinbox order timeout
 func (t *BtcInscribeTask) orderTimeout() {
 
 	// 120 minutes to timeout
@@ -533,6 +617,42 @@ func (t *BtcInscribeTask) orderTimeout() {
 		// timeout
 		order.OrderStatus = "PAYTIMEOUT"
 		err := t.tbOrderModel.Update(t.ctx, order)
+		if err != nil {
+			logx.Errorf("Update error: %v", err.Error())
+			continue
+		}
+
+	}
+
+}
+
+// inscribe order timeout
+func (t *BtcInscribeTask) inscribeOrderTimeout() {
+
+	// 120 minutes to timeout
+	timeoutSecs := 120 * 60
+	now := time.Now()
+	timeout := time.Unix(now.Unix()-int64(timeoutSecs), 0)
+	queryBuilder := t.tbInscribeOrderModel.RowBuilder().Where(squirrel.Eq{
+		"order_status": "NOTPAID",
+	}).Where(squirrel.Lt{
+		"create_time": timeout,
+	}).Limit(100)
+
+	orders, err := t.tbInscribeOrderModel.FindOrders(t.ctx, queryBuilder)
+	if err != nil {
+		logx.Errorf("FindOrders error: %v", err.Error())
+		return
+	}
+
+	for _, order := range orders {
+		if now.Sub(order.CreateTime).Seconds() < float64(timeoutSecs) {
+			continue
+		}
+
+		// timeout
+		order.OrderStatus = "PAYTIMEOUT"
+		err := t.tbInscribeOrderModel.Update(t.ctx, order)
 		if err != nil {
 			logx.Errorf("Update error: %v", err.Error())
 			continue
