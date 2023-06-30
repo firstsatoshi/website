@@ -121,7 +121,17 @@ func newInscriptionToolWithBtcApiClient(net *chaincfg.Params, btcApiClient btcap
 		txCtxDataList:             make([]*inscriptionTxCtxData, len(request.DataList)),
 		revealTxPrevOutputFetcher: txscript.NewMultiPrevOutFetcher(nil),
 	}
-	return tool, tool._initTool(net, request)
+	err := tool._initTool(net, request)
+
+	// FIX: check whether the reveal is empty, to fix isssue #2
+	if len(tool.commitTx.TxOut) < len(request.DataList) {
+		return nil, errors.New("the length of commitTx.TxOut and request.DataList must equal or greater than the length of DataList")
+	}
+	if len(tool.revealTx) != len(request.DataList) {
+		return nil, errors.New("the length of revealTx and request.DataList must be the same")
+	}
+
+	return tool, err
 }
 
 func (tool *inscriptionTool) _initTool(net *chaincfg.Params, request *inscriptionRequest) error {
@@ -230,6 +240,7 @@ func createInscriptionTxCtxData(net *chaincfg.Params, inscriptionRequest *inscri
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("commitAddress:%s, recoverKey: %s", commitTxAddress.String(), recoveryPrivateKeyWIF.String())
 
 	return &inscriptionTxCtxData{
 		privateKey:              privateKey,
