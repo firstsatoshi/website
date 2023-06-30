@@ -83,6 +83,7 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 	logx.Infof("before newInscriptionToolWithBtcApiClient .........")
 	tool, err := newInscriptionToolWithBtcApiClient(netParams, btcApiClient, &request)
 	if err != nil {
+		logx.Errorf("newInscriptionToolWithBtcApiClient error: %v", err.Error())
 		return
 	}
 	logx.Infof("newInscriptionToolWithBtcApiClient ok")
