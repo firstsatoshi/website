@@ -240,7 +240,7 @@ func createInscriptionTxCtxData(net *chaincfg.Params, inscriptionRequest *inscri
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("commitAddress:%s, recoverKey: %s", commitTxAddress.String(), recoveryPrivateKeyWIF.String())
+	fmt.Printf("commitAddress:%s, recoverKey: %s\n", commitTxAddress.String(), recoveryPrivateKeyWIF.String())
 
 	return &inscriptionTxCtxData{
 		privateKey:              privateKey,
