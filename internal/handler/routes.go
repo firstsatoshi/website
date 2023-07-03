@@ -11,6 +11,7 @@ import (
 	joinwaitlist "github.com/firstsatoshi/website/internal/handler/joinwaitlist"
 	queryAddress "github.com/firstsatoshi/website/internal/handler/queryAddress"
 	queryBlindboxEvent "github.com/firstsatoshi/website/internal/handler/queryBlindboxEvent"
+	queryBrc20 "github.com/firstsatoshi/website/internal/handler/queryBrc20"
 	queryGalleryList "github.com/firstsatoshi/website/internal/handler/queryGalleryList"
 	queryOrder "github.com/firstsatoshi/website/internal/handler/queryOrder"
 	"github.com/firstsatoshi/website/internal/svc"
@@ -113,6 +114,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPost,
 				Path:    "/createinscribeorder",
 				Handler: createInscribeOrder.CreateInscribeOrderHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/querybrc20",
+				Handler: queryBrc20.QueryBrc20Handler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/api/v1"),

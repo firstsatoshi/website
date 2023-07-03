@@ -26,7 +26,9 @@
 看后续btc生态的发展情况，再决定是否自建数据服务。最好的方式是用第三方数据服务商的api,降低我们的成本。
 
 
-- 查询brc20： https://unisat.io/brc20-api-v2/inscriptions/category/sats/search/v2?name=hello&limit=32&start=0
+- 查询brc20：
+  - https://unisat.io/brc20-api-v2/brc20/ordi/info
+  - https://unisat.io/brc20-api-v2/inscriptions/category/sats/search/v2?name=hello&limit=32&start=0
 
 - sats: https://unisat.io/brc20-api-v2/inscriptions/category/sats/existence
 

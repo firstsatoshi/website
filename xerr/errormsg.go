@@ -17,6 +17,7 @@ func init() {
 	message[EXCEED_MINT_LIMIT_ERROR] = "Sorry, your total mint count exceeds the mint limit, please check it and try again."
 	message[ONLY_WHITELIST_ERROR] = "Only allow whitelist to mint"
 	message[INVALID_TOKEN_ERROR] = "Token expired, please refresh and try again."
+	message[GET_BRC20_INFO_ERROR] = "Get BRC20 info error."
 	message[DB_ERROR] = "system error"
 }
 

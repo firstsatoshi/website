@@ -6,6 +6,7 @@ import (
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/firstsatoshi/website/common/bmfilter"
 	"github.com/firstsatoshi/website/common/keymanager"
+	"github.com/firstsatoshi/website/common/unisat"
 	"github.com/firstsatoshi/website/internal/config"
 	"github.com/firstsatoshi/website/model"
 	"github.com/zeromicro/go-zero/core/limit"
@@ -35,6 +36,9 @@ type ServiceContext struct {
 	ChainCfg   *chaincfg.Params
 
 	PeriodLimit *limit.PeriodLimit
+
+	// unisat api client
+	UnisatApiClient *unisat.UnisatApiClient
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -75,5 +79,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		KeyManager:               km,
 		ChainCfg:                 &chainCfg,
 		PeriodLimit:              periodLimit,
+		UnisatApiClient:          unisat.NewUnisatApiClient(),
 	}
 }

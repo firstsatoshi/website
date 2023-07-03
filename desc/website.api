@@ -244,3 +244,27 @@ service website-api {
 	@handler createInscribeOrder
 	post /createinscribeorder(createInscribeOrderReq) returns (createInscribeOrderResp)
 }
+
+// brc20 info
+type queryBrc20Req {
+	Ticker string `json:"ticker"`
+}
+
+type queryBrc20Resp {
+	IsExists      bool   `json:"isExists"`
+	Ticker        string `json:"ticker"`
+	Limit         int64  `json:"limit"`
+	Max           int64  `json:"max"`
+	Minted        int64  `json:"minted"`
+	Decimal       int    `json:"decimal"`
+	InscriptionId string `json:"inscriptionId"`
+}
+
+@server(
+	prefix: api/v1
+	group: queryBrc20
+)
+service website-api {
+	@handler queryBrc20
+	post /querybrc20(queryBrc20Req) returns (queryBrc20Resp)
+}

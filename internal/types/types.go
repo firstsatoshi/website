@@ -155,3 +155,17 @@ type CreateInscribeOrderResp struct {
 	Total          int    `json:"total"`
 	CreateTime     string `json:"createTime"`
 }
+
+type QueryBrc20Req struct {
+	Ticker string `json:"ticker"`
+}
+
+type QueryBrc20Resp struct {
+	IsExists      bool   `json:"isExists"`
+	Ticker        string `json:"ticker"`
+	Limit         int64  `json:"limit"`
+	Max           int64  `json:"max"`
+	Minted        int64  `json:"minted"`
+	Decimal       int    `json:"decimal"`
+	InscriptionId string `json:"inscriptionId"`
+}
