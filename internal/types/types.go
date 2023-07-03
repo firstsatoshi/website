@@ -169,3 +169,13 @@ type QueryBrc20Resp struct {
 	Decimal       int    `json:"decimal"`
 	InscriptionId string `json:"inscriptionId"`
 }
+
+type CheckNamesReq struct {
+	Type  string   `json:"type"` // sats, unisat
+	Names []string `json:"names"`
+}
+
+type CheckNamesResp struct {
+	Name     string `json:"name"`
+	IsExists bool   `json:"isExists"`
+}

@@ -18,6 +18,8 @@ func init() {
 	message[ONLY_WHITELIST_ERROR] = "Only allow whitelist to mint"
 	message[INVALID_TOKEN_ERROR] = "Token expired, please refresh and try again."
 	message[GET_BRC20_INFO_ERROR] = "Get BRC20 info error."
+	message[INVALID_NAME_TYPE_ERROR] = "invalid name type error."
+	message[INVALID_NAME_ERROR] = "invalid name error."
 	message[DB_ERROR] = "system error"
 }
 

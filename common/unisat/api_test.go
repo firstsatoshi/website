@@ -29,3 +29,14 @@ func TestUnisatApiClient_GetBrc20Info(t *testing.T) {
 	}
 
 }
+
+func TestUnisatApiClient_CheckNames(t *testing.T) {
+	c := unisat.NewUnisatApiClient()
+
+	r, err := c.CheckNames("sats", []string{"aaa.sats"})
+	if err != nil {
+		t.Fatalf("err:%v", err)
+	}
+
+	t.Logf("r:%+v", r)
+}

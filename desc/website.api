@@ -268,3 +268,23 @@ service website-api {
 	@handler queryBrc20
 	post /querybrc20(queryBrc20Req) returns (queryBrc20Resp)
 }
+
+// check sats , unisat
+type checkNamesReq {
+	Type  string   `json:"type"` // sats, unisat
+	Names []string `json:"names"`
+}
+
+type checkNamesResp {
+	Name     string `json:"name"`
+	IsExists bool   `json:"isExists"`
+}
+
+@server(
+	prefix: api/v1
+	group: checkNames
+)
+service website-api {
+	@handler checkNames
+	post /checknames(checkNamesReq) returns ( []checkNamesResp )
+}

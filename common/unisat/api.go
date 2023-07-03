@@ -1,10 +1,12 @@
 package unisat
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/tidwall/gjson"
 )
 
 type UnisatApiClient struct {
@@ -39,5 +41,38 @@ func (c *UnisatApiClient) GetBrc20Info(ticker string) (brc20Info *Brc20Info, err
 	}
 
 	brc20Info = info
+	return
+}
+
+// get names
+func (c *UnisatApiClient) CheckNames(nameType string, names []string) (results map[string]bool, err error) {
+	url := fmt.Sprintf("https://unisat.io/brc20-api-v2/inscriptions/category/%s/existence", nameType)
+	namesJson, err := json.Marshal(map[string][]string{
+		"names": names,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.client.R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(namesJson).Post(url)
+	if err != nil {
+		return
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		err = fmt.Errorf("code:%v,error:%v", resp.StatusCode(), string(resp.Body()))
+		return
+	}
+
+	body := string(resp.Body())
+	fmt.Printf("==%v", body)
+	result := gjson.Get(body, "data").Map()
+
+	results = make(map[string]bool, 0)
+	for k, v := range result {
+		results[k] = v.String() == "confirmed"
+	}
 	return
 }
