@@ -310,7 +310,8 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		ServiceFee:     int(ord.ServiceFeeSat),
 		Price:          int(ord.PriceSat),
 		Total:          int(ord.TotalAmountSat),
-		CreateTime:     createTime.Format("2006-01-02 15:04:05 +0800 CST"),
+		CreateTime:     createTime.Unix(),
+		// CreateTime:     createTime.Format("2006-01-02 15:04:05 +0800 CST"),
 	}
 
 	return

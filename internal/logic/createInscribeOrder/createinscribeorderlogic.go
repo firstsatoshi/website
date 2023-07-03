@@ -238,9 +238,15 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		l.svcCtx.DepositBloomFilter.Add([]byte(depositAddress))
 	}
 
+	filenames := make([]string, 0)
+	for _, v := range req.FileUploads {
+		filenames = append(filenames, v.FileName)
+	}
+
 	resp = &types.CreateInscribeOrderResp{
 		OrderId:        ord.OrderId,
 		Count:          count,
+		Filenames:      filenames,
 		DepositAddress: ord.DepositAddress,
 		ReceiveAddress: ord.ReceiveAddress,
 		FeeRate:        int(ord.FeeRate),
@@ -248,7 +254,8 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		InscribeFee:    int(ord.TxfeeAmountSat),
 		ServiceFee:     int(ord.ServiceFeeSat),
 		Total:          int(ord.TotalAmountSat),
-		CreateTime:     createTime.Format("2006-01-02 15:04:05 +0800 CST"),
+		CreateTime:     createTime.Unix(),
+		// CreateTime:     createTime.Format("2006-01-02 15:04:05 +0800 CST"),
 	}
 
 	return

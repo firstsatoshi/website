@@ -126,7 +126,8 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 				PayConfirmedTime: payConfirmedTime,
 				NftDetails:       nftDetails,
 				PayTxid:          payTxid,
-				CreateTime:       o.CreateTime.Format("2006-01-02 15:04:05 +0800 CST"),
+				CreateTime:       o.CreateTime.Unix(),
+				// CreateTime:       o.CreateTime.Format("2006-01-02 15:04:05 +0800 CST"),
 			})
 
 		}
@@ -268,7 +269,8 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 				PayConfirmedTime: payConfirmedTime,
 				NftDetails:       nftDetails,
 				PayTxid:          payTxid,
-				CreateTime:       o.CreateTime.Format("2006-01-02 15:04:05 +0800 CST"),
+				CreateTime:       o.CreateTime.Unix(),
+				// CreateTime:       o.CreateTime.Format("2006-01-02 15:04:05 +0800 CST"),
 			})
 		}
 	}

@@ -69,6 +69,7 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp []types.BlindboxEve
 			EventId:            int(event.Id),
 			Name:               event.EventName,
 			Description:        event.EventDescription,
+			BackgroundImageUrl: event.BackgroundImgUrl,
 			RoadmapDescription: event.EventDescription,
 			RoadmapList:        roadmapList,
 			WebsiteUrl:         event.WebsiteUrl,

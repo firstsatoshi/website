@@ -37,6 +37,7 @@ CREATE TABLE `tb_blindbox_event` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `event_name` varchar(100) COLLATE utf8mb4_bin DEFAULT "" COMMENT '名称',
   `event_description` varchar(200) COLLATE utf8mb4_bin DEFAULT "" COMMENT '描述,富文本',
+  `background_img_url` varchar(500) COLLATE utf8mb4_bin DEFAULT "" COMMENT '背景图片url',
   `roadmap_description` varchar(1000) COLLATE utf8mb4_bin DEFAULT "" COMMENT '路线图描述,富文本',
   `roadmap_list` varchar(1000) COLLATE utf8mb4_bin DEFAULT "" COMMENT '路线图;按照 title1;title2;title3 的格式',
   `website_url` varchar(200) COLLATE utf8mb4_bin DEFAULT "" COMMENT '官网url',

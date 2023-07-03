@@ -33,7 +33,7 @@ type CreateOrderResp struct {
 	ServiceFee     int    `json:"serviceFee"`
 	Price          int    `json:"price"`
 	Total          int    `json:"total"`
-	CreateTime     string `json:"createTime"`
+	CreateTime     int64  `json:"createTime"`
 }
 
 type QueryOrderReq struct {
@@ -64,13 +64,14 @@ type Order struct {
 	PayTime          string      `json:"paytime"`
 	PayConfirmedTime string      `json:"payConfirmedTime"`
 	NftDetails       []NftDetail `json:"nftDetails"`
-	CreateTime       string      `json:"createTime"`
+	CreateTime       int64       `json:"createTime"`
 }
 
 type BlindboxEvent struct {
 	EventId            int      `json:"eventId"`
 	Name               string   `json:"name"`
 	Description        string   `json:"description"`
+	BackgroundImageUrl string   `json:"backgroundImageUrl"`
 	RoadmapDescription string   `json:"roadmapDescription"`
 	RoadmapList        []string `json:"roadmapList"`
 	WebsiteUrl         string   `json:"websiteUrl"`
@@ -149,16 +150,17 @@ type CreateInscribeOrderReq struct {
 }
 
 type CreateInscribeOrderResp struct {
-	OrderId        string `json:"orderId"`
-	Count          int    `json:"count"`
-	DepositAddress string `json:"depositAddress"`
-	ReceiveAddress string `json:"receiveAddress"`
-	FeeRate        int    `json:"feeRate"`
-	Bytes          int    `json:"bytes"`
-	InscribeFee    int    `json:"inscribeFee"`
-	ServiceFee     int    `json:"serviceFee"`
-	Total          int    `json:"total"`
-	CreateTime     string `json:"createTime"`
+	OrderId        string   `json:"orderId"`
+	Count          int      `json:"count"`
+	Filenames      []string `json:"filenames"`
+	DepositAddress string   `json:"depositAddress"`
+	ReceiveAddress string   `json:"receiveAddress"`
+	FeeRate        int      `json:"feeRate"`
+	Bytes          int      `json:"bytes"`
+	InscribeFee    int      `json:"inscribeFee"`
+	ServiceFee     int      `json:"serviceFee"`
+	Total          int      `json:"total"`
+	CreateTime     int64    `json:"createTime"`
 }
 
 type QueryBrc20Req struct {
