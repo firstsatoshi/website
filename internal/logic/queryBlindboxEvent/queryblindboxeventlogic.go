@@ -2,6 +2,7 @@ package queryBlindboxEvent
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/firstsatoshi/website/internal/svc"
@@ -61,22 +62,30 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp []types.BlindboxEve
 			safeAvail = 0
 		}
 
+		roadmapList := strings.Split(event.RoadmapList, ";")
+		imagesList := strings.Split(event.ImgUrlList, ";")
+
 		resp = append(resp, types.BlindboxEvent{
-			EventId:           int(event.Id),
-			Name:              event.EventName,
-			Description:       event.EventDescription,
-			ImageUrl:          event.ImgUrl,
-			PriceBtcSats:      int(event.PriceSats),
-			PriceUsd:          0, // TODO
-			MintLimit:         int(event.MintLimit),
-			PaymentToken:      event.PaymentToken,
-			AverageImageBytes: int(event.AverageImageBytes),
-			Supply:            int(event.Supply),
-			Avail:             int(safeAvail),
-			Enable:            event.IsActive > 0,
-			OnlyWhiteist:      event.OnlyWhitelist > 0,
-			StartTime:         event.StartTime.String(),
-			EndTime:           event.EndTime.String(),
+			EventId:            int(event.Id),
+			Name:               event.EventName,
+			Description:        event.EventDescription,
+			RoadmapDescription: event.EventDescription,
+			RoadmapList:        roadmapList,
+			WebsiteUrl:         event.WebsiteUrl,
+			TwitterUrl:         event.TwitterUrl,
+			DiscordUrl:         event.DiscordUrl,
+			ImagesList:         imagesList,
+			PriceBtcSats:       int(event.PriceSats),
+			PriceUsd:           0, // TODO
+			MintLimit:          int(event.MintLimit),
+			PaymentToken:       event.PaymentToken,
+			AverageImageBytes:  int(event.AverageImageBytes),
+			Supply:             int(event.Supply),
+			Avail:              int(safeAvail),
+			Enable:             event.IsActive > 0,
+			OnlyWhiteist:       event.OnlyWhitelist > 0,
+			StartTime:          event.StartTime.Unix(),
+			EndTime:            event.EndTime.Unix(),
 		})
 	}
 

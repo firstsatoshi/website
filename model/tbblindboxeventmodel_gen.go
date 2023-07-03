@@ -39,23 +39,29 @@ type (
 	}
 
 	TbBlindboxEvent struct {
-		Id                int64     `db:"id"`                  // id
-		EventName         string    `db:"event_name"`          // 名称
-		EventDescription  string    `db:"event_description"`   // 描述
-		PriceSats         int64     `db:"price_sats"`          // 价格
-		IsActive          int64     `db:"is_active"`           // 是否激活
-		PaymentToken      string    `db:"payment_token"`       // 支付币种
-		ImgUrl            string    `db:"img_url"`             // 图片url
-		AverageImageBytes int64     `db:"average_image_bytes"` // 平均图片大小(字节数)
-		Supply            int64     `db:"supply"`              // 供应量
-		Avail             int64     `db:"avail"`               // 当前可用
-		LockCount         int64     `db:"lock_count"`          // 锁定数量
-		MintLimit         int64     `db:"mint_limit"`          // 单个地址限购数量
-		OnlyWhitelist     int64     `db:"only_whitelist"`      // 是否只有白名单
-		StartTime         time.Time `db:"start_time"`          // 开始时间
-		EndTime           time.Time `db:"end_time"`            // 结束时间
-		CreateTime        time.Time `db:"create_time"`         // 创建时间
-		UpdateTime        time.Time `db:"update_time"`         // 最后更新时间
+		Id                 int64     `db:"id"`                  // id
+		EventName          string    `db:"event_name"`          // 名称
+		EventDescription   string    `db:"event_description"`   // 描述,富文本
+		RoadmapDescription string    `db:"roadmap_description"` // 路线图描述,富文本
+		RoadmapList        string    `db:"roadmap_list"`        // 路线图;按照 title1;title2;title3 的格式
+		WebsiteUrl         string    `db:"website_url"`         // 官网url
+		WhitepaperUrl      string    `db:"whitepaper_url"`      // 白皮书url
+		TwitterUrl         string    `db:"twitter_url"`         // twitter url
+		DiscordUrl         string    `db:"discord_url"`         // discord url
+		PriceSats          int64     `db:"price_sats"`          // 价格
+		IsActive           int64     `db:"is_active"`           // 是否激活
+		PaymentToken       string    `db:"payment_token"`       // 支付币种
+		ImgUrlList         string    `db:"img_url_list"`        // 图片url列表,按照url1;url2;url3格式
+		AverageImageBytes  int64     `db:"average_image_bytes"` // 平均图片大小(字节数)
+		Supply             int64     `db:"supply"`              // 供应量
+		Avail              int64     `db:"avail"`               // 当前可用
+		LockCount          int64     `db:"lock_count"`          // 锁定数量
+		MintLimit          int64     `db:"mint_limit"`          // 单个地址限购数量
+		OnlyWhitelist      int64     `db:"only_whitelist"`      // 是否只有白名单
+		StartTime          time.Time `db:"start_time"`          // 开始时间
+		EndTime            time.Time `db:"end_time"`            // 结束时间
+		CreateTime         time.Time `db:"create_time"`         // 创建时间
+		UpdateTime         time.Time `db:"update_time"`         // 最后更新时间
 	}
 )
 
@@ -95,8 +101,8 @@ func (m *defaultTbBlindboxEventModel) FindOne(ctx context.Context, id int64) (*T
 func (m *defaultTbBlindboxEventModel) Insert(ctx context.Context, data *TbBlindboxEvent) (sql.Result, error) {
 	tbBlindboxEventIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxEventRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.EventName, data.EventDescription, data.PriceSats, data.IsActive, data.PaymentToken, data.ImgUrl, data.AverageImageBytes, data.Supply, data.Avail, data.LockCount, data.MintLimit, data.OnlyWhitelist, data.StartTime, data.EndTime)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxEventRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.EventName, data.EventDescription, data.RoadmapDescription, data.RoadmapList, data.WebsiteUrl, data.WhitepaperUrl, data.TwitterUrl, data.DiscordUrl, data.PriceSats, data.IsActive, data.PaymentToken, data.ImgUrlList, data.AverageImageBytes, data.Supply, data.Avail, data.LockCount, data.MintLimit, data.OnlyWhitelist, data.StartTime, data.EndTime)
 	}, tbBlindboxEventIdKey)
 	return ret, err
 }
@@ -105,7 +111,7 @@ func (m *defaultTbBlindboxEventModel) Update(ctx context.Context, data *TbBlindb
 	tbBlindboxEventIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventIdPrefix, data.Id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbBlindboxEventRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.EventName, data.EventDescription, data.PriceSats, data.IsActive, data.PaymentToken, data.ImgUrl, data.AverageImageBytes, data.Supply, data.Avail, data.LockCount, data.MintLimit, data.OnlyWhitelist, data.StartTime, data.EndTime, data.Id)
+		return conn.ExecCtx(ctx, query, data.EventName, data.EventDescription, data.RoadmapDescription, data.RoadmapList, data.WebsiteUrl, data.WhitepaperUrl, data.TwitterUrl, data.DiscordUrl, data.PriceSats, data.IsActive, data.PaymentToken, data.ImgUrlList, data.AverageImageBytes, data.Supply, data.Avail, data.LockCount, data.MintLimit, data.OnlyWhitelist, data.StartTime, data.EndTime, data.Id)
 	}, tbBlindboxEventIdKey)
 	return err
 }
