@@ -93,6 +93,21 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent(req *types.QueryBlindboxEve
 		roadmapList := strings.Split(event.RoadmapList, ";")
 		imagesList := strings.Split(event.ImgUrlList, ";")
 
+		// parse plan list
+		mintPlanList := make([]types.MintPlan, 0)
+		if true {
+			ss := strings.Split(event.MintPlanList, ";")
+			for _, s := range ss {
+				x := strings.Split(s, ",")
+				if len(x) == 2 {
+					mintPlanList = append(mintPlanList, types.MintPlan{
+						Title: x[0],
+						Plan:  x[1],
+					})
+				}
+			}
+		}
+
 		resp = append(resp, types.BlindboxEvent{
 			EventId:            int(event.Id),
 			Name:               event.EventName,
@@ -101,6 +116,7 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent(req *types.QueryBlindboxEve
 			BackgroundImageUrl: event.BackgroundImgUrl,
 			RoadmapDescription: event.EventDescription,
 			RoadmapList:        roadmapList,
+			MintPlanList:       mintPlanList,
 			WebsiteUrl:         event.WebsiteUrl,
 			TwitterUrl:         event.TwitterUrl,
 			DiscordUrl:         event.DiscordUrl,

@@ -102,6 +102,16 @@
                     "https://azk.imgix.net/images/57451d86-b9d2-4199-a91f-fcdfba68d2cf.png",
                     "https://azk.imgix.net/images/57451d86-b9d2-4199-a91f-fcdfba68d2cf.png"
                 ],
+                "mintPlanList": [
+                    {
+                        "title": "Freemint",
+                        "plan": "June 29 at 11:00 PM UTC+0"
+                    },
+                    {
+                        "title": "Public Sale",
+                        "plan": "2023-07-11 20:00 UTC+0"
+                    }
+                ],
                 "priceBtcSats": 1000, // 盲盒价格， 单位是聪(satoshi),如果要换算成BTC要除以10^8, 例如：123456 satoshi = 0.00123456BTC
                 "priceUsd": 0, // 盲盒价格（美元），
                 "paymentToken": "BTC", // 收款币种，用户必须使用此币种进行支付
@@ -136,6 +146,16 @@
                     "https://bitcoinpunks.com/punks-bg/punk0070.png",
                     "https://bitcoinpunks.com/punks-bg/punk7223.png",
                     "https://bitcoinpunks.com/punks-bg/punk0482.png"
+                ],
+                "mintPlanList": [
+                    {
+                        "title": "Freemint",
+                        "plan": "June 29 at 11:00 PM UTC+0"
+                    },
+                    {
+                        "title": "Public Sale",
+                        "plan": "2023-07-11 20:00 UTC+0"
+                    }
                 ],
                 "priceBtcSats": 1024,
                 "priceUsd": 0,

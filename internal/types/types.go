@@ -72,30 +72,36 @@ type QueryBlindboxEventReq struct {
 	EventStatus string `json:"status,optional"` // "all" "active" "inactive"
 }
 
+type MintPlan struct {
+	Title string `json:"title"`
+	Plan  string `json:"plan"`
+}
+
 type BlindboxEvent struct {
-	EventId            int      `json:"eventId"`
-	Name               string   `json:"name"`
-	Description        string   `json:"description"`
-	AvatarImageUrl     string   `json:"avatarImageUrl"` // 头像图片url
-	BackgroundImageUrl string   `json:"backgroundImageUrl"`
-	RoadmapDescription string   `json:"roadmapDescription"`
-	RoadmapList        []string `json:"roadmapList"`
-	WebsiteUrl         string   `json:"websiteUrl"`
-	TwitterUrl         string   `json:"twitterUrl"`
-	DiscordUrl         string   `json:"discordUrl"`
-	ImagesList         []string `json:"imagesList"`
-	PriceBtcSats       int      `json:"priceBtcSats"`
-	PriceUsd           int      `json:"priceUsd"`          // usd价格
-	PaymentToken       string   `json:"paymentToken"`      // 支付币种
-	AverageImageBytes  int      `json:"averageImageBytes"` // 平均图片大小
-	Supply             int      `json:"supply"`            // 总数量
-	Avail              int      `json:"avail"`             // 可用数量
-	MintLimit          int      `json:"mintLimit"`         // mint 限制
-	Active             bool     `json:"isActive"`          // 是否激活
-	Display            bool     `json:"isDisplay"`         // 是否显示
-	OnlyWhiteist       bool     `json:"onlyWhitelist"`     // 仅白名单
-	StartTime          int64    `json:"startTime"`         // 开始时间
-	EndTime            int64    `json:"endTime"`           // 结束时间
+	EventId            int        `json:"eventId"`
+	Name               string     `json:"name"`
+	Description        string     `json:"description"`
+	AvatarImageUrl     string     `json:"avatarImageUrl"` // 头像图片url
+	BackgroundImageUrl string     `json:"backgroundImageUrl"`
+	RoadmapDescription string     `json:"roadmapDescription"`
+	RoadmapList        []string   `json:"roadmapList"`
+	WebsiteUrl         string     `json:"websiteUrl"`
+	TwitterUrl         string     `json:"twitterUrl"`
+	DiscordUrl         string     `json:"discordUrl"`
+	ImagesList         []string   `json:"imagesList"`
+	MintPlanList       []MintPlan `json:"mintPlanList"`
+	PriceBtcSats       int        `json:"priceBtcSats"`
+	PriceUsd           int        `json:"priceUsd"`          // usd价格
+	PaymentToken       string     `json:"paymentToken"`      // 支付币种
+	AverageImageBytes  int        `json:"averageImageBytes"` // 平均图片大小
+	Supply             int        `json:"supply"`            // 总数量
+	Avail              int        `json:"avail"`             // 可用数量
+	MintLimit          int        `json:"mintLimit"`         // mint 限制
+	Active             bool       `json:"isActive"`          // 是否激活
+	Display            bool       `json:"isDisplay"`         // 是否显示
+	OnlyWhiteist       bool       `json:"onlyWhitelist"`     // 仅白名单
+	StartTime          int64      `json:"startTime"`         // 开始时间
+	EndTime            int64      `json:"endTime"`           // 结束时间
 }
 
 type CoinPriceResp struct {
