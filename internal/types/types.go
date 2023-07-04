@@ -81,6 +81,7 @@ type BlindboxEvent struct {
 	EventId            int        `json:"eventId"`
 	Name               string     `json:"name"`
 	Description        string     `json:"description"`
+	Detail             string     `json:"detail"`
 	AvatarImageUrl     string     `json:"avatarImageUrl"` // 头像图片url
 	BackgroundImageUrl string     `json:"backgroundImageUrl"`
 	RoadmapDescription string     `json:"roadmapDescription"`

@@ -112,6 +112,7 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent(req *types.QueryBlindboxEve
 			EventId:            int(event.Id),
 			Name:               event.EventName,
 			Description:        event.EventDescription,
+			Detail:             event.Detail,
 			AvatarImageUrl:     event.AvatarImgUrl,
 			BackgroundImageUrl: event.BackgroundImgUrl,
 			RoadmapDescription: event.EventDescription,

@@ -84,6 +84,7 @@
                 "eventId": 1, // 活动id
                 "name": "Azuki", // 盲盒活动名
                 "description": "Azuki is Azuki", // 盲盒活动描述(支持富文本)
+                "detail": "Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki", // 盲盒活动详情(支持富文本)
                 "avatarImageUrl": "https://azk.imgix.net/images/166a4190-1377-4cc2-9b93-e1cd32a72ac1.png", // 头像
                 "backgroundImageUrl": "https://azk.imgix.net/images/166a4190-1377-4cc2-9b93-e1cd32a72ac1.png", // 盲盒活动背景图
                 "roadmapDescription": "Azuki is Azuki", // 路线图描述(支持富文本)
@@ -129,6 +130,7 @@
                 "eventId": 2,
                 "name": "Punks",
                 "description": "Punks is CryptoPunks",
+                "detail": "Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks", 
                 "avatarImageUrl": "https://bitcoinpunks.com/punks-bg/punk0070.png",
                 "backgroundImageUrl": "https://bitcoinpunks.com/punks-bg/punk9085.png",
                 "roadmapDescription": "Punks is CryptoPunks",
