@@ -27,10 +27,32 @@ func NewQueryBlindboxEventLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	}
 }
 
-func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp []types.BlindboxEvent, err error) {
-	querySql := l.svcCtx.TbBlindboxEventModel.RowBuilder().Where(squirrel.Eq{
-		"is_active": 1,
-	})
+func (l *QueryBlindboxEventLogic) QueryBlindboxEvent(req *types.QueryBlindboxEventReq) (resp []types.BlindboxEvent, err error) {
+	if req.EventId == 0 {
+		logx.Infof("query all events")
+	} else {
+		logx.Infof("query event: %v", req.EventId)
+	}
+
+	querySql := l.svcCtx.TbBlindboxEventModel.RowBuilder()
+	if len(req.EventStatus) > 0 {
+		if req.EventStatus == "active" {
+			querySql = querySql.Where(squirrel.Eq{
+				"is_active": 1,
+			})
+		} else if req.EventStatus == "inactive" {
+			querySql = querySql.Where(squirrel.Eq{
+				"is_active": 0,
+			})
+		}
+	}
+
+	if req.EventId >= 1 {
+		querySql = querySql.Where(squirrel.Eq{
+			"id": req.EventId,
+		})
+	}
+
 	events, err := l.svcCtx.TbBlindboxEventModel.FindBlindboxEvents(l.ctx, querySql)
 	if err != nil {
 		logx.Errorf("TbBlindboxEventModel.FindOne error: %v", err.Error())
@@ -41,6 +63,12 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp []types.BlindboxEve
 	queryBuilder := l.svcCtx.TbOrderModel.RowBuilder().Where(squirrel.Eq{
 		"order_status": "PAYPENDING",
 	}).OrderBy("id DESC")
+	if req.EventId >= 1 {
+		queryBuilder = queryBuilder.Where(squirrel.Eq{
+			"event_id": req.EventId,
+		})
+	}
+
 	payPendingOrders, err := l.svcCtx.TbOrderModel.FindOrders(l.ctx, queryBuilder)
 	if err != nil {
 		logx.Errorf("FindOrders error: %v", err.Error())
@@ -69,6 +97,7 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp []types.BlindboxEve
 			EventId:            int(event.Id),
 			Name:               event.EventName,
 			Description:        event.EventDescription,
+			AvatarImageUrl:     event.AvatarImgUrl,
 			BackgroundImageUrl: event.BackgroundImgUrl,
 			RoadmapDescription: event.EventDescription,
 			RoadmapList:        roadmapList,
@@ -83,7 +112,8 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent() (resp []types.BlindboxEve
 			AverageImageBytes:  int(event.AverageImageBytes),
 			Supply:             int(event.Supply),
 			Avail:              int(safeAvail),
-			Enable:             event.IsActive > 0,
+			Active:             event.IsActive > 0,
+			Display:            event.IsDisplay > 0,
 			OnlyWhiteist:       event.OnlyWhitelist > 0,
 			StartTime:          event.StartTime.Unix(),
 			EndTime:            event.EndTime.Unix(),

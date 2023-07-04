@@ -57,9 +57,21 @@
 
 - 请求方式: POST
 
-- 请求参数: 无参数
+- 请求参数:
+
+    | 字段 | 说明| 类型 | 可选? | 示例 |
+    |-----|------|------|----|----|
+    | `eventId` | 活动id | int | 可选(如不填，则查询所有) | 1 |
+    | `status` | 活动状态, `active`, `inactive` | string | 可选(如不填，则查询所有) | active |
+
 
 - 请求示例：
+
+```json
+{
+    "status":"active"
+}
+```
 
 - 响应示例:
 
@@ -72,6 +84,7 @@
                 "eventId": 1, // 活动id
                 "name": "Azuki", // 盲盒活动名
                 "description": "Azuki is Azuki", // 盲盒活动描述(支持富文本)
+                "avatarImageUrl": "https://azk.imgix.net/images/166a4190-1377-4cc2-9b93-e1cd32a72ac1.png", // 头像
                 "backgroundImageUrl": "https://azk.imgix.net/images/166a4190-1377-4cc2-9b93-e1cd32a72ac1.png", // 盲盒活动背景图
                 "roadmapDescription": "Azuki is Azuki", // 路线图描述(支持富文本)
                 "roadmapList": [ // 路线图列表
@@ -96,7 +109,8 @@
                 "supply": 1000, // 总供应量（本次活动供应总量）
                 "avail": 500,  // 当前可用量(背刺活动当前可用库存)
                 "mintLimit": 10,  // 限购数
-                "enable": true, // 活动是否开启
+                "isActive": true, // 活动是否开启
+                "isDisplay": true, // 是否显示
                 "onlyWhitelist": true, // 是否仅对白名单用户开放
                 "startTime": 1688376539,  // 活动开始时间
                 "endTime": 1691054939 // 活动结束时间
@@ -105,6 +119,7 @@
                 "eventId": 2,
                 "name": "Punks",
                 "description": "Punks is CryptoPunks",
+                "avatarImageUrl": "https://bitcoinpunks.com/punks-bg/punk0070.png",
                 "backgroundImageUrl": "https://bitcoinpunks.com/punks-bg/punk9085.png",
                 "roadmapDescription": "Punks is CryptoPunks",
                 "roadmapList": [
@@ -129,7 +144,8 @@
                 "supply": 500,
                 "avail": 100,
                 "mintLimit": 10,
-                "enable": true,
+                "isActive": true, // 活动是否开启
+                "isDisplay": true, // 是否显示
                 "onlyWhitelist": false,
                 "startTime": 1688377409,
                 "endTime": 1693734209
