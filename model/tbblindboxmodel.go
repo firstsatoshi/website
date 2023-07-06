@@ -18,6 +18,7 @@ type (
 
 		RowBuilder() squirrel.SelectBuilder
 		CountBuilder() squirrel.SelectBuilder
+		FindBlindboxByIdNoCahce(ctx context.Context, id int64) (*TbBlindbox, error)
 		FindBlindbox(ctx context.Context, rowBuilder squirrel.SelectBuilder) ([]*TbBlindbox, error)
 		FindPageListByPage(ctx context.Context, rowBuilder squirrel.SelectBuilder, page, pageSize int64, orderBy string) ([]*TbBlindbox, error)
 		FindCount(ctx context.Context) (int64, error)
@@ -55,6 +56,26 @@ func (m *customTbBlindboxModel) FindBlindbox(ctx context.Context, rowBuilder squ
 	switch err {
 	case nil:
 		return resp, nil
+	case sqlx.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
+}
+
+func (m *customTbBlindboxModel) FindBlindboxByIdNoCahce(ctx context.Context, id int64) (*TbBlindbox, error) {
+
+	rowBuilder := m.RowBuilder().Where("id = ?", id)
+	query, values, err := rowBuilder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	var resp TbBlindbox
+	err = m.QueryRowNoCacheCtx(ctx, &resp, query, values...)
+	switch err {
+	case nil:
+		return &resp, nil
 	case sqlx.ErrNotFound:
 		return nil, ErrNotFound
 	default:

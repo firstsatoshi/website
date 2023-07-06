@@ -262,7 +262,8 @@ func (t *BtcInscribeTask) blindboxOrderMint(order *model.TbOrder) {
 	inscribeData := make([]ordinals.InscriptionData, 0)
 	for _, bbox := range lockOrderBoxs {
 
-		box, err := t.tbBlindboxModel.FindOne(t.ctx, bbox.BlindboxId)
+		// FIX : do not use FindOne, as it with cache!!
+		box, err := t.tbBlindboxModel.FindBlindboxByIdNoCahce(t.ctx, bbox.BlindboxId)
 		if err != nil {
 			logx.Errorf(" FindOne %v error: %v", bbox.BlindboxId, err.Error())
 			return
@@ -734,13 +735,15 @@ func (t *BtcInscribeTask) txMonitor() {
 
 		okCount := 0
 		for _, boxId := range boxIds {
-			mbx, err := t.tbBlindboxModel.FindOne(t.ctx, int64(boxId))
+			// Fix: no cache
+			mbx, err := t.tbBlindboxModel.FindBlindboxByIdNoCahce(t.ctx, int64(boxId))
 			if err != nil {
 				logx.Errorf("FindOne error: %v", err.Error())
 				return
 			}
 
 			// monitor tx status
+			logx.Infof("xxxxxxxxxxxxx==============boxId:%v, reveal txid : %v",  boxId, mbx.RevealTxid.String)
 			tx, err := t.apiClient.GetTansaction(mbx.RevealTxid.String)
 			if err != nil {
 				logx.Errorf("GetTansaction error: %v, continue", err.Error())
