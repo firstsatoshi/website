@@ -3,6 +3,7 @@ package createInscribeOrder
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"math"
@@ -190,11 +191,16 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 			logx.Errorf("parse dataUrl error error: %v", err.Error())
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "parse dataUrl error: %v", err.Error())
 		}
+		b64Data := base64.RawURLEncoding.EncodeToString(dataURL.Data)
+		if err != nil {
+			logx.Errorf("encond base64 error: %v", err.Error())
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "parse dataUrl error: %v", err.Error())
+		}
 
 		// insert inscribe data into db
 		_, err = l.svcCtx.TbInscribeDataModel.Insert(l.ctx, &model.TbInscribeData{
 			OrderId:     orderId,
-			Data:        string(dataURL.Data), // is it ok?
+			Data:        b64Data,
 			ContentType: dataURL.ContentType(),
 			FileName:    v.FileName,
 		})

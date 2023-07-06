@@ -273,7 +273,7 @@ func (t *BtcInscribeTask) blindboxOrderMint(order *model.TbOrder) {
 			return
 		}
 
-		imgData, err := base64.RawStdEncoding.DecodeString(box.Data)
+		imgData, err := base64.RawURLEncoding.DecodeString(box.Data)
 		logx.Infof("img size: %v", len(imgData))
 
 		insData := ordinals.InscriptionData{
@@ -500,9 +500,15 @@ func (t *BtcInscribeTask) inscribeOrderInscribe(order *model.TbInscribeOrder) {
 	inscribeData := make([]ordinals.InscriptionData, 0)
 	for _, d := range datas {
 		logx.Infof("file data size: %v", len([]byte(d.Data)))
+
+		data, err := base64.RawURLEncoding.DecodeString(d.Data)
+		if err != nil {
+			logx.Errorf("base64 DecodeString error: %v", err.Error())
+			return
+		}
 		insData := ordinals.InscriptionData{
 			ContentType: d.ContentType,
-			Body:        []byte(d.Data),
+			Body:        data,
 			Destination: order.ReceiveAddress,
 		}
 		inscribeData = append(inscribeData, insData)
@@ -743,7 +749,7 @@ func (t *BtcInscribeTask) txMonitor() {
 			}
 
 			// monitor tx status
-			logx.Infof("xxxxxxxxxxxxx==============boxId:%v, reveal txid : %v",  boxId, mbx.RevealTxid.String)
+			logx.Infof("xxxxxxxxxxxxx==============boxId:%v, reveal txid : %v", boxId, mbx.RevealTxid.String)
 			tx, err := t.apiClient.GetTansaction(mbx.RevealTxid.String)
 			if err != nil {
 				logx.Errorf("GetTansaction error: %v, continue", err.Error())

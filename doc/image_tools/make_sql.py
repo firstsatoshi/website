@@ -62,7 +62,8 @@ def main2():
 
             img = open(os.path.join("/home/yqq/firstsat/website/images/1",  line), 'rb')
             img_data = img.read(160000)
-            base64_data = base64.b64encode(img_data).decode('latin')
+            # base64_data = base64.b64encode(img_data).decode('latin')
+            base64_data = base64.urlsafe_b64encode(img_data).decode('latin')
             print(base64_data)
 
             sql = f"INSERT INTO website.tb_blindbox (event_id, name, description, data, category, img_url, is_active, is_locked, status, commit_txid, reveal_txid, create_time, update_time) VALUES(1, '{name}', '{description}', '{base64_data}','{category}', '{image_url}', 1, 0, 'NOTMINT', NULL, NULL, '2023-06-06 12:03:13', '2023-06-06 12:03:13');"
