@@ -40,6 +40,7 @@ type (
 
 	TbBlindbox struct {
 		Id          int64          `db:"id"`          // id
+		EventId     int64          `db:"event_id"`    // 活动id
 		Name        string         `db:"name"`        // 名称
 		Description string         `db:"description"` // 描述
 		Category    string         `db:"category"`    // 分类: bald,punk,rich,elite
@@ -90,8 +91,8 @@ func (m *defaultTbBlindboxModel) FindOne(ctx context.Context, id int64) (*TbBlin
 func (m *defaultTbBlindboxModel) Insert(ctx context.Context, data *TbBlindbox) (sql.Result, error) {
 	tbBlindboxIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Name, data.Description, data.Category, data.ImgUrl, data.IsActive, data.IsLocked, data.Status, data.CommitTxid, data.RevealTxid)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.EventId, data.Name, data.Description, data.Category, data.ImgUrl, data.IsActive, data.IsLocked, data.Status, data.CommitTxid, data.RevealTxid)
 	}, tbBlindboxIdKey)
 	return ret, err
 }
@@ -100,7 +101,7 @@ func (m *defaultTbBlindboxModel) Update(ctx context.Context, data *TbBlindbox) e
 	tbBlindboxIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxIdPrefix, data.Id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbBlindboxRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.Name, data.Description, data.Category, data.ImgUrl, data.IsActive, data.IsLocked, data.Status, data.CommitTxid, data.RevealTxid, data.Id)
+		return conn.ExecCtx(ctx, query, data.EventId, data.Name, data.Description, data.Category, data.ImgUrl, data.IsActive, data.IsLocked, data.Status, data.CommitTxid, data.RevealTxid, data.Id)
 	}, tbBlindboxIdKey)
 	return err
 }

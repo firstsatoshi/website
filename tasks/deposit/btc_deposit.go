@@ -406,6 +406,7 @@ func (t *BtcDepositTask) scanBlock() {
 
 				// get not lock blindbox
 				query := t.tbBlindboxModel.RowBuilder().Where(squirrel.Eq{
+					"event_id":  order.EventId,
 					"is_active": 1,
 					"is_locked": 0,
 					"status":    "NOTMINT",

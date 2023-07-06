@@ -260,7 +260,7 @@ func (t *BtcInscribeTask) blindboxOrderMint(order *model.TbOrder) {
 	// make inscribe data
 	inscribeData := make([]ordinals.InscriptionData, 0)
 	for _, bbox := range lockOrderBoxs {
-		imgFilePath := fmt.Sprintf("/images/%v.png", bbox.BlindboxId)
+		imgFilePath := fmt.Sprintf("/images/%v/%v.png", bbox.EventId, bbox.BlindboxId)
 		imgData, err := ioutil.ReadFile(imgFilePath)
 		if err != nil {
 			logx.Errorf("ReadFile read image %v error: %v", imgFilePath, err.Error())

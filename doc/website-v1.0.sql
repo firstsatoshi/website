@@ -17,6 +17,7 @@ CREATE TABLE `tb_waitlist` (
 DROP TABLE IF EXISTS `tb_blindbox`;
 CREATE TABLE `tb_blindbox` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `event_id` bigint NOT NULL COMMENT '活动id',
   `name` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '名称',
   `description` varchar(200) COLLATE utf8mb4_bin DEFAULT '' COMMENT '描述',
   `category` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '分类: bald,punk,rich,elite',
@@ -50,6 +51,7 @@ CREATE TABLE `tb_blindbox_event` (
   `is_active` tinyint(1) DEFAULT '1' COMMENT '是否激活',
   `is_display` tinyint(1) DEFAULT '1' COMMENT '是否显示',
   `payment_token` varchar(20) NOT NULL COMMENT '支付币种',
+  `current_mint_plan_index` tinyint(1) DEFAULT '0' COMMENT '当前mint计划id',
   `mint_plan_list` varchar(500) COLLATE utf8mb4_bin DEFAULT "" COMMENT '上线计划列表,按照title1;title2;title3格式',
   `img_url_list` varchar(2000) COLLATE utf8mb4_bin DEFAULT "" COMMENT '图片url列表,按照url1;url2;url3格式',
   `average_image_bytes` int not NULL COMMENT '平均图片大小(字节数)',
