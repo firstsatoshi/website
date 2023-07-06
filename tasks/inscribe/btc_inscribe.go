@@ -214,9 +214,9 @@ func (t *BtcInscribeTask) runInscribeOrder() {
 		logx.Info("======= inscribe order inscribe =================")
 
 		// get order from db, 1 order per time
-		query := t.tbInscribeOrderModel.RowBuilder().Where(squirrel.Eq{
-			"order_status": "PAYSUCCESS",
-		}).Limit(1).OrderBy("id DESC")
+		query := t.tbInscribeOrderModel.RowBuilder().Where(
+			"`order_status` = 'PAYSUCCESS' OR `order_status` = 'PAYPENDING'").Limit(1).OrderBy("id DESC")
+
 		orders, err := t.tbInscribeOrderModel.FindOrders(t.ctx, query)
 		if err != nil {
 			logx.Errorf("error: %v", err.Error())

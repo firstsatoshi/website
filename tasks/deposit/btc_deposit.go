@@ -362,10 +362,12 @@ func (t *BtcDepositTask) scanBlock() {
 					continue
 				}
 
-				// update order
+				// update inscribe order status, when order status is NOTPAID or PAYPENDING or PAYTIMEOUT
+				if order.OrderStatus == "NOTPAID" || order.OrderStatus == "PAYPENDING" || order.OrderStatus == "PAYTIMEOUT"{
+					order.OrderStatus = "PAYSUCCESS"
+				}
 				order.PayTxid = sql.NullString{Valid: true, String: txid}
 				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
-				order.OrderStatus = "PAYSUCCESS"
 				order.PayConfirmedTime = sql.NullTime{Valid: true, Time: time.Now()}
 				order.Version += 1
 				if err := t.tbInscribeOrderModel.Update(t.ctx, order); err != nil {
@@ -641,9 +643,9 @@ func (t *BtcDepositTask) txMempoolInscribe() {
 	query := t.tbInscribeOrderModel.RowBuilder().Where(squirrel.Eq{
 		"order_status": "NOTPAID",
 	}).Where(squirrel.Gt{
-		"create_time": time.Unix(now.Unix()-30*60, 0),
+		"create_time": time.Unix(now.Unix()-60*60, 0),
 	}).Where(squirrel.Lt{
-		"create_time": time.Unix(now.Unix()-1*60, 0),
+		"create_time": time.Unix(now.Unix()-10, 0),
 	}).Limit(1000).OrderBy("id DESC")
 
 	orders, err := t.tbInscribeOrderModel.FindOrders(t.ctx, query)

@@ -15,3 +15,5 @@ images
 doc/image_tools/ceshi_50x50
 website.go
 *.pyc
+log.txt
+tmp.log

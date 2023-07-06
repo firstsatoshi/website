@@ -564,7 +564,7 @@
     | 字段 | 说明| 类型 | 可选? | 示例 |
     |-----|------|------|----|----|
     | `type` | 域名类型, 目前只有: `sats` | string | 必填 |  `sats` |
-    | `name` | 域名列表 | [string] | 必填 |  `["aaa.sats", "bbb.sats"]` |
+    | `names` | 域名列表 | [string] | 必填 |  `["aaa.sats", "bbb.sats"]` |
 
 - 请求示例:
 
