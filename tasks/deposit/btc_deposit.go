@@ -363,7 +363,7 @@ func (t *BtcDepositTask) scanBlock() {
 				}
 
 				// update inscribe order status, when order status is NOTPAID or PAYPENDING or PAYTIMEOUT
-				if order.OrderStatus == "NOTPAID" || order.OrderStatus == "PAYPENDING" || order.OrderStatus == "PAYTIMEOUT"{
+				if order.OrderStatus == "NOTPAID" || order.OrderStatus == "PAYPENDING" || order.OrderStatus == "PAYTIMEOUT" {
 					order.OrderStatus = "PAYSUCCESS"
 				}
 				order.PayTxid = sql.NullString{Valid: true, String: txid}
@@ -393,17 +393,6 @@ func (t *BtcDepositTask) scanBlock() {
 					// TODO ??
 					logx.Infof(" ============ DEPOSIT AMOUNT IS NOT ENOUGH, order total is %v, got %v ====", order.TotalAmountSat, value)
 					continue
-				}
-
-				// update order
-				order.PayTxid = sql.NullString{Valid: true, String: txid}
-				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
-				order.OrderStatus = "PAYSUCCESS"
-				order.PayConfirmedTime = sql.NullTime{Valid: true, Time: time.Now()}
-				order.Version += 1
-				if err := t.tbOrderModel.Update(t.ctx, order); err != nil {
-					logx.Errorf("Update: %v", err.Error())
-					return
 				}
 
 				// get not lock blindbox
@@ -497,6 +486,18 @@ func (t *BtcDepositTask) scanBlock() {
 				count, err := t.tbLockOrderBlindboxModel.FindCount(t.ctx, countBuilder)
 				if err != nil {
 					logx.Errorf("FindCount error: %v ", err.Error())
+					return
+				}
+
+				// !FIX: it must lock blindbox before update order status, inscribe goroutine
+				// update order
+				order.PayTxid = sql.NullString{Valid: true, String: txid}
+				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
+				order.OrderStatus = "PAYSUCCESS"
+				order.PayConfirmedTime = sql.NullTime{Valid: true, Time: time.Now()}
+				order.Version += 1
+				if err := t.tbOrderModel.Update(t.ctx, order); err != nil {
+					logx.Errorf("Update: %v", err.Error())
 					return
 				}
 

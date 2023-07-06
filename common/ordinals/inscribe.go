@@ -19,6 +19,10 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 	commitTxid string, revealsTxids []string, fee int64, change int64,
 	orderBroadcastAtom *OrderBroadcastAtom, err error,
 ) {
+	if len(inscriptionData) == 0 {
+		err = fmt.Errorf("===empty inscriptionData===")
+		return
+	}
 
 	// initial
 	commitTxid = ""

@@ -111,6 +111,11 @@ func newInscriptionToolWithBtcApiClient(net *chaincfg.Params, btcApiClient btcap
 	if len(request.CommitTxPrivateKeyList) != len(request.CommitTxOutPointList) {
 		return nil, errors.New("the length of CommitTxPrivateKeyList and CommitTxOutPointList should be the same")
 	}
+	if len(request.DataList) == 0 {
+		logx.Errorf("=====the length of DataList should be greater than 0=====")
+		return nil, errors.New("the length of DataList should be greater than 0")
+	}
+
 	tool := &inscriptionTool{
 		net: net,
 		client: &blockchainClient{
