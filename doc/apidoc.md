@@ -103,6 +103,7 @@
                     "https://azk.imgix.net/images/57451d86-b9d2-4199-a91f-fcdfba68d2cf.png",
                     "https://azk.imgix.net/images/57451d86-b9d2-4199-a91f-fcdfba68d2cf.png"
                 ],
+                "currentMintPlanIndex":0, // 当前盲盒计划的索引, 即mintPlanList的索引
                 "mintPlanList": [
                     {
                         "title": "Freemint",
@@ -130,7 +131,7 @@
                 "eventId": 2,
                 "name": "Punks",
                 "description": "Punks is CryptoPunks",
-                "detail": "Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks", 
+                "detail": "Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks",
                 "avatarImageUrl": "https://bitcoinpunks.com/punks-bg/punk0070.png",
                 "backgroundImageUrl": "https://bitcoinpunks.com/punks-bg/punk9085.png",
                 "roadmapDescription": "Punks is CryptoPunks",
@@ -149,6 +150,7 @@
                     "https://bitcoinpunks.com/punks-bg/punk7223.png",
                     "https://bitcoinpunks.com/punks-bg/punk0482.png"
                 ],
+                "currentMintPlanIndex":0, // 当前盲盒计划的索引, 即mintPlanList的索引
                 "mintPlanList": [
                     {
                         "title": "Freemint",
