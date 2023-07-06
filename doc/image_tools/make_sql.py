@@ -1,4 +1,5 @@
 #coding:utf8
+import base64
 from hashlib import sha256
 from binascii import hexlify
 
@@ -58,8 +59,14 @@ def main2():
             description = 'Bit Eagle ' + name
             category = g_category[no]
             image_url = f"https://d30f95b5opmmez.cloudfront.net/images/{id}.png" # TODO:
-            # sql = f"INSERT INTO website.tb_blindbox (id, name, description, category, img_url, is_active, is_locked, status, commit_txid, reveal_txid, create_time, update_time) VALUES({id}, '{name}', '{description}', '{category}', '{image_url}', 1, 0, 'NOTMINT', NULL, NULL, '2023-06-06 12:03:13', '2023-06-06 12:03:13');"
-            sql = f"update website.tb_blindbox set img_url='{image_url}' where id={id};"
+
+            img = open(os.path.join("/home/yqq/firstsat/website/images/1",  line), 'rb')
+            img_data = img.read(160000)
+            base64_data = base64.b64encode(img_data).decode('latin')
+            print(base64_data)
+
+            sql = f"INSERT INTO website.tb_blindbox (event_id, name, description, data, category, img_url, is_active, is_locked, status, commit_txid, reveal_txid, create_time, update_time) VALUES(1, '{name}', '{description}', '{base64_data}','{category}', '{image_url}', 1, 0, 'NOTMINT', NULL, NULL, '2023-06-06 12:03:13', '2023-06-06 12:03:13');"
+            # sql = f"update website.tb_blindbox set img_url='{image_url}' where id={id};"
             outfile.write( sql + "\n" )
     pass
 

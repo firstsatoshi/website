@@ -2,6 +2,7 @@ package inscribe
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -260,16 +261,22 @@ func (t *BtcInscribeTask) blindboxOrderMint(order *model.TbOrder) {
 	// make inscribe data
 	inscribeData := make([]ordinals.InscriptionData, 0)
 	for _, bbox := range lockOrderBoxs {
-		imgFilePath := fmt.Sprintf("/images/%v/%v.png", bbox.EventId, bbox.BlindboxId)
-		imgData, err := ioutil.ReadFile(imgFilePath)
+
+		box, err := t.tbBlindboxModel.FindOne(t.ctx, bbox.BlindboxId)
 		if err != nil {
-			logx.Errorf("ReadFile read image %v error: %v", imgFilePath, err.Error())
+			logx.Errorf(" FindOne %v error: %v", bbox.BlindboxId, err.Error())
 			return
 		}
+		if len(box.Data) == 0 {
+			logx.Errorf("box.Data is empty: %v", bbox.BlindboxId)
+			return
+		}
+
+		imgData, err := base64.RawStdEncoding.DecodeString(box.Data)
 		logx.Infof("img size: %v", len(imgData))
 
 		insData := ordinals.InscriptionData{
-			ContentType: "image/png",
+			ContentType: "image/png", // TODO: always png
 			Body:        imgData,
 			Destination: order.ReceiveAddress,
 		}

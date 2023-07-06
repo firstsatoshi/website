@@ -19,6 +19,7 @@ CREATE TABLE `tb_blindbox` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `event_id` bigint NOT NULL COMMENT '活动id',
   `name` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '名称',
+  `data` mediumblob NOT NULL COMMENT '铭文数据',
   `description` varchar(200) COLLATE utf8mb4_bin DEFAULT '' COMMENT '描述',
   `category` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '分类: bald,punk,rich,elite',
   `img_url` varchar(500) COLLATE utf8mb4_bin DEFAULT "" COMMENT '图片url',
