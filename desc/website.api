@@ -312,3 +312,22 @@ service website-api {
 	@handler checkNames
 	post /checknames(checkNamesReq) returns ( []checkNamesResp )
 }
+
+// estimate fee
+type estimateFeeReq {
+	FileUploads []FileUpload `json:"fileUploads"`
+	FeeRate     int          `json:"feeRate"`
+}
+
+type estimateFeeResp {
+	TotalFee int64 `json:"totalFee"`
+}
+
+@server(
+	prefix: api/v1
+	group: estimateFee
+)
+service website-api {
+	@handler estimateFee
+	post /estimatefee(estimateFeeReq) returns ( estimateFeeResp )
+}

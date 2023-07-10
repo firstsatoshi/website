@@ -203,3 +203,12 @@ type CheckNamesResp struct {
 	Name     string `json:"name"`
 	IsExists bool   `json:"isExists"`
 }
+
+type EstimateFeeReq struct {
+	FileUploads []FileUpload `json:"fileUploads"`
+	FeeRate     int          `json:"feeRate"`
+}
+
+type EstimateFeeResp struct {
+	TotalFee int64 `json:"totalFee"`
+}

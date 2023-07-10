@@ -9,6 +9,7 @@ import (
 	coinPrice "github.com/firstsatoshi/website/internal/handler/coinPrice"
 	createInscribeOrder "github.com/firstsatoshi/website/internal/handler/createInscribeOrder"
 	createOrder "github.com/firstsatoshi/website/internal/handler/createOrder"
+	estimateFee "github.com/firstsatoshi/website/internal/handler/estimateFee"
 	joinwaitlist "github.com/firstsatoshi/website/internal/handler/joinwaitlist"
 	queryAddress "github.com/firstsatoshi/website/internal/handler/queryAddress"
 	queryBlindboxEvent "github.com/firstsatoshi/website/internal/handler/queryBlindboxEvent"
@@ -137,6 +138,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPost,
 				Path:    "/checknames",
 				Handler: checkNames.CheckNamesHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/estimatefee",
+				Handler: estimateFee.EstimateFeeHandler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/api/v1"),

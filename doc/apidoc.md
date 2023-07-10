@@ -607,3 +607,47 @@
 }
 ```
 
+
+
+## `estimatefee` 估算铭文手续费
+
+- 请求方式: `POST`
+
+- 请求参数:
+
+    | 字段 | 说明| 类型 | 可选? | 示例 |
+    |-----|------|------|----|----|
+    | `fileUploads` | 上传文件列表 | [string] | 必填 |  |
+    | `feeRate` | 费率 | integer | 必填 | |
+
+
+- 请求示例:
+
+```json
+{
+    "fileUploads":[
+        {
+            "dataUrl":"data:text/plain;charset=utf-8;base64,aGV5YQ==",
+            "fileName":"1111"
+        },
+        {
+            "dataUrl":"data:text/plain;charset=utf-8;base64,eyJwIjoiYnJjLTIwIiwib3AiOiJkZXBsb3kiLCJ0aWNrIjoieXFxcSIsIm1heCI6IjIxMDAwMDAwIiwibGltIjoiMTAwMCJ9Cg==",
+            "fileName":"yqqq"
+        }
+    ],
+    "feeRate":3
+}
+```
+
+
+- 响应示例：
+
+```json
+{
+    "code": 0,
+    "msg": "ok",
+    "data": {
+        "totalFee": 2364
+    }
+}
+```
