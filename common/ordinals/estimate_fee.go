@@ -3,53 +3,62 @@ package ordinals
 import (
 	"fmt"
 
-	"github.com/firstsatoshi/website/common/mempool"
-	"github.com/zeromicro/go-zero/core/logx"
-
 	"github.com/btcsuite/btcd/btcec/v2"
-	"github.com/btcsuite/btcd/btcec/v2/schnorr"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/firstsatoshi/website/common/btcapi"
+	"github.com/firstsatoshi/website/common/mempool"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
-func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Params, feeRate int,
-	inscriptionData []InscriptionData, revealValueSats int64, onlyEstimate bool) (
-	commitTxid string, revealsTxids []string, fee int64, change int64,
-	orderBroadcastAtom *OrderBroadcastAtom, err error,
-) {
+// EstimateFee estimates the fee for a given data size and inscription count by
+// using  dummy transaction.
+func EstimateFee(netParams *chaincfg.Params, feeRate int, noChange bool, inscriptionData []InscriptionData, revealValueSats int64) (fee int64, change int64, err error) {
 	if len(inscriptionData) == 0 {
 		err = fmt.Errorf("===empty inscriptionData===")
 		return
 	}
 
 	// initial
-	commitTxid = ""
-	revealsTxids = make([]string, 0)
 	fee = 0
 	change = 0
 	err = nil
 	logx.Infof("start inscribing.........")
 
 	btcApiClient := mempool.NewClient(netParams)
-	wifKey, err := btcutil.DecodeWIF(wifPrivKey)
-	if err != nil {
-		return
+
+	// DUMMY address
+	tmpAddr := "bc1p0ftnthhe6gsthnhd6mswg96aukn888tzrqldz0wkmeeewpr4lkus0vqflq"
+	tmpWif := "L2EF51PPPYHkDYVRhyHjzjsNznaHxvy4C8t6GdrDRn5udABQsCYC"
+	if netParams.Name == "testnet3" {
+		tmpAddr = "tb1p0ftnthhe6gsthnhd6mswg96aukn888tzrqldz0wkmeeewpr4lkuscykx90"
+		tmpWif = "cSbEXvPEpbz1Nyxh6P6sN4NSd1shdP4kGB2ZP4JivtjusuFYuTZc"
 	}
-	utxoTaprootAddress, err := btcutil.NewAddressTaproot(schnorr.SerializePubKey(txscript.ComputeTaprootKeyNoScript(wifKey.PrivKey.PubKey())), netParams)
-	if err != nil {
-		return
-	}
+	wif, err := btcutil.DecodeWIF(tmpWif)
+	utxoTaprootAddress, err := btcutil.DecodeAddress(tmpAddr, netParams)
 
 	logx.Infof("start get utxos of address %v", utxoTaprootAddress)
-	unspentList, err := btcApiClient.ListUnspent(utxoTaprootAddress)
-	if len(unspentList) == 0 {
-		err = fmt.Errorf("empty utxos")
-		return
+
+	// make DUMMY UTXOs
+	unspentList := make([]*btcapi.UnspentOutput, 0)
+	if true {
+		txHash, er := chainhash.NewHashFromStr("15e10745f15593a899cef391191bdd3d7c12412cc4696b7bcb669d0feadc8521")
+		if er != nil {
+			return
+		}
+		pkScript, er := txscript.PayToAddrScript(utxoTaprootAddress)
+		if err != nil {
+			return
+		}
+		unspentList = append(unspentList, &btcapi.UnspentOutput{
+			Outpoint: wire.NewOutPoint(txHash, uint32(0)),
+			Output:   wire.NewTxOut(10_0000_0000, pkScript),
+		})
 	}
 
-	// TODO:  multiple utxo ?
 	// collect all of UTXOs
 	logx.Infof("%v utxo size is %v\n", utxoTaprootAddress, len(unspentList))
 	vinAmount := 0
@@ -60,7 +69,7 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 			continue
 		}
 		commitTxOutPointList = append(commitTxOutPointList, unspentList[i].Outpoint)
-		commitTxPrivateKeyList = append(commitTxPrivateKeyList, wifKey.PrivKey)
+		commitTxPrivateKeyList = append(commitTxPrivateKeyList, wif.PrivKey)
 		vinAmount += int(unspentList[i].Output.Value)
 	}
 	logx.Infof("len(commitTxOutPointList) is %v\n", len(commitTxOutPointList))
@@ -72,7 +81,7 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 	}
 
 	request := inscriptionRequest{
-		ChangeAddress:          changeAddress,
+		ChangeAddress:          tmpAddr,
 		CommitTxOutPointList:   commitTxOutPointList,
 		CommitTxPrivateKeyList: commitTxPrivateKeyList,
 		CommitFeeRate:          int64(feeRate),
@@ -84,9 +93,9 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 		SingleRevealTxOnly: false,
 
 		// !NOTE: only for estimate fee
-		OnlyEstimateFee: false,
-		DummyTxOut:      nil,
-		NoChange:        false,
+		OnlyEstimateFee: true,
+		DummyTxOut:      unspentList[0].Output,
+		NoChange: true,
 	}
 
 	logx.Infof("before newInscriptionToolWithBtcApiClient .........")
@@ -98,30 +107,11 @@ func Inscribe(changeAddress string, wifPrivKey string, netParams *chaincfg.Param
 	logx.Infof("newInscriptionToolWithBtcApiClient ok")
 
 	change = tool.changeSat
-	fee = tool.calculateFee()
-	if onlyEstimate {
-		return
-	}
+	// fee = tool.calculateFee()
+	fee = tool.estimateFee
 
-	logx.Infof("before tool.Inscribe .....")
-
-	commitTxHash, revealTxHashList, _, _, orderBroadcastAtom, err := tool.Inscribe()
-	if err != nil {
-		logx.Errorf("inscribe error: %v", err.Error())
-		err = fmt.Errorf("send tx errr, %v", err)
-		return
-	}
-
-	commitTxid = commitTxHash.String()
-	logx.Info("==================Inscribe ok==============================")
-	logx.Infof("commitTxid: %v", commitTxid)
-
-	for i := range revealTxHashList {
-		revealsTxids = append(revealsTxids, revealTxHashList[i].String())
-		logx.Infof("revealTxid[%v]: %v", i, revealTxHashList[i].String())
-	}
 	logx.Infof("fee: %v", fee)
-	logx.Infof("change: %v", change)
+	// logx.Infof("change: %v", change)
 	logx.Info("================================================")
 
 	return

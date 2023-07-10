@@ -15,6 +15,7 @@ import (
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/firstsatoshi/website/common/globalvar"
+	"github.com/firstsatoshi/website/common/ordinals"
 	"github.com/firstsatoshi/website/common/turnslite"
 	"github.com/firstsatoshi/website/common/uniqueid"
 	"github.com/firstsatoshi/website/internal/svc"
@@ -184,6 +185,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 	dataSize := 0
 	totalFee := int64(0)
+	inscriptionRequests := make([]ordinals.InscriptionData, 0)
 	for _, v := range req.FileUploads {
 		// eg: dataURL, err := dataurl.DecodeString(`data:text/plain;charset=utf-8;base64,aGV5YQ==`)
 		dataURL, err := dataurl.DecodeString(v.DataUrl)
@@ -208,7 +210,18 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 			logx.Errorf("insert inscribedata error %v", err.Error())
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "insert inscribedata error %v", err.Error())
 		}
-		totalFee += calcFee(float64(utxoSat), float64(len(dataURL.Data)), 1, float64(req.FeeRate))
+
+		inscriptionRequests = append(inscriptionRequests, ordinals.InscriptionData{
+			ContentType: dataURL.ContentType(),
+			Body:        dataURL.Data,
+			Destination: req.ReceiveAddress,
+		})
+	}
+	totalFee, _, err = ordinals.EstimateFee(l.svcCtx.ChainCfg, req.FeeRate, true, inscriptionRequests, int64(utxoSat))
+	if err != nil {
+		logx.Errorf("EstimateFee error %v", err.Error())
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "EstimateFee error %v", err.Error())
+
 	}
 
 	logx.Infof("==========totalFee : %v", totalFee)

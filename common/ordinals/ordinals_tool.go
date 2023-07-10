@@ -41,6 +41,12 @@ type inscriptionRequest struct {
 	SingleRevealTxOnly bool // Currently, the official Ordinal parser can only parse a single NFT per transaction.
 	// When the official Ordinal parser supports parsing multiple NFTs in the future, we can consider using a single reveal transaction.
 	RevealOutValue int64
+
+	// ==== NOTE: only estimate fee ====
+	OnlyEstimateFee bool
+	DummyTxOut      *wire.TxOut
+	NoChange        bool
+	//==============
 }
 
 type inscriptionTxCtxData struct {
@@ -85,6 +91,13 @@ type inscriptionTool struct {
 
 	// NOTE: change amount is our income
 	changeSat int64
+
+	//===== NOTE: only estimate fee =====
+	onlyEstimateFee bool
+	dummyTxOut      *wire.TxOut
+	estimateFee     int64
+	noChange        bool
+	//======================
 }
 
 const (
@@ -125,6 +138,11 @@ func newInscriptionToolWithBtcApiClient(net *chaincfg.Params, btcApiClient btcap
 		commitTxPrivateKeyList:    request.CommitTxPrivateKeyList,
 		txCtxDataList:             make([]*inscriptionTxCtxData, len(request.DataList)),
 		revealTxPrevOutputFetcher: txscript.NewMultiPrevOutFetcher(nil),
+
+		// only for estimate fee
+		onlyEstimateFee: request.OnlyEstimateFee,
+		dummyTxOut:      request.DummyTxOut,
+		noChange:        request.NoChange,
 	}
 	err := tool._initTool(net, request)
 
@@ -330,33 +348,37 @@ func (tool *inscriptionTool) buildEmptyRevealTx(singleRevealTxOnly bool, destina
 
 func (tool *inscriptionTool) getTxOutByOutPoint(outPoint *wire.OutPoint) (*wire.TxOut, error) {
 	var txOut *wire.TxOut
-	if tool.client.rpcClient != nil {
-		tx, err := tool.client.rpcClient.GetRawTransactionVerbose(&outPoint.Hash)
-		if err != nil {
-			return nil, err
-		}
-		if int(outPoint.Index) >= len(tx.Vout) {
-			return nil, errors.New("err out point")
-		}
-		vout := tx.Vout[outPoint.Index]
-		pkScript, err := hex.DecodeString(vout.ScriptPubKey.Hex)
-		if err != nil {
-			return nil, err
-		}
-		amount, err := btcutil.NewAmount(vout.Value)
-		if err != nil {
-			return nil, err
-		}
-		txOut = wire.NewTxOut(int64(amount), pkScript)
+	if tool.onlyEstimateFee && tool.dummyTxOut != nil {
+		txOut = tool.dummyTxOut
 	} else {
-		tx, err := tool.client.btcApiClient.GetRawTransaction(&outPoint.Hash)
-		if err != nil {
-			return nil, err
+		if tool.client.rpcClient != nil {
+			tx, err := tool.client.rpcClient.GetRawTransactionVerbose(&outPoint.Hash)
+			if err != nil {
+				return nil, err
+			}
+			if int(outPoint.Index) >= len(tx.Vout) {
+				return nil, errors.New("err out point")
+			}
+			vout := tx.Vout[outPoint.Index]
+			pkScript, err := hex.DecodeString(vout.ScriptPubKey.Hex)
+			if err != nil {
+				return nil, err
+			}
+			amount, err := btcutil.NewAmount(vout.Value)
+			if err != nil {
+				return nil, err
+			}
+			txOut = wire.NewTxOut(int64(amount), pkScript)
+		} else {
+			tx, err := tool.client.btcApiClient.GetRawTransaction(&outPoint.Hash)
+			if err != nil {
+				return nil, err
+			}
+			if int(outPoint.Index) >= len(tx.TxOut) {
+				return nil, errors.New("err out point")
+			}
+			txOut = tx.TxOut[outPoint.Index]
 		}
-		if int(outPoint.Index) >= len(tx.TxOut) {
-			return nil, errors.New("err out point")
-		}
-		txOut = tx.TxOut[outPoint.Index]
 	}
 	tool.commitTxPrevOutputFetcher.AddPrevOut(*outPoint, txOut)
 	return txOut, nil
@@ -384,8 +406,12 @@ func (tool *inscriptionTool) buildCommitTx(changePkScript []byte, commitTxOutPoi
 		panic("======== changePkScript is nil =============")
 	}
 
-	tx.AddTxOut(wire.NewTxOut(0, changePkScript))
+	if tool.noChange == false{
+		tx.AddTxOut(wire.NewTxOut(0, changePkScript))
+	}
 	fee := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
+
+	tool.estimateFee = int64(fee.ToUnit(btcutil.AmountSatoshi)) + totalRevealPrevOutput
 
 	// relay fee
 	// https://bitcoin.stackexchange.com/questions/69282/what-is-the-min-relay-min-fee-code-26
@@ -401,6 +427,10 @@ func (tool *inscriptionTool) buildCommitTx(changePkScript []byte, commitTxOutPoi
 		logx.Infof("============ Remove Change Txout =============")
 		logx.Errorf("============ Remove Change Txout =============")
 		tx.TxOut = tx.TxOut[:len(tx.TxOut)-1]
+
+		fee = btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
+		tool.estimateFee = int64(fee.ToUnit(btcutil.AmountSatoshi)) + totalRevealPrevOutput
+
 		if changeAmount < 0 {
 			feeWithoutChange := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
 			if totalSenderAmount-btcutil.Amount(totalRevealPrevOutput)-feeWithoutChange < 0 {
