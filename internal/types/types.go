@@ -68,8 +68,9 @@ type Order struct {
 }
 
 type QueryBlindboxEventReq struct {
-	EventId     int    `json:"eventId,optional"`
-	EventStatus string `json:"status,optional"` // "all" "active" "inactive"
+	EventId       int    `json:"eventId,optional"`
+	EventStatus   string `json:"status,optional"` // "all" "active" "inactive"
+	EventEndpoint string `json:"eventEndpoint,optional"`
 }
 
 type MintPlan struct {
@@ -80,6 +81,7 @@ type MintPlan struct {
 type BlindboxEvent struct {
 	EventId              int        `json:"eventId"`
 	Name                 string     `json:"name"`
+	EventEndpoint        string     `json:"eventEndpoint"`
 	Description          string     `json:"description"`
 	Detail               string     `json:"detail"`
 	AvatarImageUrl       string     `json:"avatarImageUrl"` // 头像图片url

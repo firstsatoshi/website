@@ -63,6 +63,7 @@
     |-----|------|------|----|----|
     | `eventId` | 活动id | int | 可选(如不填，则查询所有) | 1 |
     | `status` | 活动状态, `active`, `inactive` | string | 可选(如不填，则查询所有) | active |
+    | `eventEndpoint` | 活动名(唯一), 例如: fsat.io/collection/biteagle  | string | 可选(如不填, 根据其他字段查询) | biteagle |
 
 
 - 请求示例：
@@ -83,6 +84,7 @@
             {
                 "eventId": 1, // 活动id
                 "name": "Azuki", // 盲盒活动名
+                "eventEndpoint": "azuki",
                 "description": "Azuki is Azuki", // 盲盒活动描述(支持富文本)
                 "detail": "Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki Azuki", // 盲盒活动详情(支持富文本)
                 "avatarImageUrl": "https://azk.imgix.net/images/166a4190-1377-4cc2-9b93-e1cd32a72ac1.png", // 头像
@@ -130,6 +132,7 @@
             {
                 "eventId": 2,
                 "name": "Punks",
+                "eventEndpoint": "cryptopunks",
                 "description": "Punks is CryptoPunks",
                 "detail": "Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks Punks",
                 "avatarImageUrl": "https://bitcoinpunks.com/punks-bg/punk0070.png",

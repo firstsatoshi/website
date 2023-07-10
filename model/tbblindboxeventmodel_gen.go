@@ -22,13 +22,15 @@ var (
 	tbBlindboxEventRowsExpectAutoSet   = strings.Join(stringx.Remove(tbBlindboxEventFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), ",")
 	tbBlindboxEventRowsWithPlaceHolder = strings.Join(stringx.Remove(tbBlindboxEventFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
 
-	cacheTbBlindboxEventIdPrefix = "cache:tbBlindboxEvent:id:"
+	cacheTbBlindboxEventIdPrefix            = "cache:tbBlindboxEvent:id:"
+	cacheTbBlindboxEventEventEndpointPrefix = "cache:tbBlindboxEvent:eventEndpoint:"
 )
 
 type (
 	tbBlindboxEventModel interface {
 		Insert(ctx context.Context, data *TbBlindboxEvent) (sql.Result, error)
 		FindOne(ctx context.Context, id int64) (*TbBlindboxEvent, error)
+		FindOneByEventEndpoint(ctx context.Context, eventEndpoint string) (*TbBlindboxEvent, error)
 		Update(ctx context.Context, data *TbBlindboxEvent) error
 		Delete(ctx context.Context, id int64) error
 	}
@@ -41,6 +43,7 @@ type (
 	TbBlindboxEvent struct {
 		Id                   int64     `db:"id"`                      // id
 		EventName            string    `db:"event_name"`              // 名称
+		EventEndpoint        string    `db:"event_endpoint"`          // url endpoint,例如: fsat.io/collection/biteagle
 		EventDescription     string    `db:"event_description"`       // 描述,富文本
 		Detail               string    `db:"detail"`                  // 详情,富文本
 		AvatarImgUrl         string    `db:"avatar_img_url"`          // 头像图片url
@@ -79,11 +82,17 @@ func newTbBlindboxEventModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultTbBli
 }
 
 func (m *defaultTbBlindboxEventModel) Delete(ctx context.Context, id int64) error {
+	data, err := m.FindOne(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	tbBlindboxEventEventEndpointKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventEventEndpointPrefix, data.EventEndpoint)
 	tbBlindboxEventIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventIdPrefix, id)
-	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
+	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 		return conn.ExecCtx(ctx, query, id)
-	}, tbBlindboxEventIdKey)
+	}, tbBlindboxEventEventEndpointKey, tbBlindboxEventIdKey)
 	return err
 }
 
@@ -104,21 +113,48 @@ func (m *defaultTbBlindboxEventModel) FindOne(ctx context.Context, id int64) (*T
 	}
 }
 
+func (m *defaultTbBlindboxEventModel) FindOneByEventEndpoint(ctx context.Context, eventEndpoint string) (*TbBlindboxEvent, error) {
+	tbBlindboxEventEventEndpointKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventEventEndpointPrefix, eventEndpoint)
+	var resp TbBlindboxEvent
+	err := m.QueryRowIndexCtx(ctx, &resp, tbBlindboxEventEventEndpointKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
+		query := fmt.Sprintf("select %s from %s where `event_endpoint` = ? limit 1", tbBlindboxEventRows, m.table)
+		if err := conn.QueryRowCtx(ctx, &resp, query, eventEndpoint); err != nil {
+			return nil, err
+		}
+		return resp.Id, nil
+	}, m.queryPrimary)
+	switch err {
+	case nil:
+		return &resp, nil
+	case sqlc.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
+}
+
 func (m *defaultTbBlindboxEventModel) Insert(ctx context.Context, data *TbBlindboxEvent) (sql.Result, error) {
+	tbBlindboxEventEventEndpointKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventEventEndpointPrefix, data.EventEndpoint)
 	tbBlindboxEventIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxEventRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.EventName, data.EventDescription, data.Detail, data.AvatarImgUrl, data.BackgroundImgUrl, data.RoadmapDescription, data.RoadmapList, data.WebsiteUrl, data.WhitepaperUrl, data.TwitterUrl, data.DiscordUrl, data.PriceSats, data.IsActive, data.IsDisplay, data.PaymentToken, data.CurrentMintPlanIndex, data.MintPlanList, data.ImgUrlList, data.AverageImageBytes, data.Supply, data.Avail, data.LockCount, data.MintLimit, data.OnlyWhitelist, data.StartTime, data.EndTime)
-	}, tbBlindboxEventIdKey)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxEventRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.EventName, data.EventEndpoint, data.EventDescription, data.Detail, data.AvatarImgUrl, data.BackgroundImgUrl, data.RoadmapDescription, data.RoadmapList, data.WebsiteUrl, data.WhitepaperUrl, data.TwitterUrl, data.DiscordUrl, data.PriceSats, data.IsActive, data.IsDisplay, data.PaymentToken, data.CurrentMintPlanIndex, data.MintPlanList, data.ImgUrlList, data.AverageImageBytes, data.Supply, data.Avail, data.LockCount, data.MintLimit, data.OnlyWhitelist, data.StartTime, data.EndTime)
+	}, tbBlindboxEventEventEndpointKey, tbBlindboxEventIdKey)
 	return ret, err
 }
 
-func (m *defaultTbBlindboxEventModel) Update(ctx context.Context, data *TbBlindboxEvent) error {
+func (m *defaultTbBlindboxEventModel) Update(ctx context.Context, newData *TbBlindboxEvent) error {
+	data, err := m.FindOne(ctx, newData.Id)
+	if err != nil {
+		return err
+	}
+
+	tbBlindboxEventEventEndpointKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventEventEndpointPrefix, data.EventEndpoint)
 	tbBlindboxEventIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventIdPrefix, data.Id)
-	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
+	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbBlindboxEventRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.EventName, data.EventDescription, data.Detail, data.AvatarImgUrl, data.BackgroundImgUrl, data.RoadmapDescription, data.RoadmapList, data.WebsiteUrl, data.WhitepaperUrl, data.TwitterUrl, data.DiscordUrl, data.PriceSats, data.IsActive, data.IsDisplay, data.PaymentToken, data.CurrentMintPlanIndex, data.MintPlanList, data.ImgUrlList, data.AverageImageBytes, data.Supply, data.Avail, data.LockCount, data.MintLimit, data.OnlyWhitelist, data.StartTime, data.EndTime, data.Id)
-	}, tbBlindboxEventIdKey)
+		return conn.ExecCtx(ctx, query, newData.EventName, newData.EventEndpoint, newData.EventDescription, newData.Detail, newData.AvatarImgUrl, newData.BackgroundImgUrl, newData.RoadmapDescription, newData.RoadmapList, newData.WebsiteUrl, newData.WhitepaperUrl, newData.TwitterUrl, newData.DiscordUrl, newData.PriceSats, newData.IsActive, newData.IsDisplay, newData.PaymentToken, newData.CurrentMintPlanIndex, newData.MintPlanList, newData.ImgUrlList, newData.AverageImageBytes, newData.Supply, newData.Avail, newData.LockCount, newData.MintLimit, newData.OnlyWhitelist, newData.StartTime, newData.EndTime, newData.Id)
+	}, tbBlindboxEventEventEndpointKey, tbBlindboxEventIdKey)
 	return err
 }
 

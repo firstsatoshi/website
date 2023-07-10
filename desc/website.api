@@ -97,8 +97,9 @@ service website-api {
 }
 
 type queryBlindboxEventReq {
-	EventId     int    `json:"eventId,optional"`
-	EventStatus string `json:"status,optional"` // "all" "active" "inactive"
+	EventId       int    `json:"eventId,optional"`
+	EventStatus   string `json:"status,optional"` // "all" "active" "inactive"
+	EventEndpoint string `json:"eventEndpoint,optional"`
 }
 
 type MintPlan {
@@ -109,6 +110,7 @@ type MintPlan {
 type BlindboxEvent {
 	EventId              int        `json:"eventId"`
 	Name                 string     `json:"name"`
+	EventEndpoint        string     `json:"eventEndpoint"`
 	Description          string     `json:"description"`
 	Detail               string     `json:"detail"`
 	AvatarImageUrl       string     `json:"avatarImageUrl"` // 头像图片url

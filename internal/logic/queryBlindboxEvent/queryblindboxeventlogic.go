@@ -53,9 +53,15 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent(req *types.QueryBlindboxEve
 		})
 	}
 
+	if len(req.EventEndpoint) > 0 {
+		querySql = querySql.Where(squirrel.Eq{
+			"event_endpoint": req.EventEndpoint,
+		})
+	}
+
 	events, err := l.svcCtx.TbBlindboxEventModel.FindBlindboxEvents(l.ctx, querySql)
 	if err != nil {
-		logx.Errorf("TbBlindboxEventModel.FindOne error: %v", err.Error())
+		logx.Errorf("TbBlindboxEventModel.FindBlindboxEvents error: %v", err.Error())
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "database error")
 	}
 
@@ -111,6 +117,7 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent(req *types.QueryBlindboxEve
 		resp = append(resp, types.BlindboxEvent{
 			EventId:              int(event.Id),
 			Name:                 event.EventName,
+			EventEndpoint:        event.EventEndpoint,
 			Description:          event.EventDescription,
 			Detail:               event.Detail,
 			AvatarImageUrl:       event.AvatarImgUrl,

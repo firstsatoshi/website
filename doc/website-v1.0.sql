@@ -38,6 +38,7 @@ DROP TABLE IF EXISTS `tb_blindbox_event`;
 CREATE TABLE `tb_blindbox_event` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `event_name` varchar(100) COLLATE utf8mb4_bin DEFAULT "" COMMENT '名称',
+  `event_endpoint` varchar(100) COLLATE utf8mb4_bin DEFAULT "" COMMENT 'url endpoint,例如: fsat.io/collection/biteagle',
   `event_description` varchar(1200) COLLATE utf8mb4_bin DEFAULT "" COMMENT '描述,富文本',
   `detail` varchar(2000) COLLATE utf8mb4_bin DEFAULT "" COMMENT '详情,富文本',
   `avatar_img_url` varchar(500) COLLATE utf8mb4_bin DEFAULT "" COMMENT '头像图片url',
@@ -65,7 +66,8 @@ CREATE TABLE `tb_blindbox_event` (
   `end_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '结束时间',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `uidx_event_endpoit` (`event_endpoint`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='盲盒活动表';
 
 
