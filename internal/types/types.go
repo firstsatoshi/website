@@ -64,8 +64,8 @@ type Order struct {
 	ReceiveAddress   string      `json:"receiveAddress"`
 	OrderStatus      string      `json:"orderStatus"`
 	PayTxid          string      `json:"payTxid"`
-	PayTime          string      `json:"paytime"`
-	PayConfirmedTime string      `json:"payConfirmedTime"`
+	PayTime          int64       `json:"paytime"`
+	PayConfirmedTime int64       `json:"payConfirmedTime"`
 	NftDetails       []NftDetail `json:"nftDetails"`
 	CreateTime       int64       `json:"createTime"`
 }

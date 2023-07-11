@@ -34,5 +34,5 @@ func krand(size int, kind int) string {
 // 生成单号
 func GenSn(snPrefix string) string {
 	time.Sleep(time.Nanosecond)
-	return fmt.Sprintf("%s%s%s", snPrefix, time.Now().Format("20060102150405"), krand(8, KC_RAND_KIND_NUM))
+	return fmt.Sprintf("%s%s%s", snPrefix, time.Now().UTC().In(time.UTC).Format("20060102150405"), krand(8, KC_RAND_KIND_NUM))
 }

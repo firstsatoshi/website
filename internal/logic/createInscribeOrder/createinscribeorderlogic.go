@@ -3,7 +3,6 @@ package createInscribeOrder
 import (
 	"context"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"math"
@@ -101,7 +100,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		}
 
 		// as filename is varchar(100)
-		if len(v.FileName) > 90 || len(v.FileName) == 0{
+		if len(v.FileName) > 90 || len(v.FileName) == 0 {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "filename too long or empty %v", v.FileName)
 		}
 	}
@@ -205,16 +204,11 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 			logx.Errorf("parse dataUrl error error: %v", err.Error())
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "parse dataUrl error: %v", err.Error())
 		}
-		b64Data := base64.RawURLEncoding.EncodeToString(dataURL.Data)
-		if err != nil {
-			logx.Errorf("encond base64 error: %v", err.Error())
-			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "parse dataUrl error: %v", err.Error())
-		}
 
 		// insert inscribe data into db
 		_, err = l.svcCtx.TbInscribeDataModel.Insert(l.ctx, &model.TbInscribeData{
 			OrderId:     orderId,
-			Data:        b64Data,
+			Data:        v.DataUrl,
 			ContentType: dataURL.MediaType.String(),
 			FileName:    v.FileName,
 		})

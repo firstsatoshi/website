@@ -2,7 +2,6 @@ package inscribe
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -22,6 +21,7 @@ import (
 	"github.com/firstsatoshi/website/common/task"
 	"github.com/firstsatoshi/website/internal/config"
 	"github.com/firstsatoshi/website/model"
+	"github.com/vincent-petithory/dataurl"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
@@ -273,7 +273,13 @@ func (t *BtcInscribeTask) blindboxOrderMint(order *model.TbOrder) {
 			return
 		}
 
-		imgData, err := base64.RawURLEncoding.DecodeString(box.Data)
+		dataUrl, err := dataurl.DecodeString(box.Data)
+		if err != nil {
+			logx.Errorf(" dataurl.DecodeString error: %v", err.Error())
+			return
+		}
+
+		imgData := dataUrl.Data
 		logx.Infof("img size: %v", len(imgData))
 
 		insData := ordinals.InscriptionData{
@@ -501,14 +507,15 @@ func (t *BtcInscribeTask) inscribeOrderInscribe(order *model.TbInscribeOrder) {
 	for _, d := range datas {
 		logx.Infof("file data size: %v", len([]byte(d.Data)))
 
-		data, err := base64.RawURLEncoding.DecodeString(d.Data)
+		dataUrl, err := dataurl.DecodeString(d.Data)
 		if err != nil {
-			logx.Errorf("base64 DecodeString error: %v", err.Error())
+			logx.Errorf(" dataurl.DecodeString error: %v", err.Error())
 			return
 		}
+
 		insData := ordinals.InscriptionData{
 			ContentType: d.ContentType,
-			Body:        data,
+			Body:        dataUrl.Data,
 			Destination: order.ReceiveAddress,
 		}
 		inscribeData = append(inscribeData, insData)

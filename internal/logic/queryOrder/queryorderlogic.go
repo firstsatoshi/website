@@ -2,7 +2,6 @@ package queryOrder
 
 import (
 	"context"
-	"encoding/base64"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -62,14 +61,14 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 		resp = make([]types.Order, 0)
 		for _, o := range orders {
 
-			payTime := o.PayTime.Time.String()
-			if !o.PayTime.Valid {
-				payTime = ""
+			payTime := int64(0)
+			if o.PayTime.Valid {
+				payTime = o.PayTime.Time.Unix()
 			}
 
-			payConfirmedTime := o.PayConfirmedTime.Time.String()
-			if !o.PayConfirmedTime.Valid {
-				payConfirmedTime = ""
+			payConfirmedTime := int64(0)
+			if o.PayConfirmedTime.Valid {
+				payConfirmedTime = o.PayConfirmedTime.Time.Unix()
 			}
 
 			payTxid := ""
@@ -102,7 +101,6 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 
 				for _, b := range datas {
 					if b.RevealTxid.Valid {
-						d, _ := base64.RawURLEncoding.DecodeString(b.Data)
 						nftDetails = append(nftDetails, types.NftDetail{
 							Txid:        b.RevealTxid.String,
 							TxConfirmed: b.Status == "MINT",
@@ -112,7 +110,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 							// ImageUrl:    "",
 							FileName:    b.FileName,
 							ContentType: b.ContentType,
-							Inscription: string(d),
+							Inscription: b.Data,
 						})
 					}
 				}
@@ -166,14 +164,14 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 		resp = make([]types.Order, 0)
 		for _, o := range orders {
 
-			payTime := o.PayTime.Time.String()
-			if !o.PayTime.Valid {
-				payTime = ""
+			payTime := int64(0)
+			if o.PayTime.Valid {
+				payTime = o.PayTime.Time.Unix()
 			}
 
-			payConfirmedTime := o.PayConfirmedTime.Time.String()
-			if !o.PayConfirmedTime.Valid {
-				payConfirmedTime = ""
+			payConfirmedTime := int64(0)
+			if o.PayConfirmedTime.Valid {
+				payConfirmedTime = o.PayConfirmedTime.Time.Unix()
 			}
 
 			payTxid := ""
@@ -256,6 +254,8 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 							Category:    b.Category,
 							Description: b.Description,
 							ImageUrl:    b.ImgUrl,
+
+							Inscription: b.Data,
 						})
 					}
 				}
