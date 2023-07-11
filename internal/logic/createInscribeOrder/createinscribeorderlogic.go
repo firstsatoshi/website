@@ -120,7 +120,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 	// TODO get mempool recommanded feerate
 	// https://mempool.space/api/v1/fees/recommended
-	if l.svcCtx.ChainCfg.Name == chaincfg.MainNetParams.Name && (req.FeeRate < 5 || req.FeeRate > 300) {
+	if l.svcCtx.ChainCfg.Name == chaincfg.MainNetParams.Name && (req.FeeRate < 3 || req.FeeRate > 300) {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.FEERATE_TOO_SMALL_ERROR), "feeRate too small %v", req.FeeRate)
 	}
 
