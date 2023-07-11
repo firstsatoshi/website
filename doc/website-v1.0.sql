@@ -143,7 +143,7 @@ DROP TABLE IF EXISTS `tb_inscribe_data`;
 CREATE TABLE `tb_inscribe_data` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
   `order_id` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '订单id',
-  `content_type` varchar(20) COLLATE utf8mb4_bin NOT NULL COMMENT '类型: 如 image/img',
+  `content_type` varchar(50) COLLATE utf8mb4_bin NOT NULL COMMENT '类型: 如 image/img',
   `file_name` varchar(100) COLLATE utf8mb4_bin NOT NULL COMMENT '文件名',
   `data` mediumblob NOT NULL COMMENT '铭文数据',
   `status` varchar(20) COLLATE utf8mb4_bin DEFAULT 'NOTMINT'  COMMENT '状态,NOTMINT,MINTING,MINT',

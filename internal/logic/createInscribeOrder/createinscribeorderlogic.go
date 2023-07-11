@@ -94,9 +94,21 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 	count := len(req.FileUploads)
 
+	// check DataUrl https://www.rfc-editor.org/rfc/rfc2397
+	for _, v := range req.FileUploads {
+		if !strings.HasPrefix(v.DataUrl, "data:") || !strings.Contains(v.DataUrl, ";base64,") {
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid dataUrl %v", v.DataUrl)
+		}
+
+		// as filename is varchar(100)
+		if len(v.FileName) > 90 || len(v.FileName) == 0{
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "filename too long or empty %v", v.FileName)
+		}
+	}
+
 	// check count
 	if count <= 0 {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "count is invalid %v", count)
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "empty inscription %v", count)
 	}
 	if count > 50 {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.COUNT_EXCEED_PER_ORDER_LIMIT_ERROR), "count is too large %v", count)
@@ -203,7 +215,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		_, err = l.svcCtx.TbInscribeDataModel.Insert(l.ctx, &model.TbInscribeData{
 			OrderId:     orderId,
 			Data:        b64Data,
-			ContentType: dataURL.ContentType(),
+			ContentType: dataURL.MediaType.String(),
 			FileName:    v.FileName,
 		})
 		if err != nil {
@@ -212,7 +224,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		}
 
 		inscriptionRequests = append(inscriptionRequests, ordinals.InscriptionData{
-			ContentType: dataURL.ContentType(),
+			ContentType: dataURL.MediaType.String(),
 			Body:        dataURL.Data,
 			Destination: req.ReceiveAddress,
 		})

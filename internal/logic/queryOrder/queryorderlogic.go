@@ -2,6 +2,7 @@ package queryOrder
 
 import (
 	"context"
+	"encoding/base64"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -101,13 +102,17 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 
 				for _, b := range datas {
 					if b.RevealTxid.Valid {
+						d, _ := base64.RawURLEncoding.DecodeString(b.Data)
 						nftDetails = append(nftDetails, types.NftDetail{
 							Txid:        b.RevealTxid.String,
 							TxConfirmed: b.Status == "MINT",
 							Name:        b.FileName,
 							Category:    b.ContentType,
-							Description: b.ContentType,
-							ImageUrl:    "",
+							// Description: b.ContentType,
+							// ImageUrl:    "",
+							FileName:    b.FileName,
+							ContentType: b.ContentType,
+							Inscription: string(d),
 						})
 					}
 				}
