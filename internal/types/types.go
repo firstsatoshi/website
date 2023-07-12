@@ -137,10 +137,12 @@ type QueryGalleryListResp struct {
 }
 
 type CheckWhitelistReq struct {
+	EventId        int    `json:"eventId"`
 	ReceiveAddress string `json:"receiveAddress"`
 }
 
 type CheckWhitelistResp struct {
+	EventId     int  `json:"eventId"`
 	IsWhitelist bool `json:"isWhitelist"`
 }
 

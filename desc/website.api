@@ -198,10 +198,12 @@ service website-api {
 }
 
 type checkWhitelistReq {
+	EventId        int    `json:"eventId"`
 	ReceiveAddress string `json:"receiveAddress"`
 }
 
 type checkWhitelistResp {
+	EventId     int  `json:"eventId"`
 	IsWhitelist bool `json:"isWhitelist"`
 }
 

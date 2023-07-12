@@ -410,6 +410,7 @@ func (t *BtcDepositTask) scanBlock() {
 
 				// check boxs count
 				if len(boxs) < int(order.Count) {
+					// TODO: fixme
 					logx.Errorf("======== BLINDBOX NOT ENOUGH TO BE LOCKED ============")
 					return
 				}

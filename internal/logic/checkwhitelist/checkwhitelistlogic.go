@@ -28,10 +28,22 @@ func NewCheckWhitelistLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ch
 
 func (l *CheckWhitelistLogic) CheckWhitelist(req *types.CheckWhitelistReq) (*types.CheckWhitelistResp, error) {
 
-	_, err := l.svcCtx.TbWaitlistModel.FindOneByBtcAddress(l.ctx, req.ReceiveAddress)
+	event, err := l.svcCtx.TbBlindboxEventModel.FindOne(l.ctx, int64(req.EventId))
+	if err != nil {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByBtcAddress error: %v", err.Error())
+	}
+	if event.OnlyWhitelist == 0 {
+		return &types.CheckWhitelistResp{
+			EventId:   req.EventId,
+			IsWhitelist: true, // Default set to true
+		}, nil
+	}
+
+	_, err = l.svcCtx.TbWaitlistModel.FindOneByBtcAddress(l.ctx, req.ReceiveAddress)
 	if err != nil {
 		if err == model.ErrNotFound {
 			return &types.CheckWhitelistResp{
+				EventId:   req.EventId,
 				IsWhitelist: false,
 			}, nil
 		}
@@ -39,8 +51,8 @@ func (l *CheckWhitelistLogic) CheckWhitelist(req *types.CheckWhitelistReq) (*typ
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByBtcAddress error: %v", err.Error())
 	}
 
-
 	return &types.CheckWhitelistResp{
+		EventId:   req.EventId,
 		IsWhitelist: true,
 	}, nil
 }

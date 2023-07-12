@@ -441,6 +441,7 @@
 
     | 字段 | 说明| 类型 | 可选? | 示例 |
     |-----|------|------|----|----|
+    | eventId | 活动id  | integer | 必填 | 1 |
     | `receiveAddress` | 接收地址  | string | 必填 | tb1pv5d2mmx2v9cx9menxl5zlhacljqu9zqhltl4d303n3rjjcxfrgwq20ej2q |
 
 
@@ -448,6 +449,7 @@
 
     ```json
     {
+        "eventId":1,
         "receiveAddress":"xxxxxxxxxxxxxx"
     }
     ```
@@ -459,6 +461,7 @@
         "code": 0,
         "msg": "ok",
         "data": {
+            "eventId": 1,
             "isWhitelist": false    // true： 是白名单  ; false 不是白名单
         }
     }
