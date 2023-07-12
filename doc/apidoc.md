@@ -23,6 +23,7 @@
 
     | 字段 | 说明| 类型 | 可选? | 示例 |
     |-----|------|------|----|----|
+    | eventId | 活动id | integer | 必填 | 1 |
     | `email` | 邮箱 | string | 必填 | helloworld@163.com |
     | `btcAddress` | btc地址，主网地址以`bc1p`开头，测试网地址以`tb1p`开头，长度为`62`字符, | string | 必填 | bc1phjsyw73de6ap8nfjzg4erxmdw7lzlfgvm447v82fytn78nm0mwnsq654e7 |
     | `referalCode` | 邮箱 | string | **可选** | HXsg |
@@ -31,6 +32,7 @@
 
     ```json
     {
+        "eventId":1,
         "email":"youngqqcn@163.com",
         "btcAddress":"bc1pv5d2mmx2v9cx9menxl5zlhacljqu9zqhltl4d303n3rjjcxfrgwqa80as0"
         "referalCode":"2342"
