@@ -50,7 +50,7 @@ func (l *QueryAddressLogic) QueryAddress(req *types.QueryAddressReq) (*types.Que
 	}
 
 	// check whitelist
-	_, err = l.svcCtx.TbWaitlistModel.FindOneByBtcAddress(l.ctx, req.ReceiveAddress)
+	_, err = l.svcCtx.TbWaitlistModel.FindOneByEventIdBtcAddress(l.ctx, int64(req.EventId), req.ReceiveAddress)
 	if err != nil {
 		if err == model.ErrNotFound {
 			resp.IsWhitelist = false

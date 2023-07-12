@@ -90,13 +90,13 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 	}
 
 	// check exits
-	if one, err := l.svcCtx.TbWaitlistModel.FindOneByEmail(l.ctx, req.Email); err == nil {
+	if one, err := l.svcCtx.TbWaitlistModel.FindOneByEventIdEmail(l.ctx, int64(req.EventId), req.Email); err == nil {
 		resp.Duplicated = true
 		resp.ReferalCode = uniqueid.GetReferalCodeById(one.Id)
 		return &resp, nil
 	}
 
-	if one, err := l.svcCtx.TbWaitlistModel.FindOneByBtcAddress(l.ctx, req.BtcAddress); err == nil {
+	if one, err := l.svcCtx.TbWaitlistModel.FindOneByEventIdBtcAddress(l.ctx, int64(req.EventId), req.BtcAddress); err == nil {
 		resp.Duplicated = true
 		resp.ReferalCode = uniqueid.GetReferalCodeById(one.Id)
 		return &resp, nil

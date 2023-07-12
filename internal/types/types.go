@@ -2,6 +2,7 @@
 package types
 
 type JoinWaitListReq struct {
+	EventId     int    `json:"eventId"`
 	Email       string `json:"email"`
 	BtcAddress  string `json:"btcAddress"`
 	ReferalCode string `json:"referalCode,optional"`

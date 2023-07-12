@@ -4,14 +4,15 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `tb_waitlist`;
 CREATE TABLE `tb_waitlist` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `event_id` bigint NOT NULL COMMENT '活动id',
   `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '邮箱',
   `btc_address` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'BTC的P2TR格式地址',
   `referee_id` bigint DEFAULT '0' COMMENT '邀请人id',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`) USING BTREE,
-	UNIQUE KEY `email` (`email`) USING BTREE,
-	UNIQUE KEY `btc_address` (`btc_address`) USING BTREE
+	UNIQUE KEY `uidx_event_id_email` (`event_id`, `email`) USING BTREE,
+	UNIQUE KEY `uidx_event_id_btc_address` (`event_id`, `btc_address`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC COMMENT='waitlist数据表';
 
 DROP TABLE IF EXISTS `tb_blindbox`;

@@ -137,7 +137,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 
 	// checkwhitelist
 	if event.OnlyWhitelist > 0 {
-		_, err := l.svcCtx.TbWaitlistModel.FindOneByBtcAddress(l.ctx, req.ReceiveAddress)
+		_, err := l.svcCtx.TbWaitlistModel.FindOneByEventIdBtcAddress(l.ctx, int64(req.EventId), req.ReceiveAddress)
 		if err != nil {
 			if err == model.ErrNotFound {
 				return nil, errors.Wrapf(xerr.NewErrCode(xerr.ONLY_WHITELIST_ERROR), "not whitelist: %v", req.ReceiveAddress)

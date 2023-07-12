@@ -34,16 +34,16 @@ func (l *CheckWhitelistLogic) CheckWhitelist(req *types.CheckWhitelistReq) (*typ
 	}
 	if event.OnlyWhitelist == 0 {
 		return &types.CheckWhitelistResp{
-			EventId:   req.EventId,
+			EventId:     req.EventId,
 			IsWhitelist: true, // Default set to true
 		}, nil
 	}
 
-	_, err = l.svcCtx.TbWaitlistModel.FindOneByBtcAddress(l.ctx, req.ReceiveAddress)
+	_, err = l.svcCtx.TbWaitlistModel.FindOneByEventIdBtcAddress(l.ctx, int64(req.EventId), req.ReceiveAddress)
 	if err != nil {
 		if err == model.ErrNotFound {
 			return &types.CheckWhitelistResp{
-				EventId:   req.EventId,
+				EventId:     req.EventId,
 				IsWhitelist: false,
 			}, nil
 		}
@@ -52,7 +52,7 @@ func (l *CheckWhitelistLogic) CheckWhitelist(req *types.CheckWhitelistReq) (*typ
 	}
 
 	return &types.CheckWhitelistResp{
-		EventId:   req.EventId,
+		EventId:     req.EventId,
 		IsWhitelist: true,
 	}, nil
 }

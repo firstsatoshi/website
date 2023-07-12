@@ -22,17 +22,17 @@ var (
 	tbWaitlistRowsExpectAutoSet   = strings.Join(stringx.Remove(tbWaitlistFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), ",")
 	tbWaitlistRowsWithPlaceHolder = strings.Join(stringx.Remove(tbWaitlistFieldNames, "`id`", "`create_at`", "`create_time`", "`created_at`", "`update_at`", "`update_time`", "`updated_at`"), "=?,") + "=?"
 
-	cacheTbWaitlistIdPrefix         = "cache:tbWaitlist:id:"
-	cacheTbWaitlistBtcAddressPrefix = "cache:tbWaitlist:btcAddress:"
-	cacheTbWaitlistEmailPrefix      = "cache:tbWaitlist:email:"
+	cacheTbWaitlistIdPrefix                = "cache:tbWaitlist:id:"
+	cacheTbWaitlistEventIdBtcAddressPrefix = "cache:tbWaitlist:eventId:btcAddress:"
+	cacheTbWaitlistEventIdEmailPrefix      = "cache:tbWaitlist:eventId:email:"
 )
 
 type (
 	tbWaitlistModel interface {
 		Insert(ctx context.Context, data *TbWaitlist) (sql.Result, error)
 		FindOne(ctx context.Context, id int64) (*TbWaitlist, error)
-		FindOneByBtcAddress(ctx context.Context, btcAddress string) (*TbWaitlist, error)
-		FindOneByEmail(ctx context.Context, email string) (*TbWaitlist, error)
+		FindOneByEventIdBtcAddress(ctx context.Context, eventId int64, btcAddress string) (*TbWaitlist, error)
+		FindOneByEventIdEmail(ctx context.Context, eventId int64, email string) (*TbWaitlist, error)
 		Update(ctx context.Context, data *TbWaitlist) error
 		Delete(ctx context.Context, id int64) error
 	}
@@ -44,6 +44,7 @@ type (
 
 	TbWaitlist struct {
 		Id         int64     `db:"id"`          // id
+		EventId    int64     `db:"event_id"`    // 活动id
 		Email      string    `db:"email"`       // 邮箱
 		BtcAddress string    `db:"btc_address"` // BTC的P2TR格式地址
 		RefereeId  int64     `db:"referee_id"`  // 邀请人id
@@ -65,13 +66,13 @@ func (m *defaultTbWaitlistModel) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 
-	tbWaitlistBtcAddressKey := fmt.Sprintf("%s%v", cacheTbWaitlistBtcAddressPrefix, data.BtcAddress)
-	tbWaitlistEmailKey := fmt.Sprintf("%s%v", cacheTbWaitlistEmailPrefix, data.Email)
+	tbWaitlistEventIdBtcAddressKey := fmt.Sprintf("%s%v:%v", cacheTbWaitlistEventIdBtcAddressPrefix, data.EventId, data.BtcAddress)
+	tbWaitlistEventIdEmailKey := fmt.Sprintf("%s%v:%v", cacheTbWaitlistEventIdEmailPrefix, data.EventId, data.Email)
 	tbWaitlistIdKey := fmt.Sprintf("%s%v", cacheTbWaitlistIdPrefix, id)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
 		return conn.ExecCtx(ctx, query, id)
-	}, tbWaitlistBtcAddressKey, tbWaitlistEmailKey, tbWaitlistIdKey)
+	}, tbWaitlistEventIdBtcAddressKey, tbWaitlistEventIdEmailKey, tbWaitlistIdKey)
 	return err
 }
 
@@ -92,12 +93,12 @@ func (m *defaultTbWaitlistModel) FindOne(ctx context.Context, id int64) (*TbWait
 	}
 }
 
-func (m *defaultTbWaitlistModel) FindOneByBtcAddress(ctx context.Context, btcAddress string) (*TbWaitlist, error) {
-	tbWaitlistBtcAddressKey := fmt.Sprintf("%s%v", cacheTbWaitlistBtcAddressPrefix, btcAddress)
+func (m *defaultTbWaitlistModel) FindOneByEventIdBtcAddress(ctx context.Context, eventId int64, btcAddress string) (*TbWaitlist, error) {
+	tbWaitlistEventIdBtcAddressKey := fmt.Sprintf("%s%v:%v", cacheTbWaitlistEventIdBtcAddressPrefix, eventId, btcAddress)
 	var resp TbWaitlist
-	err := m.QueryRowIndexCtx(ctx, &resp, tbWaitlistBtcAddressKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `btc_address` = ? limit 1", tbWaitlistRows, m.table)
-		if err := conn.QueryRowCtx(ctx, &resp, query, btcAddress); err != nil {
+	err := m.QueryRowIndexCtx(ctx, &resp, tbWaitlistEventIdBtcAddressKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
+		query := fmt.Sprintf("select %s from %s where `event_id` = ? and `btc_address` = ? limit 1", tbWaitlistRows, m.table)
+		if err := conn.QueryRowCtx(ctx, &resp, query, eventId, btcAddress); err != nil {
 			return nil, err
 		}
 		return resp.Id, nil
@@ -112,12 +113,12 @@ func (m *defaultTbWaitlistModel) FindOneByBtcAddress(ctx context.Context, btcAdd
 	}
 }
 
-func (m *defaultTbWaitlistModel) FindOneByEmail(ctx context.Context, email string) (*TbWaitlist, error) {
-	tbWaitlistEmailKey := fmt.Sprintf("%s%v", cacheTbWaitlistEmailPrefix, email)
+func (m *defaultTbWaitlistModel) FindOneByEventIdEmail(ctx context.Context, eventId int64, email string) (*TbWaitlist, error) {
+	tbWaitlistEventIdEmailKey := fmt.Sprintf("%s%v:%v", cacheTbWaitlistEventIdEmailPrefix, eventId, email)
 	var resp TbWaitlist
-	err := m.QueryRowIndexCtx(ctx, &resp, tbWaitlistEmailKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
-		query := fmt.Sprintf("select %s from %s where `email` = ? limit 1", tbWaitlistRows, m.table)
-		if err := conn.QueryRowCtx(ctx, &resp, query, email); err != nil {
+	err := m.QueryRowIndexCtx(ctx, &resp, tbWaitlistEventIdEmailKey, m.formatPrimary, func(ctx context.Context, conn sqlx.SqlConn, v any) (i any, e error) {
+		query := fmt.Sprintf("select %s from %s where `event_id` = ? and `email` = ? limit 1", tbWaitlistRows, m.table)
+		if err := conn.QueryRowCtx(ctx, &resp, query, eventId, email); err != nil {
 			return nil, err
 		}
 		return resp.Id, nil
@@ -133,13 +134,13 @@ func (m *defaultTbWaitlistModel) FindOneByEmail(ctx context.Context, email strin
 }
 
 func (m *defaultTbWaitlistModel) Insert(ctx context.Context, data *TbWaitlist) (sql.Result, error) {
-	tbWaitlistBtcAddressKey := fmt.Sprintf("%s%v", cacheTbWaitlistBtcAddressPrefix, data.BtcAddress)
-	tbWaitlistEmailKey := fmt.Sprintf("%s%v", cacheTbWaitlistEmailPrefix, data.Email)
+	tbWaitlistEventIdBtcAddressKey := fmt.Sprintf("%s%v:%v", cacheTbWaitlistEventIdBtcAddressPrefix, data.EventId, data.BtcAddress)
+	tbWaitlistEventIdEmailKey := fmt.Sprintf("%s%v:%v", cacheTbWaitlistEventIdEmailPrefix, data.EventId, data.Email)
 	tbWaitlistIdKey := fmt.Sprintf("%s%v", cacheTbWaitlistIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?)", m.table, tbWaitlistRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.Email, data.BtcAddress, data.RefereeId)
-	}, tbWaitlistBtcAddressKey, tbWaitlistEmailKey, tbWaitlistIdKey)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?)", m.table, tbWaitlistRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.EventId, data.Email, data.BtcAddress, data.RefereeId)
+	}, tbWaitlistEventIdBtcAddressKey, tbWaitlistEventIdEmailKey, tbWaitlistIdKey)
 	return ret, err
 }
 
@@ -149,13 +150,13 @@ func (m *defaultTbWaitlistModel) Update(ctx context.Context, newData *TbWaitlist
 		return err
 	}
 
-	tbWaitlistBtcAddressKey := fmt.Sprintf("%s%v", cacheTbWaitlistBtcAddressPrefix, data.BtcAddress)
-	tbWaitlistEmailKey := fmt.Sprintf("%s%v", cacheTbWaitlistEmailPrefix, data.Email)
+	tbWaitlistEventIdBtcAddressKey := fmt.Sprintf("%s%v:%v", cacheTbWaitlistEventIdBtcAddressPrefix, data.EventId, data.BtcAddress)
+	tbWaitlistEventIdEmailKey := fmt.Sprintf("%s%v:%v", cacheTbWaitlistEventIdEmailPrefix, data.EventId, data.Email)
 	tbWaitlistIdKey := fmt.Sprintf("%s%v", cacheTbWaitlistIdPrefix, data.Id)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbWaitlistRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.Email, newData.BtcAddress, newData.RefereeId, newData.Id)
-	}, tbWaitlistBtcAddressKey, tbWaitlistEmailKey, tbWaitlistIdKey)
+		return conn.ExecCtx(ctx, query, newData.EventId, newData.Email, newData.BtcAddress, newData.RefereeId, newData.Id)
+	}, tbWaitlistEventIdBtcAddressKey, tbWaitlistEventIdEmailKey, tbWaitlistIdKey)
 	return err
 }
 
