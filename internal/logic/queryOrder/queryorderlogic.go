@@ -253,7 +253,7 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 							Name:        b.Name,
 							Category:    b.Category,
 							Description: b.Description,
-							ImageUrl:    b.ImgUrl,
+							// ImageUrl:    b.ImgUrl,
 
 							Inscription: b.Data,
 						})

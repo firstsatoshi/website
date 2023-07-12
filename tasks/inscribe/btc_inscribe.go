@@ -2,7 +2,6 @@ package inscribe
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -274,18 +273,13 @@ func (t *BtcInscribeTask) blindboxOrderMint(order *model.TbOrder) {
 			return
 		}
 
-		// dataUrl, err := dataurl.DecodeString(box.Data)
-		// if err != nil {
-		// 	logx.Errorf(" dataurl.DecodeString error: %v", err.Error())
-		// 	return
-		// }
-		imgData, err := base64.URLEncoding.DecodeString(box.Data)
+		dataUrl, err := dataurl.DecodeString(box.Data)
 		if err != nil {
 			logx.Errorf(" dataurl.DecodeString error: %v", err.Error())
 			return
 		}
 
-		// imgData := dataUrl.Data/
+		imgData := dataUrl.Data
 		logx.Infof("img size: %v", len(imgData))
 
 		insData := ordinals.InscriptionData{

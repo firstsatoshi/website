@@ -49,7 +49,6 @@ type NftDetail struct {
 	Name        string `json:"name"`
 	Category    string `json:"category"`
 	Description string `json:"description"`
-	ImageUrl    string `json:"imageUrl"`
 	ContentType string `json:"contentType"`
 	FileName    string `json:"fileName"`
 	Inscription string `json:"inscription"`

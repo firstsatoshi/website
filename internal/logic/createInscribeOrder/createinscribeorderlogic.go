@@ -103,6 +103,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		if len(v.FileName) > 90 || len(v.FileName) == 0 {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "filename too long or empty %v", v.FileName)
 		}
+
 	}
 
 	// check count
@@ -203,6 +204,11 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		if err != nil {
 			logx.Errorf("parse dataUrl error error: %v", err.Error())
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "parse dataUrl error: %v", err.Error())
+		}
+
+		if len(dataURL.Data) > 2_000_000 {
+			logx.Errorf("data size too large")
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "data too large error: %v", err.Error())
 		}
 
 		// insert inscribe data into db

@@ -68,7 +68,7 @@ type NftDetail {
 	Name        string `json:"name"`
 	Category    string `json:"category"`
 	Description string `json:"description"`
-	ImageUrl    string `json:"imageUrl"`
+	// ImageUrl    string `json:"imageUrl"`
 
 	// for inscription
 	ContentType string `json:"contentType"`

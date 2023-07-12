@@ -356,7 +356,7 @@
                         "name": "#6",
                         "category": "bald",
                         "description": "no6",
-                        "imageUrl": "https://c-ssl.dtstatic.com/uploads/item/201504/16/20150416H4223_vG4eY.thumb.1000_0.jpeg",
+                        // 已经去掉次字段  "imageUrl": "https://c-ssl.dtstatic.com/uploads/item/201504/16/20150416H4223_vG4eY.thumb.1000_0.jpeg",
                         "contentType": "text/plain",  // 铭文类型
                         "fileName": "hello,world,world",  // 文件名
                         "inscription": "aGVsbG8sd29ybGQsd29ybGQ"  // 铭文内容
