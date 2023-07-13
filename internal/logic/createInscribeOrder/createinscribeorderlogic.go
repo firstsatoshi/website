@@ -94,6 +94,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	count := len(req.FileUploads)
 
 	// check DataUrl https://www.rfc-editor.org/rfc/rfc2397
+	totalBytesSize := 0
 	for _, v := range req.FileUploads {
 		if !strings.HasPrefix(v.DataUrl, "data:") || !strings.Contains(v.DataUrl, ";base64,") {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid dataUrl %v", v.DataUrl)
@@ -104,13 +105,18 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "filename too long or empty %v", v.FileName)
 		}
 
+		totalBytesSize += len(v.DataUrl)
+	}
+	// max limit size  1MB
+	if totalBytesSize > 1_000_001 {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "total bytes size too large %v", totalBytesSize)
 	}
 
 	// check count
 	if count <= 0 {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "empty inscription %v", count)
 	}
-	if count > 50 {
+	if count > 100 {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.COUNT_EXCEED_PER_ORDER_LIMIT_ERROR), "count is too large %v", count)
 	}
 
