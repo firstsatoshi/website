@@ -627,6 +627,7 @@
     |-----|------|------|----|----|
     | `fileUploads` | 上传文件列表 | [string] | 必填 |  |
     | `feeRate` | 费率 | integer | 必填 | |
+    | `receiveAddress` | 接受地址| string| 必填| |
 
 
 - 请求示例:
@@ -643,7 +644,8 @@
             "fileName":"yqqq"
         }
     ],
-    "feeRate":3
+    "feeRate":3,
+    "receiveAddress": "bc1pv8t6d5fyqwhmpm7q3ul6jfveev83n0kqke7d3tyvy46fw6hvfcls6hu4nx"
 }
 ```
 
