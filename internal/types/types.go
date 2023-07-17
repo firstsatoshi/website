@@ -210,8 +210,9 @@ type CheckNamesResp struct {
 }
 
 type EstimateFeeReq struct {
-	FileUploads []FileUpload `json:"fileUploads"`
-	FeeRate     int          `json:"feeRate"`
+	FileUploads    []FileUpload `json:"fileUploads"`
+	FeeRate        int          `json:"feeRate"`
+	ReceiveAddress string       `json:"receiveAddress"`
 }
 
 type EstimateFeeResp struct {

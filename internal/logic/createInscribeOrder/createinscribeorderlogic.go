@@ -120,20 +120,10 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.COUNT_EXCEED_PER_ORDER_LIMIT_ERROR), "count is too large %v", count)
 	}
 
-	// check receiveAddress is valid P2TR address
+	// check receiveAddress
 	_, err = btcutil.DecodeAddress(req.ReceiveAddress, l.svcCtx.ChainCfg)
-	if err != nil || len(req.ReceiveAddress) != 62 {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
-	}
-	if l.svcCtx.ChainCfg.Net == wire.MainNet {
-		if !strings.HasPrefix(req.ReceiveAddress, "bc1p") {
-			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
-		}
-	} else {
-		// testnet3
-		if !strings.HasPrefix(req.ReceiveAddress, "tb1p") {
-			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
-		}
+	if err != nil {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
 	}
 
 	// TODO get mempool recommanded feerate

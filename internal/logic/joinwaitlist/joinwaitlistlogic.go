@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"net/mail"
-	"strings"
 
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/wire"
@@ -65,28 +64,10 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_EMAIL_ERROR), "invalid email")
 	}
 
-	// reference: https://unchained.com/blog/bitcoin-address-types-compared/
-	// bc1p
-	// e.g: bc1p3vs4447e5w0g828adhvpekqndtkpxmr04cj99zurxlqz50v9lz2q656na6
-	// encoding: Bech32m
-	btcAddress := req.BtcAddress
-	if len(btcAddress) != 62 {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid bitcoin p2tr address")
-	}
-	// check receiveAddress is valid P2TR address
+	// check receiveAddress
 	_, err = btcutil.DecodeAddress(req.BtcAddress, l.svcCtx.ChainCfg)
-	if err != nil || len(req.BtcAddress) != 62 {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid btcaddress %v", req.BtcAddress)
-	}
-	if l.svcCtx.ChainCfg.Net == wire.MainNet {
-		if !strings.HasPrefix(req.BtcAddress, "bc1p") {
-			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid btcaddress  %v", req.BtcAddress)
-		}
-	} else {
-		// testnet3
-		if !strings.HasPrefix(req.BtcAddress, "tb1p") {
-			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid btcaddress  %v", req.BtcAddress)
-		}
+	if err != nil {
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCADDRESS_ERROR), "invalid receive address %v", req.BtcAddress)
 	}
 
 	// check exits

@@ -9,7 +9,7 @@ func init() {
 	message[REUQEST_PARAM_ERROR] = "Invalid request parameter error, please check it"
 	message[INVALID_EMAIL_ERROR] = "Invalid email"
 	message[TOO_MANY_REQUEST_ERROR] = "Too many requests, please try it later"
-	message[INVALID_BTCP2TRADDRESS_ERROR] = "Invalid Bitcoin Taproot(P2TR) inscription receive address, it must starts with 'bc1p'"
+	message[INVALID_BTCADDRESS_ERROR] = "Invalid Bitcoin Taproot(P2TR) inscription receive address, it must starts with 'bc1p'"
 	message[FEERATE_TOO_SMALL_ERROR] = "Fee rate is not safe, too small or too large, please set a proper fee rate and try again"
 	message[COUNT_EXCEED_PER_ORDER_LIMIT_ERROR] = "Sorry mint file count exceed limit count, please reduce file count and try again"
 	message[EVENT_NOT_EXISTS_ERROR] = "event does not exists"
