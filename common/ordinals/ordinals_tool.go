@@ -263,7 +263,11 @@ func createInscriptionTxCtxData(net *chaincfg.Params, inscriptionRequest *inscri
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("commitAddress: %s, recoverKey: %s\n", commitTxAddress.String(), recoveryPrivateKeyWIF.String())
+	privateKeyWIF, err := btcutil.NewWIF(txscript.TweakTaprootPrivKey(*privateKey, tapHash[:]), net, true)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("privateKeyWIF: %v, commitAddress: %s, recoverKey: %s\n", privateKeyWIF.String(), commitTxAddress.String(), recoveryPrivateKeyWIF.String())
 
 	return &inscriptionTxCtxData{
 		privateKey:              privateKey,
@@ -406,7 +410,7 @@ func (tool *inscriptionTool) buildCommitTx(changePkScript []byte, commitTxOutPoi
 		panic("======== changePkScript is nil =============")
 	}
 
-	if tool.noChange == false{
+	if tool.noChange == false {
 		tx.AddTxOut(wire.NewTxOut(0, changePkScript))
 	}
 	fee := btcutil.Amount(mempool.GetTxVirtualSize(btcutil.NewTx(tx))) * btcutil.Amount(commitFeeRate)
@@ -626,6 +630,7 @@ func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxH
 	if err != nil {
 		panic(err)
 	}
+	logx.Infof("hexCommitRawTx: %s", hexCommitRawTx)
 	hexRevealTxHexLists, err := tool.getRevealTxHexList()
 	if err != nil {
 		panic(err)
@@ -642,7 +647,8 @@ func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxH
 		FeeSats:    fees,
 		ChangeSats: tool.changeSat,
 	}
-	for _, hexRevealTx := range hexRevealTxHexLists {
+	for i, hexRevealTx := range hexRevealTxHexLists {
+		logx.Infof("hexRevealTx[%v]: %s", i, hexRevealTx)
 		atom.Reveals = append(atom.Reveals, &BroadTx{
 			RawTx:  hexRevealTx,
 			Txid:   "",
@@ -666,7 +672,7 @@ func (tool *inscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxH
 	inscriptions = make([]string, len(tool.txCtxDataList))
 	for i := range tool.revealTx {
 		logx.Infof(" ====== Before broadcast revealTx[%v] ====", i)
-		time.Sleep(time.Second * 3)
+		time.Sleep(time.Second * 10)
 		_revealTxHash, err := tool.sendRawTransaction(tool.revealTx[i])
 		if err != nil {
 			return commitTxHash, revealTxHashList, nil, fees, atom, errors.Wrap(err, fmt.Sprintf("send reveal tx error, %d。", i))

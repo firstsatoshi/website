@@ -125,7 +125,7 @@ func (t *BtcInscribeTask) Start() {
 	go func() {
 		defer wg.Done()
 		for {
-			ticker := time.NewTicker(time.Second * 20)
+			ticker := time.NewTicker(time.Second * 60)
 			select {
 			case <-t.ctx.Done():
 				logx.Info("Gracefully exit tx monitor Task goroutine....")
@@ -135,7 +135,7 @@ func (t *BtcInscribeTask) Start() {
 				logx.Info("======= Btc txmonitor task======")
 				t.txMonitor()
 				logx.Info("======= Btc txMonitorInscribe task======")
-				time.Sleep(time.Millisecond * 333)
+				time.Sleep(time.Second *  5)
 				t.txMonitorInscribe()
 			}
 		}
@@ -759,6 +759,7 @@ func (t *BtcInscribeTask) txMonitor() {
 
 			// monitor tx status
 			logx.Infof("xxxxxxxxxxxxx==============boxId:%v, reveal txid : %v", boxId, mbx.RevealTxid.String)
+			time.Sleep(time.Second * 3)
 			tx, err := t.apiClient.GetTansaction(mbx.RevealTxid.String)
 			if err != nil {
 				logx.Errorf("GetTansaction error: %v, continue", err.Error())
