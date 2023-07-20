@@ -412,7 +412,8 @@ func (t *BtcInscribeTask) blindboxOrderMint(order *model.TbOrder) {
 					panic(fmt.Errorf("json.Marshal error: %v", err.Error()))
 				}
 
-				t.redis.Set(tmpAtomKey, string(data))
+				// fix: fuck redis autoremove!
+				t.redis.Setex(tmpAtomKey, string(data), 3600*24*365)
 			}
 		}
 
@@ -643,7 +644,8 @@ func (t *BtcInscribeTask) inscribeOrderInscribe(order *model.TbInscribeOrder) {
 					panic(fmt.Errorf("json.Marshal error: %v", err.Error()))
 				}
 
-				t.redis.Set(tmpAtomKey, string(data))
+				// fix: fuck redis autoremove!
+				t.redis.Setex(tmpAtomKey, string(data), 3600*24*365)
 			}
 		}
 
