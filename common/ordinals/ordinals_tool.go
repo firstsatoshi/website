@@ -263,7 +263,7 @@ func createInscriptionTxCtxData(net *chaincfg.Params, inscriptionRequest *inscri
 	if err != nil {
 		return nil, err
 	}
-	privateKeyWIF, err := btcutil.NewWIF(txscript.TweakTaprootPrivKey(*privateKey, tapHash[:]), net, true)
+	privateKeyWIF, err := btcutil.NewWIF(privateKey, net, true)
 	if err != nil {
 		return nil, err
 	}
