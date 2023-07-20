@@ -90,7 +90,7 @@ func (m *MempoolApiClient) BroadcastTx(tx *wire.MsgTx) (txHash *chainhash.Hash, 
 	txid := ""
 	for iTry := 0; iTry < 120; iTry++ {
 		logx.Infof(" BroadcastTx  try %v times , hexRawTx: %v", iTry, txHex)
-		sleepSecs := rand.Int()%2 + 1
+		sleepSecs := rand.Int()%10 + 1
 		time.Sleep(time.Second * time.Duration(sleepSecs))
 
 		resp, err := m.client.R().SetBody([]byte(hex.EncodeToString(buf.Bytes()))).Post(url)
@@ -133,7 +133,7 @@ func (m *MempoolApiClient) BroadcastTxHex(hexRawTx string) (txHash *chainhash.Ha
 	rand.Seed(time.Now().UnixMilli())
 	for iTry := 0; iTry < 120; iTry++ {
 		logx.Infof(" BroadcastTx  try %v times , hexRawTx : %v", iTry, hexRawTx)
-		sleepSecs := rand.Int()%2 + 1
+		sleepSecs := rand.Int()%10 + 1
 		time.Sleep(time.Second * time.Duration(sleepSecs))
 
 		resp, err := m.client.R().SetBody([]byte(hexRawTx)).Post(url)
