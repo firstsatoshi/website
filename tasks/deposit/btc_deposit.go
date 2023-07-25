@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math/rand"
+	"strings"
 	"sync"
 	"time"
 
@@ -50,6 +51,7 @@ type BtcDepositTask struct {
 	tbBlindboxEventModel     model.TbBlindboxEventModel
 
 	tbInscribeOrderModel model.TbInscribeOrderModel
+	tbInscribeDataModel  model.TbInscribeDataModel
 }
 
 func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcDepositTask {
@@ -710,6 +712,30 @@ func (t *BtcDepositTask) txMempoolInscribe() {
 
 				// ignore error
 				t.tbInscribeOrderModel.Update(t.ctx, o)
+
+				// Bitfish
+				if true {
+					builder := t.tbInscribeDataModel.RowBuilder().Where(squirrel.Eq{
+						"order_id": o.OrderId,
+					})
+					datas, _ := t.tbInscribeDataModel.FindInscribeDatas(t.ctx, builder)
+
+					prefix := "bitfish_"
+					suffix := ".html"
+					for _, d := range datas {
+						if strings.HasPrefix(d.FileName, prefix) && strings.HasSuffix(d.FileName, suffix) {
+
+							event, err := t.tbBlindboxEventModel.FindOneByEventEndpoint(t.ctx, "bitfish")
+							if err == nil {
+								event.Avail -= 1
+								if event.Avail < 0 {
+									event.Avail = 0
+								}
+								t.tbBlindboxEventModel.Update(t.ctx, event)
+							}
+						}
+					}
+				}
 			}
 		}
 	}
