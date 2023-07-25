@@ -67,6 +67,7 @@ type (
 		LockCount            int64     `db:"lock_count"`              // 锁定数量
 		MintLimit            int64     `db:"mint_limit"`              // 单个地址限购数量
 		OnlyWhitelist        int64     `db:"only_whitelist"`          // 是否只有白名单
+		CustomeMint          int64     `db:"custome_mint"`            // 是否是自定义mint的项目,类似bitfish可以自定义合成
 		StartTime            time.Time `db:"start_time"`              // 开始时间
 		EndTime              time.Time `db:"end_time"`                // 结束时间
 		CreateTime           time.Time `db:"create_time"`             // 创建时间
@@ -137,8 +138,8 @@ func (m *defaultTbBlindboxEventModel) Insert(ctx context.Context, data *TbBlindb
 	tbBlindboxEventEventEndpointKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventEventEndpointPrefix, data.EventEndpoint)
 	tbBlindboxEventIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxEventRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.EventName, data.EventEndpoint, data.EventDescription, data.Detail, data.AvatarImgUrl, data.BackgroundImgUrl, data.RoadmapDescription, data.RoadmapList, data.WebsiteUrl, data.WhitepaperUrl, data.TwitterUrl, data.DiscordUrl, data.PriceSats, data.IsActive, data.IsDisplay, data.PaymentToken, data.CurrentMintPlanIndex, data.MintPlanList, data.ImgUrlList, data.AverageImageBytes, data.Supply, data.Avail, data.LockCount, data.MintLimit, data.OnlyWhitelist, data.StartTime, data.EndTime)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, tbBlindboxEventRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.EventName, data.EventEndpoint, data.EventDescription, data.Detail, data.AvatarImgUrl, data.BackgroundImgUrl, data.RoadmapDescription, data.RoadmapList, data.WebsiteUrl, data.WhitepaperUrl, data.TwitterUrl, data.DiscordUrl, data.PriceSats, data.IsActive, data.IsDisplay, data.PaymentToken, data.CurrentMintPlanIndex, data.MintPlanList, data.ImgUrlList, data.AverageImageBytes, data.Supply, data.Avail, data.LockCount, data.MintLimit, data.OnlyWhitelist, data.CustomeMint, data.StartTime, data.EndTime)
 	}, tbBlindboxEventEventEndpointKey, tbBlindboxEventIdKey)
 	return ret, err
 }
@@ -153,7 +154,7 @@ func (m *defaultTbBlindboxEventModel) Update(ctx context.Context, newData *TbBli
 	tbBlindboxEventIdKey := fmt.Sprintf("%s%v", cacheTbBlindboxEventIdPrefix, data.Id)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbBlindboxEventRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.EventName, newData.EventEndpoint, newData.EventDescription, newData.Detail, newData.AvatarImgUrl, newData.BackgroundImgUrl, newData.RoadmapDescription, newData.RoadmapList, newData.WebsiteUrl, newData.WhitepaperUrl, newData.TwitterUrl, newData.DiscordUrl, newData.PriceSats, newData.IsActive, newData.IsDisplay, newData.PaymentToken, newData.CurrentMintPlanIndex, newData.MintPlanList, newData.ImgUrlList, newData.AverageImageBytes, newData.Supply, newData.Avail, newData.LockCount, newData.MintLimit, newData.OnlyWhitelist, newData.StartTime, newData.EndTime, newData.Id)
+		return conn.ExecCtx(ctx, query, newData.EventName, newData.EventEndpoint, newData.EventDescription, newData.Detail, newData.AvatarImgUrl, newData.BackgroundImgUrl, newData.RoadmapDescription, newData.RoadmapList, newData.WebsiteUrl, newData.WhitepaperUrl, newData.TwitterUrl, newData.DiscordUrl, newData.PriceSats, newData.IsActive, newData.IsDisplay, newData.PaymentToken, newData.CurrentMintPlanIndex, newData.MintPlanList, newData.ImgUrlList, newData.AverageImageBytes, newData.Supply, newData.Avail, newData.LockCount, newData.MintLimit, newData.OnlyWhitelist, newData.CustomeMint, newData.StartTime, newData.EndTime, newData.Id)
 	}, tbBlindboxEventEventEndpointKey, tbBlindboxEventIdKey)
 	return err
 }

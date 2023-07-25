@@ -128,6 +128,7 @@
                 "isActive": true, // 活动是否开启
                 "isDisplay": true, // 是否显示
                 "onlyWhitelist": true, // 是否仅对白名单用户开放
+                "customeMint": true, // 是否是自定义mint的项目,类似bitfish可以自定义合成
                 "startTime": 1688376539,  // 活动开始时间
                 "endTime": 1691054939 // 活动结束时间
             },
@@ -176,6 +177,7 @@
                 "isActive": true, // 活动是否开启
                 "isDisplay": true, // 是否显示
                 "onlyWhitelist": false,
+                "customeMint": true,
                 "startTime": 1688377409,
                 "endTime": 1693734209
             }
@@ -664,7 +666,7 @@
 
 
 
-## `checkPath`  Bitfish合成路径查重
+## `checkpath`  Bitfish合成路径查重
 
 - 请求方式: `POST`
 

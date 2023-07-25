@@ -63,6 +63,7 @@ CREATE TABLE `tb_blindbox_event` (
   `lock_count` int DEFAULT 0 COMMENT '锁定数量',
   `mint_limit` int DEFAULT 2 COMMENT '单个地址限购数量',
   `only_whitelist` tinyint(1) DEFAULT '0' COMMENT '是否只有白名单',
+  `custome_mint` tinyint(1) DEFAULT '0' COMMENT '是否是自定义mint的项目,类似bitfish可以自定义合成',
   `start_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '开始时间',
   `end_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '结束时间',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

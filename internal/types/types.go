@@ -107,6 +107,7 @@ type BlindboxEvent struct {
 	Active               bool       `json:"isActive"`          // 是否激活
 	Display              bool       `json:"isDisplay"`         // 是否显示
 	OnlyWhiteist         bool       `json:"onlyWhitelist"`     // 仅白名单
+	CustomMint           bool       `json:"customMint"`        // 是否是自定义mint的项目，类似bitfish可以自定义合成
 	StartTime            int64      `json:"startTime"`         // 开始时间
 	EndTime              int64      `json:"endTime"`           // 结束时间
 }

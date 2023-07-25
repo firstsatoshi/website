@@ -139,6 +139,7 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent(req *types.QueryBlindboxEve
 			Avail:                int(safeAvail),
 			Active:               event.IsActive > 0,
 			Display:              event.IsDisplay > 0,
+			CustomMint:           event.CustomeMint > 0,
 			OnlyWhiteist:         event.OnlyWhitelist > 0,
 			StartTime:            event.StartTime.Unix(),
 			EndTime:              event.EndTime.Unix(),
