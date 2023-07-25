@@ -77,10 +77,60 @@ def main3():
 
     pass
 
+
+def main4():
+    files = glob.glob('/home/yqq/下载/fff/加密咸鱼/加密咸鱼/*.png')
+    ret = []
+    retjson = {}
+    for file in files:
+        filename = os.path.basename(file)
+        filename = filename.replace('.png', '')
+
+        merge_path = ''
+        # print(filename)
+        merge_path += filename[:4]  + '_'
+
+        x = 0
+        if filename[6:7] == 'f' :
+            merge_path += filename[4:7] + '_'
+            x = 7
+        elif filename[6:8] == 'bb':
+            merge_path += filename[4:8] + '_'
+            merge_path += filename[8:11] + '_'
+            x = 11
+
+
+        while True:
+            if x >= len(filename):
+                break
+            start_index = x
+            end_index = start_index + 4
+            merge_path += filename[  start_index :  end_index] + '_'
+
+            x = end_index
+            pass
+
+        # remove the last '_'
+        merge_path = merge_path[:-1]
+        # print(merge_path)
+        ret.append(merge_path)
+        retjson[merge_path] = True
+
+    with open('merge_path.sql', 'w') as merge_path:
+        for path in ret:
+            s = f"""INSERT INTO website.tb_bitfish_merge_path (merge_path) VALUES('{path}');"""
+            merge_path.write(s + '\n')
+
+    with open('bitfish_merged_paths.json', 'w') as outfile:
+        outfile.write( json.dumps(retjson, indent=4) )
+
+    pass
+
 if __name__ == '__main__':
     # main()
     # main2()
-    main3()
+    # main3()
+    main4()
 
 
 

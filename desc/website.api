@@ -340,3 +340,21 @@ service website-api {
 	@handler estimateFee
 	post /estimatefee(estimateFeeReq) returns ( estimateFeeResp )
 }
+
+// check bitfish path
+type checkPathReq {
+	Path string `json:"path"`
+}
+
+type checkPathResp {
+	IsExists bool `json:"isExists"`
+}
+
+@server(
+	prefix: api/v1
+	group: checkPath
+)
+service website-api {
+	@handler checkPath
+	post /checkpath(checkPathReq) returns ( checkPathResp )
+}

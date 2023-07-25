@@ -218,3 +218,11 @@ type EstimateFeeReq struct {
 type EstimateFeeResp struct {
 	TotalFee int64 `json:"totalFee"`
 }
+
+type CheckPathReq struct {
+	Path string `json:"path"`
+}
+
+type CheckPathResp struct {
+	IsExists bool `json:"isExists"`
+}

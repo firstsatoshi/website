@@ -661,3 +661,37 @@
     }
 }
 ```
+
+
+
+## `checkPath`  Bitfish合成路径查重
+
+- 请求方式: `POST`
+
+- 请求参数:
+
+    | 字段 | 说明| 类型 | 可选? | 示例 |
+    |-----|------|------|----|----|
+    | `path` | 合成路径的Base64编码 | string| 必填| |
+
+
+- 请求示例:
+
+```json
+{
+    "path": "MDhial8wMWZfMDh5Zl8wOGxi"
+}
+```
+
+
+- 响应示例：
+
+```json
+{
+    "code": 0,
+    "msg": "ok",
+    "data": {
+        "isExists": true
+    }
+}
+```

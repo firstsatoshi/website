@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	checkNames "github.com/firstsatoshi/website/internal/handler/checkNames"
+	checkPath "github.com/firstsatoshi/website/internal/handler/checkPath"
 	checkwhitelist "github.com/firstsatoshi/website/internal/handler/checkwhitelist"
 	coinPrice "github.com/firstsatoshi/website/internal/handler/coinPrice"
 	createInscribeOrder "github.com/firstsatoshi/website/internal/handler/createInscribeOrder"
@@ -149,6 +150,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPost,
 				Path:    "/estimatefee",
 				Handler: estimateFee.EstimateFeeHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/checkpath",
+				Handler: checkPath.CheckPathHandler(serverCtx),
 			},
 		},
 		rest.WithPrefix("/api/v1"),

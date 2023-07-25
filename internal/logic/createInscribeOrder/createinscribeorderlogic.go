@@ -3,6 +3,7 @@ package createInscribeOrder
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"math"
@@ -103,6 +104,24 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		// as filename is varchar(100)
 		if len(v.FileName) > 90 || len(v.FileName) == 0 {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "filename too long or empty %v", v.FileName)
+		}
+
+		// BITFISH
+		prefix := "bitfish_"
+		suffix := ".html"
+		if strings.HasPrefix(v.FileName, prefix) && strings.HasSuffix(v.FileName, suffix) {
+			// parse path
+			b64Path, _ := strings.CutPrefix(v.FileName, prefix)
+			b64Path, _ = strings.CutSuffix(v.FileName, suffix)
+			mergePath, err := base64.StdEncoding.DecodeString(b64Path)
+			if err != nil {
+				return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid bitfish filename: %v", v.FileName)
+			}
+
+			_, err = l.svcCtx.TbBitfishMergePathModel.FindOneByMergePath(l.ctx, string(mergePath))
+			if err != model.ErrNotFound {
+				return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByMergePath error: %v", err.Error())
+			}
 		}
 
 		totalBytesSize += len(v.DataUrl)
@@ -224,6 +243,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 			Body:        dataURL.Data,
 			Destination: req.ReceiveAddress,
 		})
+
 	}
 	totalFee, _, err = ordinals.EstimateFee(l.svcCtx.ChainCfg, req.FeeRate, true, inscriptionRequests, int64(utxoSat))
 	if err != nil {
@@ -257,6 +277,23 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 		logx.Errorf("insert error:%v", err.Error())
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "insert error: %v", err.Error())
+	}
+
+	// BITFISH
+	for _, v := range req.FileUploads {
+		prefix := "bitfish_"
+		suffix := ".html"
+		if strings.HasPrefix(v.FileName, prefix) && strings.HasSuffix(v.FileName, suffix) {
+			// parse path
+			b64Path, _ := strings.CutPrefix(v.FileName, prefix)
+			b64Path, _ = strings.CutSuffix(v.FileName, suffix)
+			mergePath, _ := base64.StdEncoding.DecodeString(b64Path)
+
+			// insert path
+			l.svcCtx.TbBitfishMergePathModel.Insert(l.ctx, &model.TbBitfishMergePath{
+				MergePath: string(mergePath),
+			})
+		}
 	}
 
 	// update bloomFilter for deposit

@@ -25,6 +25,7 @@ type ServiceContext struct {
 	TbLockOrderBlindboxModel model.TbLockOrderBlindboxModel
 	TbInscribeOrderModel     model.TbInscribeOrderModel
 	TbInscribeDataModel      model.TbInscribeDataModel
+	TbBitfishMergePathModel  model.TbBitfishMergePathModel
 
 	// redis
 	Redis *redis.Redis
@@ -76,6 +77,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		TbLockOrderBlindboxModel: model.NewTbLockOrderBlindboxModel(sqlConn, c.CacheRedis),
 		TbInscribeOrderModel:     model.NewTbInscribeOrderModel(sqlConn, c.CacheRedis),
 		TbInscribeDataModel:      model.NewTbInscribeDataModel(sqlConn, c.CacheRedis),
+		TbBitfishMergePathModel:  model.NewTbBitfishMergePathModel(sqlConn, c.CacheRedis),
 		KeyManager:               km,
 		ChainCfg:                 &chainCfg,
 		PeriodLimit:              periodLimit,
