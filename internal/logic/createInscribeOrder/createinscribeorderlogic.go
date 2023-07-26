@@ -96,6 +96,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 	// check DataUrl https://www.rfc-editor.org/rfc/rfc2397
 	totalBytesSize := 0
+	bitfishTotalPrice := int64(0)
 	for _, v := range req.FileUploads {
 		if !strings.HasPrefix(v.DataUrl, "data:") || !strings.Contains(v.DataUrl, ";base64,") {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid dataUrl %v", v.DataUrl)
@@ -139,6 +140,9 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 					return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByEventIdBtcAddress error: %v", err.Error())
 				}
 			}
+
+			// bitfish price
+			bitfishTotalPrice += event.PriceSats
 		}
 
 		totalBytesSize += len(v.DataUrl)
@@ -271,6 +275,12 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 	logx.Infof("==========totalFee : %v", totalFee)
 	logx.Infof("==========net name: %v", l.svcCtx.ChainCfg.Name)
+
+
+	// bitfish price
+	if bitfishTotalPrice > 1000 {
+		totalFee += bitfishTotalPrice
+	}
 
 	createTime := time.Now()
 	ord := model.TbInscribeOrder{
