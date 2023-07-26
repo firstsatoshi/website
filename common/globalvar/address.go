@@ -1,11 +1,18 @@
 package globalvar
 
 var MainChangeAdddress = []string{
-	"bc1p6dgehpvxh0vrgutcgru0nqly7l926zs50q4v5xazm36n7kj0jj3slpt4ej",
-	"bc1p2a0py9ulpsfxxaprq7yaz4nqugp8lsternzhu4yg23kt8k7p24uqwsmsc8",
-	"bc1ptpw4hs4pavtt2hj6c7unakzpujdhtsdtw737sedpsrazerdyx0ys4c2c5e",
-	"bc1pwtruczq6a4gzawdcesp6cu5e40gzschkwsjr88hs7tq39pgtqrvsl7x9cv",
-	"bc1pydx4sx5na2qw0x39jnke8duh3enmqnwhuxp7hg7l94nezp4cqwpshrneqp",
+	// Mars
+	"bc1p9h37lxs8fw86trahcrzhtre6k46enuvlshkje7f86qjv6xkhjqfqp3afut",
+	"bc1pg2d5vajwu94es55u9gjys2z0ff894yrk7gc626xw4vut9kvd7mksk5q8z3",
+	"bc1pyv4yvmq06qjw6v4gaq8urjrmg7z0fvmyvvxhmr8l6vsa5mwkn8as0lstez",
+	"bc1pn8wckjghc5gz3xzeslvgnw30nzmwla26gmdhcysy39d4rupsyvtszdyaqs",
+	"bc1p578ny8yxjugmhxhfnkr9a78xyu5v8nrnh9uk9n7eueaqzhjfaq9sgujau7",
+	"bc1pmh30kr45twyampnxv09encn35dm2mdjmda7c0ua6uj6yu8cp0tyqutpq49",
+	"bc1p0e8lzhq38jrses5wfx9s3e7v3ncu6ndys0rf6p6aznqmq77p2qysuqy2xk",
+	"bc1pf87pgaddsxdnedwnfz8ktekzte264sctqm0tevmdgj3n4gph6xkq264lze",
+	"bc1pnupr9u2w3ffew33wm7zmf84x7004hj2lgf62hl2x7yln9qjcndpsme07lx",
+	"bc1p9tuggfqxwdvv5mtjyzmfq09xls8ttpjpclf32jx3crg29nz8kh7q9tshfa",
+	"bc1p7067a9xk3xxhlzj8h6wpza0f6w6dsghvk3d4p0c2tv6ux7ej9uasl5k3yx",
 }
 
 var TestnetChangeAddress = []string{
