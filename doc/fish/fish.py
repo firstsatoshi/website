@@ -126,11 +126,27 @@ def main4():
 
     pass
 
+def fac(n):
+    """ 计算阶乘 n! """
+    if n == 0 or n == 1:
+        return 1
+    return n * fac(n-1)
+
+def C(m, n):
+    """从m个元素中取n个,组合公式 C(m, n) = m! / (n! * (m - n)!)"""
+    return fac(m) / (fac(n) *fac(m - n))
+
+def calc_bitfish_total():
+    """计算bitfish总数"""
+    items = [6 , 10 , 9 , 9 , 20 , 17 , 9]
+    m = sum(items)
+    total = 0
+    for n in range(1, 8):
+        total += C(m, n)
+    print(int(total))
+
 if __name__ == '__main__':
-    # main()
-    # main2()
-    # main3()
-    main4()
+    calc_bitfish_total()
 
 
 

@@ -109,6 +109,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		// BITFISH
 		prefix := "bitfish_"
 		suffix := ".html"
+		endpoint := "bitfish"
 		if strings.HasPrefix(v.FileName, prefix) && strings.HasSuffix(v.FileName, suffix) {
 			// parse path
 			b64Path, _ := strings.CutPrefix(v.FileName, prefix)
@@ -118,9 +119,25 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 				return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid bitfish filename: %v", v.FileName)
 			}
 
+			// checkpath
 			_, err = l.svcCtx.TbBitfishMergePathModel.FindOneByMergePath(l.ctx, string(mergePath))
 			if err != model.ErrNotFound {
 				return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByMergePath error: %v", err.Error())
+			}
+
+			// checkwhitelist
+			event, err := l.svcCtx.TbBlindboxEventModel.FindOneByEventEndpoint(l.ctx, endpoint)
+			if err != nil {
+				return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByEventEndpoint error: %v", err.Error())
+			}
+			if event.OnlyWhitelist > 0 {
+				_, err = l.svcCtx.TbWaitlistModel.FindOneByEventIdBtcAddress(l.ctx, event.Id, req.ReceiveAddress)
+				if err != nil {
+					if err == model.ErrNotFound {
+						return nil, errors.Wrapf(xerr.NewErrCode(xerr.ONLY_WHITELIST_ERROR), "FindOneByEventIdBtcAddress error: %v", err.Error())
+					}
+					return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByEventIdBtcAddress error: %v", err.Error())
+				}
 			}
 		}
 
