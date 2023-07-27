@@ -90,6 +90,7 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 
 	// if not exits
 	sqlRet, err := l.svcCtx.TbWaitlistModel.Insert(l.ctx, &model.TbWaitlist{
+		EventId:    int64(req.EventId),
 		Email:      req.Email,
 		BtcAddress: req.BtcAddress,
 		RefereeId:  uniqueid.GetIdByReferalCode(referalCode),

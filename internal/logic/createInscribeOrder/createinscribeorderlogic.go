@@ -97,6 +97,8 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	// check DataUrl https://www.rfc-editor.org/rfc/rfc2397
 	totalBytesSize := 0
 	bitfishTotalPrice := int64(0)
+	bitfishFilesCount := 0
+	bitfishMintLimit := 0
 	for _, v := range req.FileUploads {
 		if !strings.HasPrefix(v.DataUrl, "data:") || !strings.Contains(v.DataUrl, ";base64,") {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid dataUrl %v", v.DataUrl)
@@ -114,7 +116,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		if strings.HasPrefix(v.FileName, prefix) && strings.HasSuffix(v.FileName, suffix) {
 			// parse path
 			b64Path, _ := strings.CutPrefix(v.FileName, prefix)
-			b64Path, _ = strings.CutSuffix(v.FileName, suffix)
+			b64Path, _ = strings.CutSuffix(b64Path, suffix)
 			mergePath, err := base64.StdEncoding.DecodeString(b64Path)
 			if err != nil {
 				return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid bitfish filename: %v", v.FileName)
@@ -140,6 +142,8 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 					return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByEventIdBtcAddress error: %v", err.Error())
 				}
 			}
+			bitfishFilesCount += 1
+			bitfishMintLimit = int(event.MintLimit)
 
 			// bitfish price
 			bitfishTotalPrice += event.PriceSats
@@ -147,6 +151,26 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 		totalBytesSize += len(v.DataUrl)
 	}
+
+	// bitfish
+	if true {
+		// each address can't mint over mint limit
+		tmpBuilder := l.svcCtx.TbInscribeOrderModel.SumBuilder("`count`").Where(
+			"receive_address=?", req.ReceiveAddress,
+		)
+		tmpBuilder = tmpBuilder.Where("(order_status=? OR order_status=? OR order_status=? OR order_status=? OR order_status=?)",
+			"NOTPAID", "PAYPENDING", "PAYSUCCESS", "MINTING", "ALLSUCCESS")
+		mintCountSum, err := l.svcCtx.TbInscribeOrderModel.FindSum(l.ctx, tmpBuilder)
+		if err != nil {
+			logx.Errorf("FindSum error:%v", err.Error())
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindCount error: %v", err.Error())
+		}
+		logx.Infof("=== bitfishMintLimit: %v,  bitfishFilesCount: %v, mintCountSum: %v", bitfishMintLimit, bitfishFilesCount, mintCountSum)
+		if bitfishFilesCount+int(mintCountSum) > bitfishMintLimit {
+			return nil, errors.Wrapf(xerr.NewErrCode(xerr.EXCEED_MINT_LIMIT_ERROR), "address exceed mint limit %v", bitfishMintLimit)
+		}
+	}
+
 	// max limit size  1MB
 	if totalBytesSize > 1_000_001 {
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "total bytes size too large %v", totalBytesSize)
@@ -276,7 +300,6 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	logx.Infof("==========totalFee : %v", totalFee)
 	logx.Infof("==========net name: %v", l.svcCtx.ChainCfg.Name)
 
-
 	// bitfish price
 	if bitfishTotalPrice > 1000 {
 		totalFee += bitfishTotalPrice
@@ -313,7 +336,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		if strings.HasPrefix(v.FileName, prefix) && strings.HasSuffix(v.FileName, suffix) {
 			// parse path
 			b64Path, _ := strings.CutPrefix(v.FileName, prefix)
-			b64Path, _ = strings.CutSuffix(v.FileName, suffix)
+			b64Path, _ = strings.CutSuffix(b64Path, suffix)
 			mergePath, _ := base64.StdEncoding.DecodeString(b64Path)
 
 			// insert path
