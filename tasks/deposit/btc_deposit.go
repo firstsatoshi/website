@@ -86,6 +86,7 @@ func NewBtcDepositTask(apiHost string, config *config.Config, chainCfg *chaincfg
 		tbOrderModel:             model.NewTbOrderModel(sqlConn, config.CacheRedis),
 		tbLockOrderBlindboxModel: model.NewTbLockOrderBlindboxModel(sqlConn, config.CacheRedis),
 		tbBlindboxEventModel:     model.NewTbBlindboxEventModel(sqlConn, config.CacheRedis),
+		tbInscribeDataModel:      model.NewTbInscribeDataModel(sqlConn, config.CacheRedis),
 
 		tbInscribeOrderModel: model.NewTbInscribeOrderModel(sqlConn, config.CacheRedis),
 	}
@@ -649,7 +650,7 @@ func (t *BtcDepositTask) txMempoolInscribe() {
 	}).Where(squirrel.Gt{
 		"create_time": time.Unix(now.Unix()-60*60, 0),
 	}).Where(squirrel.Lt{
-		"create_time": time.Unix(now.Unix()-10, 0),
+		"create_time": time.Unix(now.Unix()-5, 0),
 	}).Limit(1000).OrderBy("id DESC")
 
 	orders, err := t.tbInscribeOrderModel.FindOrders(t.ctx, query)
@@ -658,9 +659,10 @@ func (t *BtcDepositTask) txMempoolInscribe() {
 		return
 	}
 	if len(orders) == 0 {
-		logx.Infof("==no order need to monitor txmempool==")
+		logx.Infof("==no order need to monitor txMempoolInscribe==")
 		return
 	}
+	logx.Infof("txMempoolInscribe orders size is %v", len(orders))
 
 	// get all of address utxo by listunspent
 	for _, order := range orders {
@@ -679,6 +681,7 @@ func (t *BtcDepositTask) txMempoolInscribe() {
 		}
 
 		if len(utxos) == 0 {
+			logx.Infof("xxxxxxxxxxxxxx %v  empty utxo", order.DepositAddress)
 			continue
 		}
 
