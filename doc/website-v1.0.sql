@@ -7,6 +7,7 @@ CREATE TABLE `tb_waitlist` (
   `event_id` bigint NOT NULL COMMENT '活动id',
   `email` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '邮箱',
   `btc_address` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'BTC的P2TR格式地址',
+  `mint_limit` int DEFAULT '1' COMMENT 'mint limit',
   `referee_id` bigint DEFAULT '0' COMMENT '邀请人id',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',

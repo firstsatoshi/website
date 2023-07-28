@@ -134,16 +134,18 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 				return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByEventEndpoint error: %v", err.Error())
 			}
 			if event.OnlyWhitelist > 0 {
-				_, err = l.svcCtx.TbWaitlistModel.FindOneByEventIdBtcAddress(l.ctx, event.Id, req.ReceiveAddress)
+				whitelist, err := l.svcCtx.TbWaitlistModel.FindOneByEventIdBtcAddress(l.ctx, event.Id, req.ReceiveAddress)
 				if err != nil {
 					if err == model.ErrNotFound {
 						return nil, errors.Wrapf(xerr.NewErrCode(xerr.ONLY_WHITELIST_ERROR), "FindOneByEventIdBtcAddress error: %v", err.Error())
 					}
 					return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByEventIdBtcAddress error: %v", err.Error())
 				}
+
+				// bitfish: how many fishes you stake, how many fishes you could mint
+				bitfishMintLimit = int(whitelist.MintLimit)
 			}
 			bitfishFilesCount += 1
-			bitfishMintLimit = int(event.MintLimit)
 
 			// bitfish price
 			bitfishTotalPrice += event.PriceSats

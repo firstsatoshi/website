@@ -47,6 +47,7 @@ type (
 		EventId    int64     `db:"event_id"`    // 活动id
 		Email      string    `db:"email"`       // 邮箱
 		BtcAddress string    `db:"btc_address"` // BTC的P2TR格式地址
+		MintLimit  int64     `db:"mint_limit"`  // mint limit
 		RefereeId  int64     `db:"referee_id"`  // 邀请人id
 		CreateTime time.Time `db:"create_time"` // 创建时间
 		UpdateTime time.Time `db:"update_time"` // 最后更新时间
@@ -138,8 +139,8 @@ func (m *defaultTbWaitlistModel) Insert(ctx context.Context, data *TbWaitlist) (
 	tbWaitlistEventIdEmailKey := fmt.Sprintf("%s%v:%v", cacheTbWaitlistEventIdEmailPrefix, data.EventId, data.Email)
 	tbWaitlistIdKey := fmt.Sprintf("%s%v", cacheTbWaitlistIdPrefix, data.Id)
 	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?)", m.table, tbWaitlistRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.EventId, data.Email, data.BtcAddress, data.RefereeId)
+		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?)", m.table, tbWaitlistRowsExpectAutoSet)
+		return conn.ExecCtx(ctx, query, data.EventId, data.Email, data.BtcAddress, data.MintLimit, data.RefereeId)
 	}, tbWaitlistEventIdBtcAddressKey, tbWaitlistEventIdEmailKey, tbWaitlistIdKey)
 	return ret, err
 }
@@ -155,7 +156,7 @@ func (m *defaultTbWaitlistModel) Update(ctx context.Context, newData *TbWaitlist
 	tbWaitlistIdKey := fmt.Sprintf("%s%v", cacheTbWaitlistIdPrefix, data.Id)
 	_, err = m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, tbWaitlistRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, newData.EventId, newData.Email, newData.BtcAddress, newData.RefereeId, newData.Id)
+		return conn.ExecCtx(ctx, query, newData.EventId, newData.Email, newData.BtcAddress, newData.MintLimit, newData.RefereeId, newData.Id)
 	}, tbWaitlistEventIdBtcAddressKey, tbWaitlistEventIdEmailKey, tbWaitlistIdKey)
 	return err
 }
