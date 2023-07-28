@@ -17,7 +17,7 @@ import (
 
 func VeifyToken(ctx context.Context, token string, rds *redis.Redis) (bool, error) {
 
-	SECRET_KEY := "0x4AAAAAAAHMyJAyJ_Qj95myYbk9c4vL-wQ"
+	SECRET_KEY := "0x4AAAAAAAH-ZW3Jlhg3CpTuXoXnV5fPk4Y"
 
 	if len(token) < 10 {
 		return false, fmt.Errorf("invalid token")
