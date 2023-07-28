@@ -305,7 +305,6 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	if err != nil {
 		logx.Errorf("EstimateFee error %v", err.Error())
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "EstimateFee error %v", err.Error())
-
 	}
 
 	logx.Infof("==========totalFee : %v", totalFee)
@@ -314,6 +313,8 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	// bitfish price
 	if bitfishTotalPrice > 1000 {
 		totalFee += bitfishTotalPrice
+
+		totalFee = int64(1000 * math.Ceil(float64(totalFee)/1000))
 	}
 
 	createTime := time.Now()
