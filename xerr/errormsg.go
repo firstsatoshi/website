@@ -21,7 +21,8 @@ func init() {
 	message[TOO_LARGE_DATA_ERROR] = "inscribe data total size exceed limit size. please reduce data size and try again."
 	message[INVALID_NAME_TYPE_ERROR] = "invalid name type error."
 	message[INVALID_NAME_ERROR] = "invalid name error."
-	message[BITFISH_HAS_BEEN_BORN_ERROR] = "Sorry, this bitfish you are customizing has been mint by some guys, please change your selected items and try again."
+	message[BITFISH_HAS_BEEN_BORN_ERROR] = "Sorry, this fish is duplicated with existed fishes, please change fish's elements and try again."
+
 	message[DB_ERROR] = "system error"
 }
 

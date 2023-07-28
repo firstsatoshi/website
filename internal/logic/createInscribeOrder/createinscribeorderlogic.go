@@ -109,17 +109,17 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "filename too long or empty %v", v.FileName)
 		}
 
-		// BITFISH
-		prefix := "bitfish_"
+		// bitcoinfish
+		prefix := "bitcoinfish_"
 		suffix := ".html"
-		endpoint := "bitfish"
+		endpoint := "bitcoinfish"
 		if strings.HasPrefix(v.FileName, prefix) && strings.HasSuffix(v.FileName, suffix) {
 			// parse path
 			b64Path, _ := strings.CutPrefix(v.FileName, prefix)
 			b64Path, _ = strings.CutSuffix(b64Path, suffix)
 			mergePath, err := base64.StdEncoding.DecodeString(b64Path)
 			if err != nil {
-				return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid bitfish filename: %v", v.FileName)
+				return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid bitcoinfish filename: %v", v.FileName)
 			}
 
 			// checkpath
@@ -152,7 +152,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		totalBytesSize += len(v.DataUrl)
 	}
 
-	// bitfish
+	// bitcoinfish
 	if true {
 		// each address can't mint over mint limit
 		tmpBuilder := l.svcCtx.TbInscribeOrderModel.SumBuilder("`count`").Where(
@@ -329,9 +329,9 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "insert error: %v", err.Error())
 	}
 
-	// BITFISH
+	// bitcoinfish
 	for _, v := range req.FileUploads {
-		prefix := "bitfish_"
+		prefix := "bitcoinfish_"
 		suffix := ".html"
 		if strings.HasPrefix(v.FileName, prefix) && strings.HasSuffix(v.FileName, suffix) {
 			// parse path

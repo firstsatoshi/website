@@ -716,19 +716,19 @@ func (t *BtcDepositTask) txMempoolInscribe() {
 				// ignore error
 				t.tbInscribeOrderModel.Update(t.ctx, o)
 
-				// Bitfish
+				// bitcoinfish
 				if true {
 					builder := t.tbInscribeDataModel.RowBuilder().Where(squirrel.Eq{
 						"order_id": o.OrderId,
 					})
 					datas, _ := t.tbInscribeDataModel.FindInscribeDatas(t.ctx, builder)
 
-					prefix := "bitfish_"
+					prefix := "bitcoinfish_"
 					suffix := ".html"
 					for _, d := range datas {
 						if strings.HasPrefix(d.FileName, prefix) && strings.HasSuffix(d.FileName, suffix) {
 
-							event, err := t.tbBlindboxEventModel.FindOneByEventEndpoint(t.ctx, "bitfish")
+							event, err := t.tbBlindboxEventModel.FindOneByEventEndpoint(t.ctx, "bitcoinfish")
 							if err == nil {
 								event.Avail -= 1
 								if event.Avail < 0 {

@@ -32,7 +32,7 @@ func (l *CheckPathLogic) CheckPath(req *types.CheckPathReq) (*types.CheckPathRes
 	// parse path
 	mergePath, err := base64.StdEncoding.DecodeString(req.Path)
 	if err != nil {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid bitfish path: %v", mergePath)
+		return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid bitcoinfish path: %v", mergePath)
 	}
 
 	_, err = l.svcCtx.TbBitfishMergePathModel.FindOneByMergePath(l.ctx, string(mergePath))
