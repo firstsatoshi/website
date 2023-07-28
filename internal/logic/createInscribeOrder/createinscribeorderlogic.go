@@ -165,6 +165,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		// each address can't mint over mint limit
 		tmpBuilder := l.svcCtx.TbInscribeOrderModel.SumBuilder("`count`").Where(
 			"receive_address=?", req.ReceiveAddress,
+		).Where(
 			"version=?", BITCOIN_FISH_MAGIC_NUMBER,
 		)
 		tmpBuilder = tmpBuilder.Where("(order_status=? OR order_status=? OR order_status=? OR order_status=? OR order_status=?)",
