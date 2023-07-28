@@ -95,6 +95,9 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	count := len(req.FileUploads)
 
 	// check DataUrl https://www.rfc-editor.org/rfc/rfc2397
+	BITCOIN_FISH_MAGIC_NUMBER := 137   // tb_inscribe_order   version   for bitcoinfish
+	versionNumber := 0
+
 	totalBytesSize := 0
 	bitfishTotalPrice := int64(0)
 	bitfishFilesCount := 0
@@ -149,6 +152,9 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 
 			// bitfish price
 			bitfishTotalPrice += event.PriceSats
+
+			// magic number for flag bitcoinfish order
+			versionNumber = BITCOIN_FISH_MAGIC_NUMBER
 		}
 
 		totalBytesSize += len(v.DataUrl)
@@ -159,6 +165,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		// each address can't mint over mint limit
 		tmpBuilder := l.svcCtx.TbInscribeOrderModel.SumBuilder("`count`").Where(
 			"receive_address=?", req.ReceiveAddress,
+			"version=?", BITCOIN_FISH_MAGIC_NUMBER,
 		)
 		tmpBuilder = tmpBuilder.Where("(order_status=? OR order_status=? OR order_status=? OR order_status=? OR order_status=?)",
 			"NOTPAID", "PAYPENDING", "PAYSUCCESS", "MINTING", "ALLSUCCESS")
@@ -167,6 +174,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 			logx.Errorf("FindSum error:%v", err.Error())
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindCount error: %v", err.Error())
 		}
+
 		logx.Infof("=== bitfishMintLimit: %v,  bitfishFilesCount: %v, mintCountSum: %v", bitfishMintLimit, bitfishFilesCount, mintCountSum)
 		if bitfishFilesCount+int(mintCountSum) > bitfishMintLimit {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.EXCEED_MINT_LIMIT_ERROR), "address exceed mint limit %v", bitfishMintLimit)
@@ -319,7 +327,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		ServiceFeeSat:  0,
 		TotalAmountSat: totalFee,
 		OrderStatus:    "NOTPAID",
-		Version:        0,
+		Version:        int64(versionNumber), // magic number for bitcoinfish order
 		CreateTime:     createTime,
 	}
 	_, err = l.svcCtx.TbInscribeOrderModel.Insert(l.ctx, &ord)
