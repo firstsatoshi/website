@@ -94,6 +94,7 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 		Email:      req.Email,
 		BtcAddress: req.BtcAddress,
 		RefereeId:  uniqueid.GetIdByReferalCode(referalCode),
+		MintLimit:  0, // NOTE: no
 	})
 	if err != nil {
 		logx.Errorf("insert database error: %v", err.Error())
