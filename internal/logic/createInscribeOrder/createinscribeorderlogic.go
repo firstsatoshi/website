@@ -95,7 +95,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	count := len(req.FileUploads)
 
 	// check DataUrl https://www.rfc-editor.org/rfc/rfc2397
-	BITCOIN_FISH_MAGIC_NUMBER := 137   // tb_inscribe_order   version   for bitcoinfish
+	// BITCOIN_FISH_MAGIC_NUMBER := 137   // tb_inscribe_order   version   for bitcoinfish
 	versionNumber := 0
 
 	totalBytesSize := 0
@@ -154,7 +154,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 			bitfishTotalPrice += event.PriceSats
 
 			// magic number for flag bitcoinfish order
-			versionNumber = BITCOIN_FISH_MAGIC_NUMBER
+			versionNumber = globalvar.BITCOIN_FISH_MAGIC_NUMBER
 		}
 
 		totalBytesSize += len(v.DataUrl)
@@ -166,7 +166,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 		tmpBuilder := l.svcCtx.TbInscribeOrderModel.SumBuilder("`count`").Where(
 			"receive_address=?", req.ReceiveAddress,
 		).Where(
-			"version=?", BITCOIN_FISH_MAGIC_NUMBER,
+			"version=?", globalvar.BITCOIN_FISH_MAGIC_NUMBER,
 		)
 		tmpBuilder = tmpBuilder.Where("(order_status=? OR order_status=? OR order_status=? OR order_status=? OR order_status=?)",
 			"NOTPAID", "PAYPENDING", "PAYSUCCESS", "MINTING", "ALLSUCCESS")

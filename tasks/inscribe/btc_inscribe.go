@@ -2,11 +2,13 @@ package inscribe
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -52,8 +54,9 @@ type BtcInscribeTask struct {
 	tbBlindboxModel            model.TbBlindboxModel
 	tbTbLockOrderBlindboxModel model.TbLockOrderBlindboxModel
 
-	tbInscribeOrderModel model.TbInscribeOrderModel
-	tbInscribeDataModel  model.TbInscribeDataModel
+	tbInscribeOrderModel    model.TbInscribeOrderModel
+	tbInscribeDataModel     model.TbInscribeDataModel
+	tbBitfishMergePathModel model.TbBitfishMergePathModel
 }
 
 func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincfg.Params) *BtcInscribeTask {
@@ -97,6 +100,7 @@ func NewBtcInscribeTask(apiHost string, config *config.Config, chainCfg *chaincf
 		tbTbLockOrderBlindboxModel: model.NewTbLockOrderBlindboxModel(sqlConn, config.CacheRedis),
 		tbInscribeOrderModel:       model.NewTbInscribeOrderModel(sqlConn, config.CacheRedis),
 		tbInscribeDataModel:        model.NewTbInscribeDataModel(sqlConn, config.CacheRedis),
+		tbBitfishMergePathModel:    model.NewTbBitfishMergePathModel(sqlConn, config.CacheRedis),
 	}
 }
 
@@ -135,7 +139,7 @@ func (t *BtcInscribeTask) Start() {
 				logx.Info("======= Btc txmonitor task======")
 				t.txMonitor()
 				logx.Info("======= Btc txMonitorInscribe task======")
-				time.Sleep(time.Second *  5)
+				time.Sleep(time.Second * 5)
 				t.txMonitorInscribe()
 			}
 		}
@@ -944,6 +948,38 @@ func (t *BtcInscribeTask) inscribeOrderTimeout() {
 		if err != nil {
 			logx.Errorf("Update error: %v", err.Error())
 			continue
+		}
+
+		// bitcoinfish
+		if true {
+			prefix := "bitcoinfish_"
+			suffix := ".html"
+			// get inscribeDatas by order
+			q := t.tbInscribeDataModel.RowBuilder().Where(squirrel.Eq{
+				"order_id": order.OrderId,
+			})
+
+			datas, err := t.tbInscribeDataModel.FindInscribeDatas(t.ctx, q)
+			if err != nil {
+				logx.Errorf("FindAll error: %v", err.Error())
+				return
+			}
+
+			for _, d := range datas {
+				if strings.HasPrefix(d.FileName, prefix) && strings.HasSuffix(d.FileName, suffix) {
+					// parse path
+					b64Path, _ := strings.CutPrefix(d.FileName, prefix)
+					b64Path, _ = strings.CutSuffix(b64Path, suffix)
+					mergePath, _ := base64.StdEncoding.DecodeString(b64Path)
+
+					path, err := t.tbBitfishMergePathModel.FindOneByMergePath(t.ctx, string(mergePath))
+					if err != nil {
+						continue
+					}
+					t.tbBitfishMergePathModel.Delete(t.ctx, path.Id)
+					logx.Infof("delete mergepath ok: %v", mergePath)
+				}
+			}
 		}
 
 	}
