@@ -79,7 +79,7 @@ func (l *QueryAddressLogic) QueryAddress(req *types.QueryAddressReq) (*types.Que
 	resp.EventMintLimit = int(event.MintLimit)
 
 	// bitcoinfish
-	if true {
+	if  event.EventEndpoint == "bitcoinfish" {
 		resp.EventMintLimit = int(whiteAddress.MintLimit)
 
 		// current mint fishes count

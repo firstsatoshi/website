@@ -3,6 +3,7 @@ package queryOrder
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/firstsatoshi/website/internal/svc"
@@ -86,6 +87,13 @@ func (l *QueryOrderLogic) QueryOrder(req *types.QueryOrderReq) (resp []types.Ord
 				// !for safety , don't show deposit address for paypending/finished status order
 				depositAddress = ""
 			} else if o.OrderStatus == "NOTPAID" {
+
+				// !for safety
+				now := time.Now().Unix()
+				if now - o.CreateTime.Unix() > 110 * 60 {
+					depositAddress = ""
+					o.OrderStatus = "PAYTIMEOUT"
+				}
 			}
 
 			nftDetails := make([]types.NftDetail, 0)

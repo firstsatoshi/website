@@ -372,7 +372,7 @@ func (t *BtcDepositTask) scanBlock() {
 				order.PayTxid = sql.NullString{Valid: true, String: txid}
 				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
 				order.PayConfirmedTime = sql.NullTime{Valid: true, Time: time.Now()}
-				order.Version += 1
+				// order.Version += 1
 				if err := t.tbInscribeOrderModel.Update(t.ctx, order); err != nil {
 					logx.Errorf("Update: %v", err.Error())
 					return
@@ -499,7 +499,7 @@ func (t *BtcDepositTask) scanBlock() {
 				order.PayTime = sql.NullTime{Valid: true, Time: time.Now()}
 				order.OrderStatus = "PAYSUCCESS"
 				order.PayConfirmedTime = sql.NullTime{Valid: true, Time: time.Now()}
-				order.Version += 1
+				// order.Version += 1
 				if err := t.tbOrderModel.Update(t.ctx, order); err != nil {
 					logx.Errorf("Update: %v", err.Error())
 					return
@@ -643,12 +643,12 @@ func (t *BtcDepositTask) txMempool() {
 
 // txMempool to monitor bitcion mempool transaction and update inscribeOrder status
 func (t *BtcDepositTask) txMempoolInscribe() {
-	// load all of 0~30 minutes order , order by create time asc
+	// load all of 0~90 minutes order , order by create time asc
 	now := time.Now()
 	query := t.tbInscribeOrderModel.RowBuilder().Where(squirrel.Eq{
 		"order_status": "NOTPAID",
 	}).Where(squirrel.Gt{
-		"create_time": time.Unix(now.Unix()-60*60, 0),
+		"create_time": time.Unix(now.Unix()-90*60, 0),
 	}).Where(squirrel.Lt{
 		"create_time": time.Unix(now.Unix()-5, 0),
 	}).Limit(1000).OrderBy("id DESC")
