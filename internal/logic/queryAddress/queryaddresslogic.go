@@ -3,7 +3,6 @@ package queryAddress
 import (
 	"context"
 
-	"github.com/btcsuite/btcd/btcutil"
 	"github.com/firstsatoshi/website/common/globalvar"
 	"github.com/firstsatoshi/website/internal/svc"
 	"github.com/firstsatoshi/website/internal/types"
@@ -33,10 +32,10 @@ func (l *QueryAddressLogic) QueryAddress(req *types.QueryAddressReq) (*types.Que
 	resp := types.QueryAddressResp{}
 
 	// check receiveAddress
-	_, err := btcutil.DecodeAddress(req.ReceiveAddress, l.svcCtx.ChainCfg)
-	if err != nil {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
-	}
+	// _, err := btcutil.DecodeAddress(req.ReceiveAddress, l.svcCtx.ChainCfg)
+	// if err != nil {
+	// 	return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCADDRESS_ERROR), "invalid receive address %v", req.ReceiveAddress)
+	// }
 
 	// check whitelist
 	whiteAddress, err := l.svcCtx.TbWaitlistModel.FindOneByEventIdBtcAddress(l.ctx, int64(req.EventId), req.ReceiveAddress)
@@ -77,30 +76,34 @@ func (l *QueryAddressLogic) QueryAddress(req *types.QueryAddressReq) (*types.Que
 	resp.CurrentOrdersTotal = int(total)
 	resp.EventId = int(event.Id)
 	resp.EventMintLimit = int(event.MintLimit)
+	logx.Infof("xxxxxx total: %v", total)
 
 	// bitcoinfish
-	if  event.EventEndpoint == "bitcoinfish" {
-		resp.EventMintLimit = int(whiteAddress.MintLimit)
+	if event.EventEndpoint == "bitcoinfish" {
+		if whiteAddress == nil {
+			resp.EventMintLimit = 0
+			resp.CurrentOrdersTotal = 0
+		} else {
+			// current mint fishes count
+			if true {
+				// each address can't mint over mint limit
+				tmpBuilder := l.svcCtx.TbInscribeOrderModel.SumBuilder("`count`").Where(
+					"receive_address=?", req.ReceiveAddress,
+				).Where(
+					"version=?", globalvar.BITCOIN_FISH_MAGIC_NUMBER,
+				)
+				tmpBuilder = tmpBuilder.Where("(order_status=? OR order_status=? OR order_status=? OR order_status=? OR order_status=?)",
+					"NOTPAID", "PAYPENDING", "PAYSUCCESS", "MINTING", "ALLSUCCESS")
+				mintCountSum, err := l.svcCtx.TbInscribeOrderModel.FindSum(l.ctx, tmpBuilder)
+				if err != nil {
+					logx.Errorf("FindSum error:%v", err.Error())
+					return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindCount error: %v", err.Error())
+				}
 
-		// current mint fishes count
-		if true {
-			// each address can't mint over mint limit
-			tmpBuilder := l.svcCtx.TbInscribeOrderModel.SumBuilder("`count`").Where(
-				"receive_address=?", req.ReceiveAddress,
-			).Where(
-				"version=?", globalvar.BITCOIN_FISH_MAGIC_NUMBER,
-			)
-			tmpBuilder = tmpBuilder.Where("(order_status=? OR order_status=? OR order_status=? OR order_status=? OR order_status=?)",
-				"NOTPAID", "PAYPENDING", "PAYSUCCESS", "MINTING", "ALLSUCCESS")
-			mintCountSum, err := l.svcCtx.TbInscribeOrderModel.FindSum(l.ctx, tmpBuilder)
-			if err != nil {
-				logx.Errorf("FindSum error:%v", err.Error())
-				return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindCount error: %v", err.Error())
+				logx.Infof("=== mintCountSum: %v", mintCountSum)
+
+				resp.CurrentOrdersTotal = int(mintCountSum)
 			}
-
-			logx.Infof("=== mintCountSum: %v", mintCountSum)
-
-			resp.CurrentOrdersTotal = int(mintCountSum)
 		}
 	}
 
