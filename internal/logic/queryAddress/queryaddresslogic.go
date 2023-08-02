@@ -86,6 +86,8 @@ func (l *QueryAddressLogic) QueryAddress(req *types.QueryAddressReq) (*types.Que
 		} else {
 			// current mint fishes count
 			if true {
+				resp.EventMintLimit = int(whiteAddress.MintLimit)
+
 				// each address can't mint over mint limit
 				tmpBuilder := l.svcCtx.TbInscribeOrderModel.SumBuilder("`count`").Where(
 					"receive_address=?", req.ReceiveAddress,
