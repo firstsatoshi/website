@@ -22,6 +22,7 @@ func init() {
 	message[INVALID_NAME_TYPE_ERROR] = "invalid name type error."
 	message[INVALID_NAME_ERROR] = "invalid name error."
 	message[BITFISH_HAS_BEEN_BORN_ERROR] = "Sorry, this fish is duplicated with existed fishes, please change fish's elements and try again."
+	message[DUPLICATED_BITFISH_IN_ONE_ORDER_ERROR] = "Sorry, there are duplicated fishes in this order, please your order and try again."
 
 	message[DB_ERROR] = "system error"
 }

@@ -102,6 +102,7 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 	bitfishTotalPrice := int64(0)
 	bitfishFilesCount := 0
 	bitfishMintLimit := 0
+	currentBitcoinFishMergePath := make(map[string]int, 0) // check duplicate path in this order
 	for _, v := range req.FileUploads {
 		if !strings.HasPrefix(v.DataUrl, "data:") || !strings.Contains(v.DataUrl, ";base64,") {
 			return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid dataUrl %v", v.DataUrl)
@@ -125,10 +126,18 @@ func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribe
 				return nil, errors.Wrapf(xerr.NewErrCode(xerr.REUQEST_PARAM_ERROR), "invalid bitcoinfish filename: %v", v.FileName)
 			}
 
+			// check duplicated path in this order
+			if _, exists := currentBitcoinFishMergePath[string(mergePath)]; exists {
+				return nil, errors.Wrapf(xerr.NewErrCode(xerr.DUPLICATED_BITFISH_IN_ONE_ORDER_ERROR), "FindOneByMergePath error: %v", err.Error())
+			}
+
+			// cache mergePath
+			currentBitcoinFishMergePath[string(mergePath)] = 1
+
 			// checkpath
 			_, err = l.svcCtx.TbBitfishMergePathModel.FindOneByMergePath(l.ctx, string(mergePath))
 			if err != model.ErrNotFound {
-				return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindOneByMergePath error: %v", err.Error())
+				return nil, errors.Wrapf(xerr.NewErrCode(xerr.BITFISH_HAS_BEEN_BORN_ERROR), "FindOneByMergePath error: %v", err.Error())
 			}
 
 			// checkwhitelist
