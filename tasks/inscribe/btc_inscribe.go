@@ -807,9 +807,7 @@ func (t *BtcInscribeTask) txMonitor() {
 // txMonitor monitor tx and update order and blindbox status
 func (t *BtcInscribeTask) txMonitorInscribe() {
 
-	queryOrdersSql := t.tbInscribeOrderModel.RowBuilder().Where(squirrel.Eq{
-		"order_status": "MINTING",
-	})
+	queryOrdersSql := t.tbInscribeOrderModel.RowBuilder().Where("order_status=? OR order_status=?", "MINTING", "PAYSUCCESS")
 	mintingInscribeOrders, err := t.tbInscribeOrderModel.FindOrders(t.ctx, queryOrdersSql)
 	if err != nil {
 		logx.Errorf("FindOrders error: %v", err.Error())
