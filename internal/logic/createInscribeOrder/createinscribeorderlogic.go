@@ -16,7 +16,6 @@ import (
 	"github.com/btcsuite/btcd/wire"
 	"github.com/firstsatoshi/website/common/globalvar"
 	"github.com/firstsatoshi/website/common/ordinals"
-	"github.com/firstsatoshi/website/common/turnslite"
 	"github.com/firstsatoshi/website/common/uniqueid"
 	"github.com/firstsatoshi/website/internal/svc"
 	"github.com/firstsatoshi/website/internal/types"
@@ -72,14 +71,14 @@ func calcFee(utxoSat, imgBytes, count, feeRate float64) int64 {
 
 func (l *CreateInscribeOrderLogic) CreateInscribeOrder(req *types.CreateInscribeOrderReq) (resp *types.CreateInscribeOrderResp, err error) {
 	// verify cloudflare Turnstile token
-	ok, err := turnslite.VeifyToken(l.ctx, req.Token, l.svcCtx.Redis)
-	if !ok || err != nil {
-		if l.svcCtx.ChainCfg.Net == wire.TestNet3 {
-			logx.Infof("============testnet skip token verify==============")
-		} else {
-			return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_TOKEN_ERROR), "token: %v not exists", req.Token)
-		}
-	}
+	// ok, err := turnslite.VeifyToken(l.ctx, req.Token, l.svcCtx.Redis)
+	// if !ok || err != nil {
+	// 	if l.svcCtx.ChainCfg.Net == wire.TestNet3 {
+	// 		logx.Infof("============testnet skip token verify==============")
+	// 	} else {
+	// 		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_TOKEN_ERROR), "token: %v not exists", req.Token)
+	// 	}
+	// }
 
 	// rate limit
 	s := sha256.Sum256([]byte(req.Token))
