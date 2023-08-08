@@ -8,9 +8,10 @@ def main():
         lines = infile.readlines()
         for line in lines:
             l = line.strip()
-            ls = l.split('\t')
-            address = ls[0]
-            count = int(ls[1])
+            if len(l) == 0: continue
+            ls = l.split(',')
+            address = ls[0].strip()
+            count = int(ls[1].strip())
             if address not in addrs:
                 addrs[address] = 0
             addrs[address] += int(count)
