@@ -22,6 +22,9 @@ def main():
             # print(s)
             ofile.write(s  + '\n')
 
+    with open('whitelist.csv', 'w') as ofile:
+        for a, c in addrs.items():
+            ofile.write(f'{a},{c}\n')
 
     pass
 
