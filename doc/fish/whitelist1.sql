@@ -99,3 +99,4 @@ INSERT INTO website.tb_waitlist (event_id, email, btc_address, referee_id, mint_
 INSERT INTO website.tb_waitlist (event_id, email, btc_address, referee_id, mint_limit) VALUES(1, 'cq9pdx@whitelist.com', 'bc1p6cq9pdxywn453aasx6suc08kkqgz0ka2j8srmka7s9lna70glv3s4njtfk', 0,  3);
 INSERT INTO website.tb_waitlist (event_id, email, btc_address, referee_id, mint_limit) VALUES(1, 'mn4asg@whitelist.com', 'bc1pqmn4asg8exzsvpdxrr0942546ful927rjwf2m8llepazt5ldtzjqgqfg9u', 0,  1);
 INSERT INTO website.tb_waitlist (event_id, email, btc_address, referee_id, mint_limit) VALUES(1, '77zgt6@whitelist.com', 'bc1qv77zgt6t6qtqw9dcvuh338fuzmdm8kh8agg6n4', 0,  1);
+INSERT INTO website.tb_waitlist (event_id, email, btc_address, referee_id, mint_limit) VALUES(1, 'FFSwHs@whitelist.com', '3LK9xFFSwHsPhugbHgxo1L4E7vEDX8uyT2', 0,  5);
