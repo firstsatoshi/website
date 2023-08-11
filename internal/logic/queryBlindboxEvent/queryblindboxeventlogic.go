@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/firstsatoshi/website/common/globalvar"
 	"github.com/firstsatoshi/website/internal/svc"
 	"github.com/firstsatoshi/website/internal/types"
 	"github.com/firstsatoshi/website/xerr"
@@ -111,6 +112,26 @@ func (l *QueryBlindboxEventLogic) QueryBlindboxEvent(req *types.QueryBlindboxEve
 						Plan:  x[1],
 					})
 				}
+			}
+		}
+
+		// bitcoinfish
+		endpoint := "bitcoinfish"
+		if event.EventEndpoint == endpoint {
+			tmpBuilder := l.svcCtx.TbInscribeOrderModel.SumBuilder("`count`").Where(
+				"order_status!=?", "PAYTIMEOUT",
+			).Where(
+				"version=?", globalvar.BITCOIN_FISH_MAGIC_NUMBER,
+			)
+			mintCountSum, err := l.svcCtx.TbInscribeOrderModel.FindSum(l.ctx, tmpBuilder)
+			if err != nil {
+				logx.Errorf("FindSum error:%v", err.Error())
+				return nil, errors.Wrapf(xerr.NewErrCode(xerr.SERVER_COMMON_ERROR), "FindCount error: %v", err.Error())
+			}
+
+			safeAvail = event.Supply - int64(mintCountSum)
+			if safeAvail < 0 {
+				safeAvail = 0
 			}
 		}
 
