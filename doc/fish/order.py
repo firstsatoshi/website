@@ -55,39 +55,40 @@ def main():
 
 
 
-    with open('bitcoinfish_data_0809.csv', 'w') as ofile:
-        ofile.write('用户姓名,手机号,地址,白名单数量,已mint数量,完成?\n')
+    with open('bitcoinfish_data_0809.xlsx', 'w') as ofile:
+        ofile.write('用户姓名\t手机号\t地址\t白名单数量\t已mint数量\t完成?\n')
         for user_addr, count in whitelist_count_map.items():
             s = ''
 
+            sep = '\t'
             # 用户姓名
             if user_addr in addr_name_map:
-                s += addr_name_map[user_addr] + ','
+                s += addr_name_map[user_addr] + sep
 
                 # 手机号
                 name = addr_name_map[user_addr]
                 if name in name_telno:
-                    s += name_telno[name] + ','
+                    s += name_telno[name] +  sep
                 else:
-                    s += '    ' + ','
+                    s += '    ' +  sep
             else:
-                s += 'xxx' + ','
-                s += 'xxx' + ','
+                s += 'xxx' +  sep
+                s += 'xxx' +  sep
 
 
 
 
-            s += user_addr + ','
+            s += user_addr +  sep
             # 白名单登记的数量
-            s += str(count) + ','
+            s += str(count) +  sep
 
             # 实际mint的数量
             mint_count = 0
             if user_addr in mint_order_map:
-                s += str(mint_order_map[user_addr])  + ','
+                s += str(mint_order_map[user_addr])  +  sep
                 mint_count = mint_order_map[user_addr]
             else:
-                s += '0' + ','
+                s += '0' + sep
                 mint_count = 0
 
             if mint_count != count:
