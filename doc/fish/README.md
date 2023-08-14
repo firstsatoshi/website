@@ -3,11 +3,17 @@
 
 
 ```sql
-select reveal_txid from tb_inscribe_data where order_id in (select order_id from tb_inscribe_order where order_status != 'PAYTIMEOUT' and receive_address='bc1psdkup70gwzjz9mljt9jtkm52z00gvzs2nwxvtapcxq9065mwdqkqpgsuyx');
+select reveal_txid, file_name from website.tb_inscribe_data where order_id in (select order_id from website.tb_inscribe_order where order_status != 'PAYTIMEOUT' and order_status != 'MINTING'  and `version`=137 );
+
+mysql -uroot -pFUnxy7jdfYsxkdfs -e "select reveal_txid, file_name from website.tb_inscribe_data where order_id in (select order_id from website.tb_inscribe_order where order_status != 'PAYTIMEOUT' and order_status != 'MINTING'  and version=137 );
+" > fish.txt
+
+select receive_address, count  from tb_inscribe_order where order_status != 'PAYTIMEOUT' and `version`=137;
 
 
+select receive_address, count, order_status from tb_inscribe_order where order_status != 'PAYTIMEOUT' and order_status != 'MINTING' and `version`=137;
 
-select receive_address, count from tb_inscribe_order where order_status != 'PAYTIMEOUT' and `version`=137;
+select sum(count) from tb_inscribe_order where order_status != 'PAYTIMEOUT' and order_status != 'MINTING' and `version`=137;
 
 
 
