@@ -49,7 +49,7 @@ def main():
     inscriptions = []
 
     name_id = 1
-    with open('fish_933.txt', 'r') as infile:
+    with open('fish_968.txt', 'r') as infile:
         lines = infile.readlines()
         for line in lines:
             l = line.strip()
