@@ -42,10 +42,10 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 	// bc1p
 	// e.g: bc1p3vs4447e5w0g828adhvpekqndtkpxmr04cj99zurxlqz50v9lz2q656na6
 	// encoding: Bech32m
-	btcAddress := req.BtcAddress
-	if len(btcAddress) != 62 {
-		return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid bitcoin p2tr address")
-	}
+	// btcAddress := req.BtcAddress
+	// if len(btcAddress) != 62 {
+		// return nil, errors.Wrapf(xerr.NewErrCode(xerr.INVALID_BTCP2TRADDRESS_ERROR), "invalid bitcoin p2tr address")
+	// }
 
 	// set a lock into redis, to fix concurrent issue
 	lock := redis.NewRedisLock(l.svcCtx.Redis, req.Email)
@@ -73,7 +73,7 @@ func (l *JoinWaitListLogic) JoinWaitList(req *types.JoinWaitListReq) (*types.Joi
 	// if not exits
 	sqlRet, err := l.svcCtx.TbWaitlistModel.Insert(l.ctx, &model.TbWaitlist{
 		Email:      req.Email,
-		BtcAddress: req.BtcAddress,
+		// BtcAddress: req.BtcAddress,
 	})
 	if err != nil {
 		sqlRet.LastInsertId()

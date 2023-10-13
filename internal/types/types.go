@@ -2,8 +2,7 @@
 package types
 
 type JoinWaitListReq struct {
-	Email      string `json:"email"`
-	BtcAddress string `json:"btcAddress"`
+	Email string `json:"email"`
 }
 
 type JoinWaitListResp struct {
