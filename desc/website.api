@@ -1,5 +1,23 @@
 syntax = "v1"
 
+type JoinWaitReq {
+	Email string `json:"email"`
+}
+
+type JoinWaitResp {
+	Duplicated bool `json:"duplicated"`
+}
+
+// 加入预约
+@server(
+	prefix: api/v1
+	group: joinwait
+)
+service website-api {
+	@handler joinWait
+	post /joinwait(JoinWaitReq) returns (JoinWaitResp)
+}
+
 type JoinWaitListReq {
 	EventId     int    `json:"eventId"`
 	Email       string `json:"email"`

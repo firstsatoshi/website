@@ -11,6 +11,7 @@ import (
 	createInscribeOrder "github.com/firstsatoshi/website/internal/handler/createInscribeOrder"
 	createOrder "github.com/firstsatoshi/website/internal/handler/createOrder"
 	estimateFee "github.com/firstsatoshi/website/internal/handler/estimateFee"
+	joinwait "github.com/firstsatoshi/website/internal/handler/joinwait"
 	joinwaitlist "github.com/firstsatoshi/website/internal/handler/joinwaitlist"
 	queryAddress "github.com/firstsatoshi/website/internal/handler/queryAddress"
 	queryBlindboxEvent "github.com/firstsatoshi/website/internal/handler/queryBlindboxEvent"
@@ -23,6 +24,17 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				Method:  http.MethodPost,
+				Path:    "/joinwait",
+				Handler: joinwait.JoinWaitHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+	)
+
 	server.AddRoutes(
 		[]rest.Route{
 			{
