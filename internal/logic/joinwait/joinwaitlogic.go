@@ -45,7 +45,7 @@ func (l *JoinWaitLogic) JoinWait(req *types.JoinWaitReq) (*types.JoinWaitResp, e
 	// if not exits
 	_, err = l.svcCtx.TbWaitlistModel.Insert(l.ctx, &model.TbWaitlist{
 		EventId:   0,
-		BtcAddress: "fansland",
+		BtcAddress: "fansland" + req.Email,
 		Email:     req.Email,
 		MintLimit: 0, // NOTE: no
 	})
