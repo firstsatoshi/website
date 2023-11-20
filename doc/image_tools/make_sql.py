@@ -46,20 +46,32 @@ def main2():
 
 
     # infle,open('/home/yqq/firstsat/website/doc/image_tools/20230609_insert_blindbox.sql','w') as outfile:
-    with open(  "/home/yqq/firstsat/website/doc/image_tools/freemint_0609_2000.csv") as \
-    infle,open('/home/yqq/firstsat/website/doc/image_tools/20230615_update_blindbox_url.sql','w') as outfile:
-        lines = infle.readlines()
+
+    old_no_list = []
+
+    with open(  "/home/yqq/firstsat/website/doc/image_tools/freemint_0609_2000.csv") as infile:
+        lines = infile.readlines()
         for line in lines:
             line = str(line).strip()
             no = line[ :line.find(".png") ]
-
             id = int(no)
-            name =  '#'+no
+            old_no_list.append(id)
+
+
+
+    with open('/home/yqq/firstsat/website/doc/image_tools/20231120_sell_blindbox_url.sql','w') as outfile:
+        for n in range(1, 10239):
+            if n in old_no_list:
+                continue
+
+            name =  '#'+str(n)
+            id = n
+            no = str(n)
             description = 'Bit Eagle ' + name
-            category = g_category[no]
+            category = g_category[str(n)]
             image_url = f"https://d30f95b5opmmez.cloudfront.net/images/{id}.png" # TODO:
-            # sql = f"INSERT INTO website.tb_blindbox (id, name, description, category, img_url, is_active, is_locked, status, commit_txid, reveal_txid, create_time, update_time) VALUES({id}, '{name}', '{description}', '{category}', '{image_url}', 1, 0, 'NOTMINT', NULL, NULL, '2023-06-06 12:03:13', '2023-06-06 12:03:13');"
-            sql = f"update website.tb_blindbox set img_url='{image_url}' where id={id};"
+            sql = f"INSERT INTO website.tb_blindbox (id, name, description, category, img_url, is_active, is_locked, status, commit_txid, reveal_txid, create_time, update_time) VALUES({id}, '{name}', '{description}', '{category}', '{image_url}', 1, 0, 'NOTMINT', NULL, NULL, '2023-06-06 12:03:13', '2023-06-06 12:03:13');"
+            # sql = f"update website.tb_blindbox set img_url='{image_url}' where id={id};"
             outfile.write( sql + "\n" )
     pass
 

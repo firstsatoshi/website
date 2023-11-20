@@ -277,7 +277,7 @@ func (l *CreateOrderLogic) CreateOrder(req *types.CreateOrderReq) (resp *types.C
 		TxfeeAmountSat:  totalFee,
 		ServiceFeeSat:   0,
 		PriceSat:        event.PriceSats,
-		TotalAmountSat:  totalFee + event.PriceSats,
+		TotalAmountSat:  totalFee + event.PriceSats * int64(req.Count),
 		OrderStatus:     "NOTPAID",
 		Version:         0,
 		CreateTime:      createTime,
